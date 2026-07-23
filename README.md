@@ -11,11 +11,12 @@ _AI-first_, _konwencja nad konfiguracją_.
 
 ## Stan budowy
 
-| Faza | Zakres                                   | Status         |
-| ---- | ---------------------------------------- | -------------- |
-| 0    | Fundament: monorepo, config, DX, docs AI | ✅ ukończona   |
-| 1    | API skeleton (Fastify + Zod)             | ⏳ następna    |
-| 2–9  | Baza, auth, encja ref., klient, FE, …    | ⬜ zaplanowane |
+| Faza | Zakres                                        | Status         |
+| ---- | --------------------------------------------- | -------------- |
+| 0    | Fundament: monorepo, config, DX, docs AI      | ✅ ukończona   |
+| 1    | API skeleton (Fastify + Zod, env, logi, 7807) | ✅ ukończona   |
+| 2    | Baza (Drizzle, migracje, audyt, soft delete)  | ⏳ następna    |
+| 3–9  | Auth, encja ref., klient, FE, formularze, …   | ⬜ zaplanowane |
 
 Szczegóły i checkboxy: [`PLAN.md`](./PLAN.md).
 
@@ -40,11 +41,12 @@ Jeśli port 5432 jest zajęty (inny projekt), ustaw `POSTGRES_PORT` w `.env` (pa
 | `pnpm lint` / `typecheck` / `build` / `test` | pipeline przez Turborepo (cały monorepo) |
 | `pnpm format` / `pnpm format:check`          | Prettier                                 |
 | `pnpm turbo run test --filter=@repo/<pkg>`   | zawężenie do jednego workspace           |
+| `pnpm --filter @repo/api dev`                | API w trybie watch (`GET /health`)       |
 
 ## Struktura
 
 ```
-apps/       api (BE) · web · admin            (skorupy dochodzą w Fazach 1/6)
+apps/       api (Fastify+Zod, działa) · web · admin   (web/admin w Fazie 6)
 packages/   schemas · api-client · api-react · forms · forms-ui · ui · config
 design-system/   DS jako git subtree (na razie placeholder; READ-ONLY)
 docs/       recipes (przepisy) · adr/ · ds-component-inventory.md

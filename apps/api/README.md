@@ -1,5 +1,54 @@
 # apps/api
 
-Placeholder. Fastify + Zod, moduły domenowe montowane z rejestru.
+Backend na **Fastify + Zod**. Moduły domenowe montowane z rejestru pod `/api/v1`.
+Jedno źródło prawdy: schematy Zod tras napędzają walidację, serializację, typy i OpenAPI.
 
-Wypełniane w **Fazie 1** (skeleton API) i dalej. Patrz `PLAN.md`.
+## Komendy
+
+| Komenda               | Opis                                     |
+| --------------------- | ---------------------------------------- |
+| `pnpm dev`            | serwer w trybie watch (tsx)              |
+| `pnpm build`          | kompilacja do `dist/` (tsc)              |
+| `pnpm start`          | uruchomienie `dist/server.js`            |
+| `pnpm typecheck`      | `tsc --noEmit`                           |
+| `pnpm test`           | testy Vitest                             |
+| `pnpm test -- health` | pojedynczy plik/testy pasujące do wzorca |
+
+Serwer wymaga zmiennych z `.env` (patrz `../../.env.example`); walidowane przy starcie (fail-fast).
+
+## Endpointy
+
+- `GET /health` — liveness probe (poza `/api/v1`; endpoint infrastrukturalny).
+- `GET /api/v1/openapi.json` — spec OpenAPI generowany ze schematów (nigdy pisany ręcznie).
+- Moduły domenowe: `/api/v1/*` (pierwszy w Fazie 4).
+
+## Struktura
+
+```
+src/
+  config/env.ts              — kontrakt env (Zod) + fail-fast parse
+  lib/
+    logger.ts                — opcje pino (JSON, redakcja wrażliwych nagłówków)
+    http/
+      problem.ts             — RFC 7807 + klasy AppError (NotFound, Conflict, …)
+      error-handler.ts       — globalny handler → problem+json; notFoundHandler
+      pagination.ts          — paginacja offset-based (konwencja list)
+    error-tracking/          — ErrorTracker (interfejs) + noop / sentry (lazy)
+  modules/
+    index.ts                 — rejestr modułów /api/v1 (kotwica scaffoldera)
+    health/health.routes.ts  — /health
+  app.ts                     — buildApp(): plugin-y, swagger, handlery, rejestr
+  server.ts                  — start(): parse env → tracker → buildApp → listen
+```
+
+## Konwencje
+
+- **Moduł = katalog** w `src/modules/<nazwa>/`; trasy jako `FastifyPluginAsyncZod`.
+  Rejestracja: jedna linia przy kotwicy `// scaffolder:entities-register` w `src/modules/index.ts`.
+- **Błędy**: rzucaj podklasy `AppError` z warstwy logiki — globalny handler mapuje je na
+  RFC 7807. Nie formatuj odpowiedzi błędu ręcznie. 5xx są logowane i raportowane do `ErrorTracker`.
+- **Walidacja**: schematy Zod w `schema.{body,querystring,params,response}` tras.
+- **Logi**: structured JSON (pino); `reqId` = correlation_id (nagłówek `x-request-id`).
+- **OpenAPI**: patrz `docs/adr/ADR-0001-openapi-generation.md`.
+
+Przepis dodania modułu: `docs/recipes/struktura-modulu-api.md`.

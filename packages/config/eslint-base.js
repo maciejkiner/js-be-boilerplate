@@ -10,5 +10,18 @@ export default tseslint.config(
   { ignores: ["**/dist/**", "**/.turbo/**", "**/node_modules/**", "**/*.gen.ts"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    rules: {
+      // Konwencja: argumenty/zmienne z prefiksem `_` są celowo nieużywane.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
   prettier,
 );

@@ -39,7 +39,7 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - `pnpm format` / `pnpm format:check` — Prettier.
 - `docker compose up -d` — Postgres (5432) + mailhog (SMTP 1025, UI 8025).
 - Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
-- (Vitest per pakiet — pojedynczy test — dojdzie z pierwszym pakietem z testami, Faza 1.)
+- API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. Pojedynczy test: `pnpm --filter @repo/api test -- <wzorzec>`.
 
 ## Stack (rozstrzygnięty — nie proponuj alternatyw)
 

@@ -5,7 +5,7 @@ przez scaffolder jest równocześnie jego specyfikacją — dzięki temu się ni
 
 Planowane (wypełniane w odpowiednich fazach — patrz `PLAN.md`):
 
-- [ ] `struktura-modulu-api.md` — Faza 1
+- [x] `struktura-modulu-api.md` — Faza 1
 - [ ] `jak-dodac-migracje.md` — Faza 2
 - [ ] `jak-dodac-providera-tozsamosci.md` — Faza 3
 - [ ] `jak-dodac-encje.md` — Faza 4 (wzorzec) → finalizowany w Fazie 8 (równolegle ze scaffolderem)

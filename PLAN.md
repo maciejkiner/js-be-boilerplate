@@ -68,16 +68,16 @@ Cel: szkielet monorepo, na którym wszystko dalej stoi, oraz reguły dla agentó
 
 Cel: działające `apps/api` z konwencjami, bez domeny.
 
-- [ ] `apps/api` na Fastify + `fastify-type-provider-zod`; struktura modułowa (katalog = moduł) + rejestr do montowania routerów (`// scaffolder:routes — do not remove`).
-- [ ] Walidowana konfiguracja env (Zod) — parsowanie i fail-fast przy starcie; typy env.
-- [ ] Structured logging: pino (JSON, poziomy, `correlation_id`/request id).
-- [ ] Globalny handler błędów → **RFC 7807 (problem+json)**; spójne mapowanie błędów walidacji Zod i błędów domenowych.
-- [ ] Abstrakcja error-trackingu + adapter Sentry (Założenie B); wpięta w handler błędów; adapter dev = no-op/console.
-- [ ] Konwencja `/api/v1` (prefix ścieżki, bez dodatkowej maszynerii). Endpoint `/health`.
-- [ ] Generowanie OpenAPI ze schematów Zod (`zod-openapi`) + serwowanie spec (np. `/api/v1/openapi.json`). Spec nigdy pisany ręcznie.
-- [ ] Konwencje odpowiedzi list: kształt paginacji offset-based (do użycia od fazy 4).
-- [ ] Testy Vitest: config-fail-fast, mapowanie błędów na 7807, obecność `/health` i spec OpenAPI.
-- [ ] Przepis-szkic „struktura modułu API" + aktualizacja CLAUDE.md (konwencje API, format błędów, logowanie).
+- [x] `apps/api` na Fastify + `fastify-type-provider-zod`; struktura modułowa (katalog = moduł) + rejestr do montowania routerów (`// scaffolder:routes — do not remove`).
+- [x] Walidowana konfiguracja env (Zod) — parsowanie i fail-fast przy starcie; typy env.
+- [x] Structured logging: pino (JSON, poziomy, `correlation_id`/request id).
+- [x] Globalny handler błędów → **RFC 7807 (problem+json)**; spójne mapowanie błędów walidacji Zod i błędów domenowych.
+- [x] Abstrakcja error-trackingu + adapter Sentry (Założenie B); wpięta w handler błędów; adapter dev = no-op/console.
+- [x] Konwencja `/api/v1` (prefix ścieżki, bez dodatkowej maszynerii). Endpoint `/health`.
+- [x] Generowanie OpenAPI ze schematów Zod (`zod-openapi`) + serwowanie spec (np. `/api/v1/openapi.json`). Spec nigdy pisany ręcznie.
+- [x] Konwencje odpowiedzi list: kształt paginacji offset-based (do użycia od fazy 4).
+- [x] Testy Vitest: config-fail-fast, mapowanie błędów na 7807, obecność `/health` i spec OpenAPI.
+- [x] Przepis-szkic „struktura modułu API" + aktualizacja CLAUDE.md (konwencje API, format błędów, logowanie).
 
 **DoD fazy 1:** API startuje z walidowanym env; `/health` i OpenAPI działają; błędy w formacie 7807; logi strukturalne; testy zielone.
 
