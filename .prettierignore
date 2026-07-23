@@ -1,0 +1,9 @@
+# Generowane / zewnętrzne — nie formatujemy
+pnpm-lock.yaml
+**/dist/**
+**/.turbo/**
+coverage/
+playwright-report/
+
+# Specyfikacja to artefakt wejściowy (źródło prawdy) — nie ruszamy jej formatowania
+spec/
