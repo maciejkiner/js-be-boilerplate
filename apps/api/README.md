@@ -5,16 +5,22 @@ Jedno źródło prawdy: schematy Zod tras napędzają walidację, serializację,
 
 ## Komendy
 
-| Komenda               | Opis                                     |
-| --------------------- | ---------------------------------------- |
-| `pnpm dev`            | serwer w trybie watch (tsx)              |
-| `pnpm build`          | kompilacja do `dist/` (tsc)              |
-| `pnpm start`          | uruchomienie `dist/server.js`            |
-| `pnpm typecheck`      | `tsc --noEmit`                           |
-| `pnpm test`           | testy Vitest                             |
-| `pnpm test -- health` | pojedynczy plik/testy pasujące do wzorca |
+| Komenda               | Opis                                         |
+| --------------------- | -------------------------------------------- |
+| `pnpm dev`            | serwer w trybie watch (tsx)                  |
+| `pnpm build`          | kompilacja do `dist/` (tsc)                  |
+| `pnpm start`          | uruchomienie `dist/server.js`                |
+| `pnpm typecheck`      | `tsc --noEmit`                               |
+| `pnpm test`           | testy Vitest                                 |
+| `pnpm test -- health` | pojedynczy plik/testy pasujące do wzorca     |
+| `pnpm db:generate`    | wygeneruj migrację ze schematu (drizzle-kit) |
+| `pnpm db:migrate`     | zastosuj migracje                            |
+| `pnpm db:seed`        | uruchom seedery (idempotentne)               |
+| `pnpm db:studio`      | Drizzle Studio                               |
 
 Serwer wymaga zmiennych z `.env` (patrz `../../.env.example`); walidowane przy starcie (fail-fast).
+Baza: `docker compose up -d` (Postgres). Testy integracyjne DB uruchamiają się, gdy ustawiony jest
+`TEST_DATABASE_URL` (inaczej są pomijane).
 
 ## Endpointy
 
@@ -27,6 +33,14 @@ Serwer wymaga zmiennych z `.env` (patrz `../../.env.example`); walidowane przy s
 ```
 src/
   config/env.ts              — kontrakt env (Zod) + fail-fast parse
+  db/
+    client.ts                — createDb(url): Drizzle nad pulą pg
+    columns.ts               — helpery kolumn: timestamps, softDelete, createdBy
+    query.ts                 — notDeleted() (filtr soft-delete)
+    schema.ts                — agregacja schematów modułów (kotwica scaffoldera)
+    migrate.ts               — runMigrations() (no-op dopóki brak migracji)
+    seed.ts                  — Seeder + rejestr seedów (idempotentne)
+    cli/                     — db:migrate / db:seed
   lib/
     logger.ts                — opcje pino (JSON, redakcja wrażliwych nagłówków)
     http/
@@ -39,6 +53,8 @@ src/
     health/health.routes.ts  — /health
   app.ts                     — buildApp(): plugin-y, swagger, handlery, rejestr
   server.ts                  — start(): parse env → tracker → buildApp → listen
+drizzle/                     — wygenerowane migracje (SQL + meta)
+drizzle.config.ts            — konfiguracja drizzle-kit
 ```
 
 ## Konwencje

@@ -11,12 +11,13 @@ _AI-first_, _konwencja nad konfiguracją_.
 
 ## Stan budowy
 
-| Faza | Zakres                                        | Status         |
-| ---- | --------------------------------------------- | -------------- |
-| 0    | Fundament: monorepo, config, DX, docs AI      | ✅ ukończona   |
-| 1    | API skeleton (Fastify + Zod, env, logi, 7807) | ✅ ukończona   |
-| 2    | Baza (Drizzle, migracje, audyt, soft delete)  | ⏳ następna    |
-| 3–9  | Auth, encja ref., klient, FE, formularze, …   | ⬜ zaplanowane |
+| Faza | Zakres                                         | Status         |
+| ---- | ---------------------------------------------- | -------------- |
+| 0    | Fundament: monorepo, config, DX, docs AI       | ✅ ukończona   |
+| 1    | API skeleton (Fastify + Zod, env, logi, 7807)  | ✅ ukończona   |
+| 2    | Baza (Drizzle, migracje, audyt, soft delete)   | ✅ ukończona   |
+| 3    | Auth (userzy, sesje, RBAC, reset hasła)        | ⏳ następna    |
+| 4–9  | Encja ref., klient, FE, formularze, scaffolder | ⬜ zaplanowane |
 
 Szczegóły i checkboxy: [`PLAN.md`](./PLAN.md).
 

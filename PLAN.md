@@ -85,13 +85,13 @@ Cel: działające `apps/api` z konwencjami, bez domeny.
 
 Cel: warstwa danych i konwencje, na których stanie auth i encja referencyjna.
 
-- [ ] Integracja Drizzle + połączenie do Postgresa z walidowanego configu.
-- [ ] Pipeline migracji (generowanie + apply) wpięty w skrypty i CI (migracje na testowej bazie).
-- [ ] Konwencja **pól audytowych** (`createdAt`, `updatedAt`, `createdBy`) i **soft delete** (`deletedAt`) jako współdzielony helper/mixin schematu.
-- [ ] Infrastruktura seedów (idempotentne).
-- [ ] Repository pattern: cienka konwencja dostępu do danych (bez logiki biznesowej w SQL).
-- [ ] Testy Vitest: migracje przechodzą; helper audytu/soft delete działa; seed idempotentny.
-- [ ] Przepis „jak dodać migrację" + aktualizacja CLAUDE.md (konwencje bazy: audyt, soft delete, expand→migrate→contract).
+- [x] Integracja Drizzle + połączenie do Postgresa z walidowanego configu.
+- [x] Pipeline migracji (generowanie + apply) wpięty w skrypty i CI (migracje na testowej bazie).
+- [x] Konwencja **pól audytowych** (`createdAt`, `updatedAt`, `createdBy`) i **soft delete** (`deletedAt`) jako współdzielony helper/mixin schematu.
+- [x] Infrastruktura seedów (idempotentne).
+- [x] Repository pattern: cienka konwencja dostępu do danych (bez logiki biznesowej w SQL).
+- [x] Testy Vitest: migracje przechodzą; helper audytu/soft delete działa; seed idempotentny.
+- [x] Przepis „jak dodać migrację" + aktualizacja CLAUDE.md (konwencje bazy: audyt, soft delete, expand→migrate→contract).
 
 **DoD fazy 2:** migracje i seedy działają lokalnie i w CI; konwencje audytu/soft delete udokumentowane i pokryte testem.
 

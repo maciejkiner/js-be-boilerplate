@@ -40,6 +40,7 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - `docker compose up -d` — Postgres (5432) + mailhog (SMTP 1025, UI 8025).
 - Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
 - API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. Pojedynczy test: `pnpm --filter @repo/api test -- <wzorzec>`.
+- Baza: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Testy integracyjne DB wymagają `TEST_DATABASE_URL` (inaczej pomijane).
 
 ## Stack (rozstrzygnięty — nie proponuj alternatyw)
 
@@ -100,6 +101,7 @@ error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
 - **API:** ścieżki w liczbie mnogiej, `kebab-case`, prefix `/api/v1`; pola JSON spójne w całym API.
 - **Błędy API:** RFC 7807 (problem+json), spójne z globalnym handlerem.
 - **Paginacja:** offset-based w core; cursor-based jako przepis.
+- **Baza (Drizzle):** pola audytowe (`created_at`/`updated_at`/`created_by`) i soft delete (`deleted_at`) przez helpery `src/db/columns.ts`; odczyty przez `notDeleted()`. Migracje generowane ze schematu (nie ręcznie), rejestrowane przy kotwicy w `src/db/schema.ts`. Zmiany łamiące: expand → migrate → contract. Seedery idempotentne. Przepis: `docs/recipes/jak-dodac-migracje.md`.
 
 ## Decyzje architektoniczne
 
