@@ -3,3 +3,5 @@ packages:
   - "packages/*"
   # DS jako placeholder subtree — workspace-package, by packages/ui i skorupy mogły go konsumować.
   - "design-system"
+  # Testy e2e (Playwright) — poza pipeline'em unit (własny skrypt test:e2e).
+  - "e2e"

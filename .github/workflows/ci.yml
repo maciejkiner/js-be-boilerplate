@@ -60,3 +60,9 @@ jobs:
 
       - name: Lint / typecheck / build / test
         run: pnpm turbo run lint typecheck build test
+
+      - name: Install Playwright browser
+        run: pnpm --filter @repo/e2e exec playwright install --with-deps chromium
+
+      - name: E2E (Playwright — startuje API + web + admin)
+        run: pnpm --filter @repo/e2e test:e2e

@@ -152,7 +152,7 @@ Cel: cienkie skorupy `apps/web` i `apps/admin` na wspólnych pakietach; admin z 
 - [x] Dorobienie just-in-time komponentów DS (mock) z inwentarza sekcji 10 potrzebnych dla listy/detalu: prymitywy tabeli, pagination, modal, toast, skeleton/spinner (reguła DS read-only utrzymana). (etap A — `@repo/design-system`)
 - [x] `packages/ui`: **DataTable** (paginacja/sortowanie/filtrowanie po kolumnach), layout admina, `EmptyState` — kompozycje **na** DS. (etap A)
 - [x] Widoki admina dla encji referencyjnej: lista (DataTable), detal, usuwanie (create/edit dopiero po fazie 7 lub tymczasowo surowe — patrz DoD). (etap B — Project + Task)
-- [ ] **Playwright: konfiguracja + wpięcie w CI + pierwsze scenariusze e2e** (login, lista/detal encji referencyjnej w adminie, weryfikacja dwóch originów). (etap C — w toku)
+- [x] **Playwright: konfiguracja + wpięcie w CI + pierwsze scenariusze e2e** (login, lista/detal encji referencyjnej w adminie, weryfikacja dwóch originów). (etap C — pakiet `e2e`, 3 testy zielone; porty konfigurowalne)
 - [x] Testy: Vitest dla `packages/ui`; Playwright e2e jak wyżej. → Vitest DS (9) + ui (6) zielone; e2e w etapie C.
 - [x] Przepis „struktura skorupy FE / jak dodać widok" + aktualizacja CLAUDE.md (granica React-tak/router-nie w praktyce). (etap B)
 
