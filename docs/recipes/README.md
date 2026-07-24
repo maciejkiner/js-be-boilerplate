@@ -7,7 +7,7 @@ Planowane (wypełniane w odpowiednich fazach — patrz `PLAN.md`):
 
 - [x] `struktura-modulu-api.md` — Faza 1
 - [x] `jak-dodac-migracje.md` — Faza 2
-- [ ] `jak-dodac-providera-tozsamosci.md` — Faza 3
+- [x] `jak-dodac-providera-tozsamosci.md` — Faza 3
 - [ ] `jak-dodac-encje.md` — Faza 4 (wzorzec) → finalizowany w Fazie 8 (równolegle ze scaffolderem)
 - [ ] `jak-regenerowac-klienta.md` — Faza 5
 - [ ] `struktura-skorupy-fe.md` — Faza 6

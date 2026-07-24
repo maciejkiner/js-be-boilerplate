@@ -101,7 +101,8 @@ error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
 - **API:** ścieżki w liczbie mnogiej, `kebab-case`, prefix `/api/v1`; pola JSON spójne w całym API.
 - **Błędy API:** RFC 7807 (problem+json), spójne z globalnym handlerem.
 - **Paginacja:** offset-based w core; cursor-based jako przepis.
-- **Baza (Drizzle):** pola audytowe (`created_at`/`updated_at`/`created_by`) i soft delete (`deleted_at`) przez helpery `src/db/columns.ts`; odczyty przez `notDeleted()`. Migracje generowane ze schematu (nie ręcznie), rejestrowane przy kotwicy w `src/db/schema.ts`. Zmiany łamiące: expand → migrate → contract. Seedery idempotentne. Przepis: `docs/recipes/jak-dodac-migracje.md`.
+- **Baza (Drizzle):** pola audytowe (`created_at`/`updated_at`/`created_by`) i soft delete (`deleted_at`) przez helpery `src/db/columns.ts`; odczyty przez `notDeleted()`. Migracje generowane ze schematu (nie ręcznie; `drizzle-kit` czyta skompilowany `dist`, więc `db:generate` buduje najpierw), rejestrowane przy kotwicy w `src/db/schema.ts`. Zmiany łamiące: expand → migrate → contract. Seedery idempotentne. Przepis: `docs/recipes/jak-dodac-migracje.md`.
+- **Auth:** email+hasło (argon2) jako pierwsza implementacja interfejsu providera tożsamości (`modules/auth/providers/`); sesje = access JWT (cookie) + refresh opaque hashowany (tabela `sessions`, rotacja); RBAC przez `roles` na userze + guard `requireRoles()` po `app.authenticate`; reset hasła przez abstrakcję mailera (`lib/mailer`, dev=mailhog); admin na subdomenie: CORS dwa originy + cookies (`COOKIE_DOMAIN`). Sekrety/tokeny trzymane wyłącznie jako hash. Przepis: `docs/recipes/jak-dodac-providera-tozsamosci.md`.
 
 ## Decyzje architektoniczne
 

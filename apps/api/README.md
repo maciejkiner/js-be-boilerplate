@@ -26,7 +26,21 @@ Baza: `docker compose up -d` (Postgres). Testy integracyjne DB uruchamiają się
 
 - `GET /health` — liveness probe (poza `/api/v1`; endpoint infrastrukturalny).
 - `GET /api/v1/openapi.json` — spec OpenAPI generowany ze schematów (nigdy pisany ręcznie).
+- **Auth** (`/api/v1/auth`): `register`, `login`, `refresh`, `logout`, `me`,
+  `password-reset/request`, `password-reset/confirm`, `admin/ping` (przykład RBAC).
 - Moduły domenowe: `/api/v1/*` (pierwszy w Fazie 4).
+
+## Auth
+
+- Email+hasło jako pierwsza implementacja **interfejsu providera tożsamości**
+  (`modules/auth/providers/`); kolejni providerzy — patrz `docs/recipes/jak-dodac-providera-tozsamosci.md`.
+- **Sesje/tokeny**: access token (JWT, cookie `access_token`) + refresh token (opaque, hashowany
+  w tabeli `sessions`, cookie `refresh_token`), rotowany przy `refresh`.
+- **RBAC**: `roles` na userze; guard `requireRoles("admin")` po `app.authenticate`.
+- **Reset hasła**: token e-mailem przez **abstrakcję mailera** (`lib/mailer`; dev = mailhog).
+- **Admin na subdomenie**: CORS na `WEB_ORIGIN`+`ADMIN_ORIGIN` z credentials; cookies z opcjonalnym
+  `COOKIE_DOMAIN`. Dla deploymentu w pełni cross-site potrzebny SameSite=None+Secure.
+- Dev: `pnpm db:seed` tworzy `admin@example.com` / `admin12345`.
 
 ## Struktura
 
@@ -48,9 +62,12 @@ src/
       error-handler.ts       — globalny handler → problem+json; notFoundHandler
       pagination.ts          — paginacja offset-based (konwencja list)
     error-tracking/          — ErrorTracker (interfejs) + noop / sentry (lazy)
+    mailer/                  — Mailer (interfejs) + smtp (nodemailer) / memory
   modules/
     index.ts                 — rejestr modułów /api/v1 (kotwica scaffoldera)
     health/health.routes.ts  — /health
+    auth/                    — schema, dto, service, repository, routes, rbac,
+                               authenticate, cookies, tokens, providers/, seed
   app.ts                     — buildApp(): plugin-y, swagger, handlery, rejestr
   server.ts                  — start(): parse env → tracker → buildApp → listen
 drizzle/                     — wygenerowane migracje (SQL + meta)

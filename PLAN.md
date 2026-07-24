@@ -99,15 +99,15 @@ Cel: warstwa danych i konwencje, na których stanie auth i encja referencyjna.
 
 Cel: nieopcjonalny auth (CRUD/admin/`createdBy` na nim wiszą), z granicą modularności na metodzie logowania.
 
-- [ ] Tabela userów (+ migracja) z polami audytowymi.
-- [ ] Sesje/tokeny **z refreshem**; middleware autoryzacji.
-- [ ] **Interfejs providera tożsamości** + pierwsza implementacja **email+hasło** (hash, logowanie); struktura pod dokładanie kolejnych providerów w projektach.
-- [ ] Proste **RBAC** (role na poziomie usera) + guard na endpointach.
-- [ ] **Reset hasła** → **abstrakcja mailera** (adapter dev = mailhog, adapter prod). Mailer jako interfejs.
-- [ ] Wsparcie **admina na subdomenie od razu**: cookies `.domena` lub tokeny + **CORS na dwa originy** (web + admin).
-- [ ] Endpointy auth w `/api/v1` + wpisy OpenAPI.
-- [ ] Testy Vitest: login/refresh, guard RBAC, reset hasła (mail przez mailhog/adapter), CORS dwa originy.
-- [ ] Przepis **„jak dodać providera tożsamości"** + aktualizacja CLAUDE.md (auth, RBAC, mailer, model subdomeny/CORS).
+- [x] Tabela userów (+ migracja) z polami audytowymi.
+- [x] Sesje/tokeny **z refreshem**; middleware autoryzacji.
+- [x] **Interfejs providera tożsamości** + pierwsza implementacja **email+hasło** (hash, logowanie); struktura pod dokładanie kolejnych providerów w projektach.
+- [x] Proste **RBAC** (role na poziomie usera) + guard na endpointach.
+- [x] **Reset hasła** → **abstrakcja mailera** (adapter dev = mailhog, adapter prod). Mailer jako interfejs.
+- [x] Wsparcie **admina na subdomenie od razu**: cookies `.domena` lub tokeny + **CORS na dwa originy** (web + admin).
+- [x] Endpointy auth w `/api/v1` + wpisy OpenAPI.
+- [x] Testy Vitest: login/refresh, guard RBAC, reset hasła (mail przez mailhog/adapter), CORS dwa originy.
+- [x] Przepis **„jak dodać providera tożsamości"** + aktualizacja CLAUDE.md (auth, RBAC, mailer, model subdomeny/CORS).
 
 **DoD fazy 3:** pełny flow email+hasło + reset przez mailhog; RBAC egzekwowane; sesje z refreshem; admin-subdomena (cookies/CORS) obsłużona; testy zielone.
 

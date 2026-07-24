@@ -22,9 +22,9 @@ export const softDelete = {
 };
 
 /**
- * `createdBy` — uuid usera, który utworzył rekord. Klucz obcy do `users` dokładamy
- * w Fazie 3 (gdy tabela istnieje); teraz zwykły uuid (nullable), by konwencja
- * obowiązywała od razu.
+ * `createdBy` — uuid usera, który utworzył rekord. Zwykły uuid (nullable); klucz obcy do
+ * `users` dokładany per-tabela tam, gdzie ma sens (encje domenowe od Fazy 4) — nie globalnie,
+ * bo np. pierwszy user nie ma twórcy.
  */
 export const createdBy = {
   createdBy: uuid("created_by"),

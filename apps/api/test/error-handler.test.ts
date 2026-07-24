@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import type { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { buildApp } from "../src/app.js";
 import { NotFoundError } from "../src/lib/http/problem.js";
-import { recordingTracker, testEnv } from "./helpers.js";
+import { buildTestApp, recordingTracker } from "./helpers.js";
 
 const testRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get("/__test/not-found", async () => {
@@ -22,15 +22,17 @@ const testRoutes: FastifyPluginAsyncZod = async (app) => {
 
 const { tracker, captured } = recordingTracker();
 let app: FastifyInstance;
+let pool: Pool;
 
 beforeAll(async () => {
-  app = await buildApp({ env: testEnv(), errorTracker: tracker });
+  ({ app, pool } = await buildTestApp({ errorTracker: tracker }));
   await app.register(testRoutes);
   await app.ready();
 });
 
 afterAll(async () => {
   await app.close();
+  await pool.end();
 });
 
 describe("globalny handler błędów (RFC 7807)", () => {

@@ -1,10 +1,14 @@
-import { parseEnv } from "../../config/env.js";
 import { createDb } from "../client.js";
 import { runMigrations } from "../migrate.js";
 
-const env = parseEnv();
-const { db, pool } = createDb(env.DATABASE_URL);
+// CLI migracji potrzebuje wyłącznie DATABASE_URL (bez pełnej walidacji env aplikacji).
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  console.error("DATABASE_URL jest wymagane.");
+  process.exit(1);
+}
 
+const { db, pool } = createDb(databaseUrl);
 try {
   await runMigrations(db);
   console.log("Migracje: zaaplikowane (lub brak do zaaplikowania).");

@@ -1,10 +1,14 @@
-import { parseEnv } from "../../config/env.js";
 import { createDb } from "../client.js";
 import { runSeeds } from "../seed.js";
 
-const env = parseEnv();
-const { db, pool } = createDb(env.DATABASE_URL);
+// CLI seedów potrzebuje wyłącznie DATABASE_URL.
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  console.error("DATABASE_URL jest wymagane.");
+  process.exit(1);
+}
 
+const { db, pool } = createDb(databaseUrl);
 try {
   await runSeeds(db);
   console.log("Seedy: wykonane.");

@@ -7,5 +7,5 @@
  *   export * from "../modules/products/products.schema.js";
  */
 
+export * from "../modules/auth/auth.schema.js";
 // scaffolder:schema-export — do not remove
-export {};

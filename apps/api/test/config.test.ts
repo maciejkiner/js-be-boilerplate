@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { EnvValidationError, parseEnv } from "../src/config/env.js";
 
-const base = { DATABASE_URL: "postgres://app:app@localhost:5432/app" } as NodeJS.ProcessEnv;
+const base = {
+  DATABASE_URL: "postgres://app:app@localhost:5432/app",
+  JWT_SECRET: "test-secret-please-change-32-characters-long",
+} as NodeJS.ProcessEnv;
 
 describe("parseEnv", () => {
   it("wypełnia domyślne wartości i zwraca typowany config", () => {

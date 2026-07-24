@@ -1,3 +1,4 @@
+import { adminSeeder } from "../modules/auth/auth.seed.js";
 import type { Db } from "./client.js";
 
 export interface Seeder {
@@ -11,6 +12,7 @@ export interface Seeder {
  * seedery przy kotwicy.
  */
 export const seedRegistry: Seeder[] = [
+  adminSeeder,
   // scaffolder:seeds — do not remove
 ];
 

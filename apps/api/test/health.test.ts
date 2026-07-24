@@ -1,18 +1,19 @@
 import type { FastifyInstance } from "fastify";
+import type { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildApp } from "../src/app.js";
-import { NoopErrorTracker } from "../src/lib/error-tracking/noop.js";
-import { testEnv } from "./helpers.js";
+import { buildTestApp } from "./helpers.js";
 
 let app: FastifyInstance;
+let pool: Pool;
 
 beforeAll(async () => {
-  app = await buildApp({ env: testEnv(), errorTracker: new NoopErrorTracker() });
+  ({ app, pool } = await buildTestApp());
   await app.ready();
 });
 
 afterAll(async () => {
   await app.close();
+  await pool.end();
 });
 
 describe("GET /health", () => {
