@@ -1,3 +1,5 @@
 packages:
   - "apps/*"
   - "packages/*"
+  # DS jako placeholder subtree — workspace-package, by packages/ui i skorupy mogły go konsumować.
+  - "design-system"
