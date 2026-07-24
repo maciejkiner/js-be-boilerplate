@@ -41,6 +41,7 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
 - API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. Pojedynczy test: `pnpm --filter @repo/api test -- <wzorzec>`.
 - Baza: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Testy integracyjne DB wymagają `TEST_DATABASE_URL` (inaczej pomijane).
+- Klient API: `pnpm generate:client` (zrzut OpenAPI ze schematów → typy klienta). Po każdej zmianie API; CI pilnuje aktualności (`git diff`).
 
 ## Stack (rozstrzygnięty — nie proponuj alternatyw)
 
@@ -103,6 +104,7 @@ error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
 - **Paginacja:** offset-based w core; cursor-based jako przepis.
 - **Baza (Drizzle):** pola audytowe (`created_at`/`updated_at`/`created_by`) i soft delete (`deleted_at`) przez helpery `src/db/columns.ts`; odczyty przez `notDeleted()`. Migracje generowane ze schematu (nie ręcznie; `drizzle-kit` czyta skompilowany `dist`, więc `db:generate` buduje najpierw), rejestrowane przy kotwicy w `src/db/schema.ts`. Zmiany łamiące: expand → migrate → contract. Seedery idempotentne. Przepis: `docs/recipes/jak-dodac-migracje.md`.
 - **Encje:** jedno źródło prawdy = schemat Zod + metadane w `packages/schemas` (`defineEntity`: czysty `schema` + `validation` z `refine` międzypolowym + companion-map `fields`; parytet kluczy wymuszany typem). Etykiety encji/admina po angielsku. Tabela Drizzle w module API (enumy jako `text().$type<>()`, relacje przez `.references()` z jawnym `onDelete`). DTO wywiedzione z encji (`entity.validation`/`schema.partial()`/`schema.extend()`). Moduł: routes → service → repository, sort po allowliście kolumn, soft delete, `createdBy` z sesji. Rejestracja przy kotwicach `db/schema.ts` i `modules/index.ts`. Encje referencyjne: `Project`, `Task`. Przepis: `docs/recipes/jak-dodac-encje.md`.
+- **Klient API:** `packages/api-client` = typy generowane z OpenAPI (`openapi-typescript`) + runtime `openapi-fetch` (framework-agnostic, `baseUrl` wstrzykiwany jawnie, `credentials: "include"`); `openapi.json` zrzucany ze schematów Zod (`apps/api openapi:dump`, offline), nigdy ręcznie. `packages/api-react` = bindingi TanStack Query nad klientem: `ApiProvider` (wstrzykuje klienta), hooki `use{Projects,Tasks,…}` + mutacje invalidujące `*Keys.all`, query-option factories testowalne bez React. Regeneracja: `pnpm generate:client` (CI pilnuje `git diff`). Przepis: `docs/recipes/jak-regenerowac-klienta.md`.
 - **Auth:** email+hasło (argon2) jako pierwsza implementacja interfejsu providera tożsamości (`modules/auth/providers/`); sesje = access JWT (cookie) + refresh opaque hashowany (tabela `sessions`, rotacja); RBAC przez `roles` na userze + guard `requireRoles()` po `app.authenticate`; reset hasła przez abstrakcję mailera (`lib/mailer`, dev=mailhog); admin na subdomenie: CORS dwa originy + cookies (`COOKIE_DOMAIN`). Sekrety/tokeny trzymane wyłącznie jako hash. Przepis: `docs/recipes/jak-dodac-providera-tozsamosci.md`.
 
 ## Decyzje architektoniczne

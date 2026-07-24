@@ -47,6 +47,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check generated API client is up to date
+        run: |
+          pnpm generate:client
+          git diff --exit-code apps/api/openapi.json packages/api-client/src/generated
+
       - name: Format check
         run: pnpm format:check
 

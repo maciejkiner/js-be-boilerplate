@@ -12,7 +12,8 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "generate:client": "pnpm --filter @repo/api openapi:dump && pnpm --filter @repo/api-client generate"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

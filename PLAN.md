@@ -135,11 +135,11 @@ Cel: kompletny moduł encji jako wzorzec, z którego POWSTANIE scaffolder (nie o
 
 Cel: type-safe konsumpcja API z jednego źródła prawdy.
 
-- [ ] `packages/api-client`: klient TS **generowany z OpenAPI** (framework-agnostic, `fetch`; env/baseURL wstrzykiwany jawnie — bez `import.meta.env`). Skrypt generowania wpięty w pipeline.
-- [ ] `packages/api-react`: bindingi **TanStack Query** nad klientem (hooki per zasób) — TanStack Query dozwolony w `packages/`.
-- [ ] Hooki dla encji referencyjnej (list/get/create/update/delete) jako wzorzec.
-- [ ] Testy Vitest: generacja klienta zgodna ze spec; hooki (mock transport).
-- [ ] Przepis „jak regenerować klienta po zmianie API" + aktualizacja CLAUDE.md.
+- [x] `packages/api-client`: klient TS **generowany z OpenAPI** (framework-agnostic, `fetch`; env/baseURL wstrzykiwany jawnie — bez `import.meta.env`). Skrypt generowania wpięty w pipeline. → `openapi-typescript` (typy) + `openapi-fetch` (runtime); `openapi.json` zrzucany ze schematów (`openapi:dump`, offline); drift-check w CI.
+- [x] `packages/api-react`: bindingi **TanStack Query** nad klientem (hooki per zasób) — TanStack Query dozwolony w `packages/`. `ApiProvider` wstrzykuje klienta (env czyta skorupa).
+- [x] Hooki dla encji referencyjnej (list/get/create/update/delete) jako wzorzec (`use{Projects,Tasks}` + mutacje invalidujące cache; query-option factories).
+- [x] Testy Vitest: generacja klienta zgodna ze spec (mock transport); hooki (renderHook + jsdom).
+- [x] Przepis „jak regenerować klienta po zmianie API" + aktualizacja CLAUDE.md.
 
 **DoD fazy 5:** klient generuje się z OpenAPI; hooki React Query dla encji referencyjnej działają; granica pakietów zachowana (bez routera/bundlera); testy zielone.
 

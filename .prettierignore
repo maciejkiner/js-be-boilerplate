@@ -7,3 +7,8 @@ playwright-report/
 
 # Specyfikacja to artefakt wejściowy (źródło prawdy) — nie ruszamy jej formatowania
 spec/
+
+# Klient generowany z OpenAPI — źródłem jest schemat; format musi zgadzać się z generatorem
+# (CI regeneruje i robi `git diff`), więc Prettier tych plików nie dotyka.
+apps/api/openapi.json
+packages/api-client/src/generated/**

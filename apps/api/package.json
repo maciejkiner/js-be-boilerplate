@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
+    "openapi:dump": "tsx scripts/dump-openapi.ts",
     "db:generate": "pnpm build && drizzle-kit generate",
     "db:migrate": "tsx src/db/cli/migrate.cli.ts",
     "db:push": "pnpm build && drizzle-kit push",
