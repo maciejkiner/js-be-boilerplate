@@ -32,13 +32,18 @@ Oprócz DoD specyficznego dla fazy, zawsze:
 
 ## Punkty [DECYZJA] (wymagają akceptacji użytkownika)
 
-1. **Faza 4 — format metadanych encji** rozszerzających schemat Zod (etykiety, widoczność/kolejność kolumn, typy pól formularza, pola relacji). Zaprojektuj propozycję na starcie fazy 4 i **zatrzymaj się** — od tego zależy scaffolder (faza 8) i formularze (faza 7).
+1. ✅ **ZATWIERDZONE (2026-07-24) — format metadanych encji**: companion map + `defineEntity` w `packages/schemas` (Zod pozostaje czysty; osobna typowana mapa `fields` kluczowana polami schematu, TS wymusza pokrycie). `FieldMeta`: `label`, `control` (text/textarea/number/select/checkbox/radio/switch/date/relation), `options`, `relation {entity, displayField}`, `list {visible/sortable/filterable}`. Walidacja NIE duplikowana w metadanych (wynika z Zoda); walidacje międzypolowe przez `refine` na encji. DB (Drizzle) generowane z typu Zod + konwencji.
 2. **Faza 8 — kontrakt scaffoldera**: interfejs komendy, co dokładnie generuje, gdzie rejestruje (rejestry vs kotwice). Zaprojektuj i **zatrzymaj się** przed pisaniem szablonów.
-3. **Faza 4 (lekki) — wybór encji referencyjnej**: patrz Założenie A. Potwierdź nazwę/pola przy okazji [DECYZJA] #1.
+3. ✅ **ZATWIERDZONE (2026-07-24) — encja referencyjna**: **Project + Task** (patrz Założenie A).
 
 ## Przyjęte założenia (jawne — do korekty przez użytkownika)
 
-- **A. Encja referencyjna**: neutralna, domenowo-pusta. Propozycja: `Product` (pola pokrywające wszystkie typy pól DS: text, textarea, select/enum status, switch `isActive`, number `price`, date `publishedAt`) **+ minimalna `Category`** dla relacji 1:N, żeby wymusić combobox z async-search (pole relacji). Ostateczna nazwa/pola potwierdzone przy [DECYZJA] #1.
+- **A. Encja referencyjna (ZATWIERDZONE 2026-07-24): `Project` + `Task`.**
+  - **Project**: `name` (text), `description` (textarea), `status` (enum active/archived), `startDate`+`endDate` (date; **walidacja międzypolowa** endDate ≥ startDate).
+  - **Task**: `title` (text), `description` (textarea), `status` (enum todo/in_progress/done), `priority` (enum), `dueDate` (date), `estimate` (number), `isBlocked` (boolean), `projectId` (1:N do Project — relacja generator→generator), `assigneeId` (relacja do core `User` — async-combobox + przecięcie z auth).
+  - Filtry admina: status+priority; sort: dueDate. Audyt + soft delete z konwencji.
+  - **Wizard referencyjny (Faza 7)**: „utwórz projekt" w 3 krokach — dane projektu → zaproszenie członków (maile → mailer, NIE tabela) → początkowe zadania (hurt). Dowodzi separacji silnika formularzy od CRUD (dane częściowo do bazy, częściowo do innych handlerów).
+  - Slice BE (schematy+metadane, Drizzle, CRUD) = Faza 4; widoki admina = Faza 6; formularze+wizard = Faza 7.
 - **B. Error tracking (Sentry przez abstrakcję)** wpięty w fazie 1 razem z globalnym handlerem błędów — jedno cross-cutting wejście, nie osobna faza. Adapter dev = no-op/console, adapter prod = Sentry.
 - **C. `AGENTS.md`** utrzymywany jako cienki wskaźnik do `CLAUDE.md` (jedno źródło, brak dryfu). Treść zwiniętego `RULES.md` ląduje w `CLAUDE.md`; `RULES.md` usuwany. Szablony `adr-template.md` i `pull-request-template.md` zostają i są rozwijane.
 - **D. `design-system/`** to na teraz zwykły katalog-placeholder (mock na prymitywach HTML + Tailwind) w docelowej ścieżce montowania subtree; interfejsy komponentów zgodne z inwentarzem sekcji 10, tak by podmiana na prawdziwy subtree nie ruszała `packages/ui` ani `packages/forms-ui`. Reguła „DS read-only" obowiązuje od fazy 0. Komponenty dorabiane just-in-time (fazy 6/7), nie na zapas.
@@ -115,14 +120,14 @@ Cel: nieopcjonalny auth (CRUD/admin/`createdBy` na nim wiszą), z granicą modul
 
 Cel: kompletny moduł encji jako wzorzec, z którego POWSTANIE scaffolder (nie odwrotnie).
 
-- [ ] **[DECYZJA] #1 — format metadanych encji** (etykiety, widoczność/kolejność kolumn, typy pól formularza, pola relacji). Zaprojektuj propozycję rozszerzającą schemat Zod, przedstaw i **ZATRZYMAJ SIĘ do akceptacji**. Potwierdź też wybór encji referencyjnej (Założenie A / [DECYZJA] #3).
-- [ ] `packages/schemas`: pierwszy schemat Zod encji referencyjnej **+ metadane** (wg zaakceptowanego formatu). Czysty TS, zero zależności.
-- [ ] Schemat Drizzle encji (i minimalnej encji relacyjnej) + migracja; pola audytowe + soft delete z konwencji.
-- [ ] Endpointy CRUD w module domenowym: list (**paginacja offset + sortowanie + filtrowanie po kolumnach**), get, create, update, delete (soft). Walidacja req/res ze schematów Zod.
-- [ ] Relacja **1:N** obsłużona (M:N z atrybutami — poza zakresem generatora, tylko przepis później).
-- [ ] Wpisy OpenAPI generowane ze schematów; rejestracja modułu w rejestrze routerów (kotwica).
-- [ ] Testy Vitest: CRUD, paginacja/sortowanie/filtrowanie, walidacje, soft delete, `createdBy`.
-- [ ] Przepis **„jak dodać encję (krok po kroku)"** — pisany jako dokument-wzorzec (późniejsza specyfikacja scaffodera). Aktualizacja CLAUDE.md.
+- [x] **[DECYZJA] #1 — format metadanych encji** (etykiety, widoczność/kolejność kolumn, typy pól formularza, pola relacji). Zaprojektuj propozycję rozszerzającą schemat Zod, przedstaw i **ZATRZYMAJ SIĘ do akceptacji**. Potwierdź też wybór encji referencyjnej (Założenie A / [DECYZJA] #3). → **Zaakceptowano:** companion-map `defineEntity` (parytet kluczy wymuszany typem), etykiety po angielsku; encje referencyjne `Project` + `Task` (zamiast `Product`/`Category`).
+- [x] `packages/schemas`: pierwszy schemat Zod encji referencyjnej **+ metadane** (wg zaakceptowanego formatu). Czysty TS, zero zależności.
+- [x] Schemat Drizzle encji (i minimalnej encji relacyjnej) + migracja; pola audytowe + soft delete z konwencji.
+- [x] Endpointy CRUD w module domenowym: list (**paginacja offset + sortowanie + filtrowanie po kolumnach**), get, create, update, delete (soft). Walidacja req/res ze schematów Zod.
+- [x] Relacja **1:N** obsłużona (M:N z atrybutami — poza zakresem generatora, tylko przepis później).
+- [x] Wpisy OpenAPI generowane ze schematów; rejestracja modułu w rejestrze routerów (kotwica).
+- [x] Testy Vitest: CRUD, paginacja/sortowanie/filtrowanie, walidacje, soft delete, `createdBy`.
+- [x] Przepis **„jak dodać encję (krok po kroku)"** — pisany jako dokument-wzorzec (późniejsza specyfikacja scaffodera). Aktualizacja CLAUDE.md.
 
 **DoD fazy 4:** encja referencyjna w pełni działa przez API (CRUD+paginacja+filtry) z jednym źródłem prawdy (schemat+metadane → Drizzle → walidacja → OpenAPI); testy zielone; przepis „jak dodać encję" opisuje dokładnie ten moduł.
 

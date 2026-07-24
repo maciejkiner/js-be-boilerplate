@@ -8,4 +8,6 @@
  */
 
 export * from "../modules/auth/auth.schema.js";
+export * from "../modules/projects/projects.schema.js";
+export * from "../modules/tasks/tasks.schema.js";
 // scaffolder:schema-export — do not remove

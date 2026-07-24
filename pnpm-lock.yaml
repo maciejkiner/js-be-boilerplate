@@ -41,6 +41,9 @@ importers:
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
+      '@repo/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       '@sentry/node':
         specifier: ^8.47.0
         version: 8.55.2
@@ -106,6 +109,25 @@ importers:
       eslint:
         specifier: ^9.18.0
         version: 9.39.5
+
+  packages/schemas:
+    dependencies:
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: ^9.18.0
+        version: 9.39.5
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)
 
 packages:
 

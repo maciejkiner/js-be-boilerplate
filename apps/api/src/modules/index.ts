@@ -1,15 +1,21 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import type { Db } from "../db/client.js";
+import { projectsRoutes } from "./projects/projects.routes.js";
+import { tasksRoutes } from "./tasks/tasks.routes.js";
 
 /**
  * Rejestr modułów domenowych montowanych pod `/api/v1`.
  *
  * Scaffolder dopisuje rejestracje przy kotwicy poniżej — konwencja + kotwica
- * zamiast parsowania AST (spec sekcja 6). Pierwszy moduł powstaje w Fazie 4.
+ * zamiast parsowania AST (spec sekcja 6).
  *
  * Wzorzec dodania modułu:
- *   import { productsRoutes } from "./products/products.routes.js";
- *   await app.register(productsRoutes);
+ *   await app.register(productsRoutes({ db }), { prefix: "/products" });
  */
-export const apiV1Routes: FastifyPluginAsyncZod = async (_app) => {
-  // scaffolder:entities-register — do not remove
-};
+export function apiV1Routes(deps: { db: Db }): FastifyPluginAsyncZod {
+  return async (app) => {
+    await app.register(projectsRoutes({ db: deps.db }), { prefix: "/projects" });
+    await app.register(tasksRoutes({ db: deps.db }), { prefix: "/tasks" });
+    // scaffolder:entities-register — do not remove
+  };
+}
