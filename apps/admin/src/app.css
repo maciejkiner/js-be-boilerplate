@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Tailwind domyślnie pomija node_modules — wskaż źródła klas z workspace-pakietów,
+   by utility użyte w DS i packages/ui trafiły do bundla. */
+@source "../../../design-system/src";
+@source "../../../packages/ui/src";

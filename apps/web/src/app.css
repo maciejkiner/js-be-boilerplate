@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Skanuj klasy z workspace-pakietów (Tailwind pomija node_modules). */
+@source "../../../design-system/src";
+@source "../../../packages/ui/src";
