@@ -1,15 +1,23 @@
 import {
+  type CreateTaskBody,
   type TaskList,
   type TaskListQuery,
+  type UpdateTaskBody,
+  useCreateTask,
   useDeleteTask,
   useTask,
   useTasks,
+  useUpdateTask,
 } from "@repo/api-react";
 import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";
+import { emptyValues } from "@repo/forms-ui";
+import { taskEntity } from "@repo/schemas";
 import { type Column, DataTable, type SortState } from "@repo/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { useRelationSource } from "../relation-source";
 import { formatDate, Page } from "../ui";
+import { EntityForm, recordToFormValues } from "./entity-form";
 
 type TaskRow = TaskList["items"][number];
 
@@ -55,7 +63,14 @@ export function TasksList() {
   ];
 
   return (
-    <Page title="Zadania">
+    <Page
+      title="Zadania"
+      actions={
+        <Button variant="secondary" onClick={() => navigate({ to: "/tasks/new" })}>
+          Nowe zadanie
+        </Button>
+      }
+    >
       <DataTable
         columns={columns}
         rows={query.data?.items ?? []}
@@ -131,9 +146,17 @@ export function TaskDetail() {
     <Page
       title={task.title}
       actions={
-        <Button variant="danger" onClick={() => setConfirmOpen(true)}>
-          Usuń
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => navigate({ to: "/tasks/$id/edit", params: { id: task.id } })}
+          >
+            Edytuj
+          </Button>
+          <Button variant="danger" onClick={() => setConfirmOpen(true)}>
+            Usuń
+          </Button>
+        </div>
       }
     >
       <dl className="grid max-w-lg grid-cols-[8rem_1fr] gap-y-2 text-sm">
@@ -170,6 +193,70 @@ export function TaskDetail() {
       >
         Ta operacja jest miękka (soft delete), ale zadanie zniknie z listy.
       </Modal>
+    </Page>
+  );
+}
+
+export function TaskCreate() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const create = useCreateTask();
+  const relationSource = useRelationSource();
+
+  return (
+    <Page title="Nowe zadanie">
+      <EntityForm
+        entity={taskEntity}
+        defaultValues={emptyValues(taskEntity)}
+        submitLabel="Utwórz"
+        relationSource={relationSource}
+        onSubmit={async (values) => {
+          try {
+            const created = await create.mutateAsync(values as CreateTaskBody);
+            toast("Zadanie utworzone.", "success");
+            navigate({ to: "/tasks/$id", params: { id: created.id } });
+          } catch {
+            toast("Nie udało się utworzyć zadania.", "error");
+          }
+        }}
+      />
+    </Page>
+  );
+}
+
+export function TaskEdit() {
+  const { id } = useParams({ strict: false });
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const update = useUpdateTask();
+  const relationSource = useRelationSource();
+  const query = useTask(id ?? "");
+
+  if (query.isLoading) {
+    return <Page title="Edycja zadania">Ładowanie…</Page>;
+  }
+  if (query.isError || !query.data) {
+    return <Page title="Edycja zadania">Nie znaleziono zadania.</Page>;
+  }
+
+  const task = query.data;
+  return (
+    <Page title={`Edycja: ${task.title}`}>
+      <EntityForm
+        entity={taskEntity}
+        defaultValues={recordToFormValues(taskEntity, task)}
+        submitLabel="Zapisz"
+        relationSource={relationSource}
+        onSubmit={async (values) => {
+          try {
+            await update.mutateAsync({ id: task.id, body: values as UpdateTaskBody });
+            toast("Zapisano.", "success");
+            navigate({ to: "/tasks/$id", params: { id: task.id } });
+          } catch {
+            toast("Nie udało się zapisać.", "error");
+          }
+        }}
+      />
     </Page>
   );
 }

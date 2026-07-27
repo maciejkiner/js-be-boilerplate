@@ -12,7 +12,7 @@ Planowane (wypełniane w odpowiednich fazach — patrz `PLAN.md`):
 - [x] `jak-regenerowac-klienta.md` — Faza 5
 - [x] `struktura-skorupy-fe.md` — Faza 6
 - [x] `jak-uruchomic-w-dockerze.md` — konteneryzacja full-stack (wymaganie organizacyjne; ADR-0002)
-- [ ] `jak-zdefiniowac-formularz.md` — Faza 7
+- [x] `jak-zdefiniowac-formularz.md` — Faza 7
 - [ ] `jak-zaktualizowac-ds.md` — Faza 9
 - [ ] `paginacja-cursor-based.md` — Faza 9
 - [ ] przepisy modułów opt-in (multi-tenancy, upload, save&resume, OTel, kolejki) — Faza 9

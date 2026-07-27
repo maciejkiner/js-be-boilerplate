@@ -26,7 +26,8 @@ Jawne i jedyne — definiowane w `src/field-renderer.tsx` (`Control`). Nowy typ 
 - **`deriveFields(entity)`** — z encji (`entity.fields` + `entity.schema`) → `FieldDef[]`
   (kolejność schematu; `required` z Zod `!isOptional()`). **`emptyValues(entity)`** — puste wartości startowe.
 - **`FormFields({ fields, form, relationSource })`** — renderuje pola spięte ze stanem `@repo/forms`
-  (`useForm`): `value`/`error`/`onChange` per pole.
+  (`useForm` lub `useWizard` — wspólny interfejs `FormLike`): `value`/`error`/`onChange` per pole.
+  Pole z `visibleWhen(values)` renderuje się tylko, gdy warunek spełniony (zależności/warunkowa widoczność).
 - **`FieldRenderer` / `Field`** — pojedyncze pole (wrapper: etykieta + `*` gdy wymagane + błąd `role=alert`).
 - **`RelationSource`** — skorupa wstrzykuje źródło opcji pól relacji (dociąga z API: `options`/`onSearch`/`loading`).
 

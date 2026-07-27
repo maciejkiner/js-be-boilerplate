@@ -63,4 +63,18 @@ describe("FormFields (mapowanie typ→komponent)", () => {
     expect(screen.getByText(/\*/)).toBeTruthy(); // required marker
     expect(screen.getByRole("alert").textContent).toContain("wymagane");
   });
+
+  it("warunkowa widoczność: pole z visibleWhen renderuje się tylko gdy warunek spełniony", () => {
+    const conditional: FieldDef[] = [
+      { name: "kind", label: "Rodzaj", control: "text" },
+      { name: "extra", label: "Dodatkowe", control: "text", visibleWhen: (v) => v.kind === "b" },
+    ];
+    const hidden = makeForm({ kind: "a", extra: "" });
+    const { rerender } = render(<FormFields fields={conditional} form={hidden.form} />);
+    expect(screen.queryByLabelText("Dodatkowe")).toBeNull();
+
+    const shown = makeForm({ kind: "b", extra: "" });
+    rerender(<FormFields fields={conditional} form={shown.form} />);
+    expect(screen.getByLabelText("Dodatkowe")).toBeTruthy();
+  });
 });

@@ -1,4 +1,11 @@
-import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
+import {
+  type AnyRoute,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+} from "@tanstack/react-router";
+import { CreateProjectWizard } from "./entities/project-wizard";
 import { entityRegistry } from "./entities/registry";
 import { Dashboard, LoginPage, ProtectedShell } from "./shell";
 
@@ -27,18 +34,51 @@ const indexRoute = createRoute({
   component: Dashboard,
 });
 
-const entityRoutes = entityRegistry.flatMap((entity) => [
-  createRoute({ getParentRoute: () => protectedRoute, path: entity.path, component: entity.List }),
-  createRoute({
-    getParentRoute: () => protectedRoute,
-    path: `${entity.path}/$id`,
-    component: entity.Detail,
-  }),
-]);
+const entityRoutes: AnyRoute[] = entityRegistry.flatMap((entity) => {
+  const routes: AnyRoute[] = [
+    createRoute({
+      getParentRoute: () => protectedRoute,
+      path: entity.path,
+      component: entity.List,
+    }),
+    createRoute({
+      getParentRoute: () => protectedRoute,
+      path: `${entity.path}/$id`,
+      component: entity.Detail,
+    }),
+  ];
+  // Statyczne (`/new`) i bardziej szczegółowe (`/$id/edit`) mają pierwszeństwo nad `/$id`.
+  if (entity.Create) {
+    routes.push(
+      createRoute({
+        getParentRoute: () => protectedRoute,
+        path: `${entity.path}/new`,
+        component: entity.Create,
+      }),
+    );
+  }
+  if (entity.Edit) {
+    routes.push(
+      createRoute({
+        getParentRoute: () => protectedRoute,
+        path: `${entity.path}/$id/edit`,
+        component: entity.Edit,
+      }),
+    );
+  }
+  return routes;
+});
+
+// Wizard referencyjny (poza rejestrem — pojedynczy przypadek). Statyczny → wygrywa z `/projects/$id`.
+const wizardRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: "/projects/wizard",
+  component: CreateProjectWizard,
+});
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  protectedRoute.addChildren([indexRoute, ...entityRoutes]),
+  protectedRoute.addChildren([indexRoute, wizardRoute, ...entityRoutes] as AnyRoute[]),
 ]);
 
 export const router = createRouter({ routeTree });

@@ -163,11 +163,11 @@ Cel: cienkie skorupy `apps/web` i `apps/admin` na wspólnych pakietach; admin z 
 
 Cel: headless silnik + renderery na DS; formularz encji referencyjnej jako pierwszy konsument.
 
-- [ ] `packages/forms` (headless): definicja formularza (pola + walidacje per pole + walidacje międzypolowe + zależności/warunkowa widoczność + kroki wizarda) + handler submitu jako dowolna funkcja. Bez komponentów.
-- [ ] `packages/forms-ui`: renderery mapujące **typ pola → komponent DS** (mapping **jawny i udokumentowany**). Dorobienie just-in-time komponentów DS pól: input, textarea, select, combobox async-search, checkbox, radio, switch, date picker, tabs/stepper.
-- [ ] Formularz CRUD dla encji referencyjnej: definicja wywiedziona ze schematu+metadanych (faza 4), handler zapisujący przez api-react (faza 5). Wpięcie create/edit w admina (faza 6).
-- [ ] Testy Vitest: walidacje per pole i międzypolowe, warunkowa widoczność, kroki wizarda, mapping pól; e2e (Playwright) create/edit encji referencyjnej.
-- [ ] Przepis „jak zdefiniować formularz / dodać typ pola" + udokumentowany mapping typ→komponent; aktualizacja CLAUDE.md.
+- [x] `packages/forms` (headless): definicja formularza (pola + walidacje per pole + walidacje międzypolowe + zależności/warunkowa widoczność + kroki wizarda) + handler submitu jako dowolna funkcja. Bez komponentów. → `useForm` (Zod, per-pole + `refine`) + `useWizard` (kroki, `onComplete` multi-handler); warunkowa widoczność przez `visibleWhen` w `forms-ui`.
+- [x] `packages/forms-ui`: renderery mapujące **typ pola → komponent DS** (mapping **jawny i udokumentowany**). Dorobienie just-in-time komponentów DS pól: input, textarea, select, combobox async-search, checkbox, radio, switch, date picker, tabs/stepper. → wszystkie dorobione w mocku DS; tabela mapowania w `packages/forms-ui/README.md`.
+- [x] Formularz CRUD dla encji referencyjnej: definicja wywiedziona ze schematu+metadanych (faza 4), handler zapisujący przez api-react (faza 5). Wpięcie create/edit w admina (faza 6). → Project + Task (create/edit) + wizard „utwórz projekt".
+- [x] Testy Vitest: walidacje per pole i międzypolowe, warunkowa widoczność, kroki wizarda, mapping pól; e2e (Playwright) create/edit encji referencyjnej. → forms 5 + forms-ui 6 + DS 16 + BE 4; e2e forms 4 (create/walidacja/edit/wizard).
+- [x] Przepis „jak zdefiniować formularz / dodać typ pola" + udokumentowany mapping typ→komponent; aktualizacja CLAUDE.md.
 
 **DoD fazy 7:** create/edit encji referencyjnej działa przez silnik formularzy na DS; mapping typ→komponent udokumentowany; save&resume świadomie POMINIĘTE (opt-in, tylko przepis w fazie 9); testy zielone.
 

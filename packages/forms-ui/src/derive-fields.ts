@@ -24,10 +24,11 @@ export function emptyValues<Shape extends z.ZodRawShape>(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [name, meta] of Object.entries(entity.fields)) {
+    // number/relation → undefined (puste ""/uuid nie przejdzie walidacji), bool → false, reszta → "".
     out[name] =
       meta.control === "checkbox" || meta.control === "switch"
         ? false
-        : meta.control === "number"
+        : meta.control === "number" || meta.control === "relation"
           ? undefined
           : "";
   }

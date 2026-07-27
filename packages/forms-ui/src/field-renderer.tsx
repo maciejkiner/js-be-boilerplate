@@ -19,6 +19,8 @@ export interface FieldDef {
   options?: FieldOption[];
   relation?: RelationMeta;
   required?: boolean;
+  /** Warunkowa widoczność/zależności — pole renderowane tylko gdy zwróci `true` dla bieżących wartości. */
+  visibleWhen?: (values: Record<string, unknown>) => boolean;
 }
 
 /** Źródło opcji pól relacji (wstrzykiwane przez skorupę — dociąga z API). */
