@@ -6,6 +6,9 @@ Słownik dla generatorów i agentów: komponenty, na których wolno budować `pa
 **Status:** STUB (Faza 0). Interfejsy (propsy) i przykłady użycia dorabiane just-in-time wraz z
 mockiem DS w Fazach 6–7. Prawdziwe API pojawi się po podmianie placeholdera na subtree DS.
 
+> Docelowy DS: `netguru/silk-storybook` (`@silk/components`). Analiza luk (co dorobić przed
+> podmianą mocka na subtree): [`ds-gap-analysis.md`](./ds-gap-analysis.md).
+
 ## Wymagane pokrycie (spec sekcja 10)
 
 | Komponent                 | Zastosowanie                | Status          |
