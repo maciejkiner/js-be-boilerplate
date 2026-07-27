@@ -35,8 +35,9 @@ Poza fazami: **konteneryzacja full-stack** (ADR-0002) — patrz „Uruchomienie"
 
 Konto po seedzie: **`admin@example.com` / `admin12345`**. Adresy (domyślne porty): admin
 `http://localhost:5174` · web `http://localhost:5173` · API `http://localhost:3000/health` ·
-skrzynka mailhog `http://localhost:8025`. Porty zajęte? ustaw `API_PORT`/`WEB_PORT`/`ADMIN_PORT`/
-`POSTGRES_PORT` w `.env` (patrz `.env.example`).
+skrzynka mailhog `http://localhost:8025`. Porty zajęte? ustaw w `.env`: dla trybu w Dockerze
+`API_PORT`/`WEB_PORT`/`ADMIN_PORT` (Postgres **nie jest** publikowany na host — brak kolizji z 5432);
+dla dev-native `POSTGRES_PORT`. Patrz `.env.example`.
 
 ### Wariant 1 — cały stack w Dockerze (jedna komenda)
 
@@ -51,7 +52,7 @@ pnpm docker:full:seed   # tworzy konto admina (admin@example.com / admin12345)
 ```bash
 pnpm docker:dev         # jw., ale API/web/admin w trybie watch (bind-mount źródła)
 # seed (raz):
-docker compose -f docker-compose.yml -f docker-compose.dev.yml exec api pnpm db:seed
+docker compose -f docker-compose.dev.yml exec api pnpm db:seed
 ```
 
 ### Wariant 3 — dev natywnie (najszybszy DX, apka poza kontenerem)

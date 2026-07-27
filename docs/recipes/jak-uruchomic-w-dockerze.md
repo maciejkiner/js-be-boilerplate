@@ -1,7 +1,9 @@
 # Przepis: uruchomienie całego stacku w Dockerze
 
-Trzy tryby. Domyślny dev-native jest niezmieniony; pełny stack dokładany overlayami (patrz
-[ADR-0002](../adr/ADR-0002-konteneryzacja-full-stack.md)).
+Trzy tryby. Domyślny dev-native jest niezmieniony; pełny stack to **samowystarczalne** pliki
+(`docker-compose.app.yml` / `docker-compose.dev.yml` — każdy zawiera Postgres + mailhog + API + web +
+admin), uruchamiane jednym `-f` (patrz [ADR-0003](../adr/ADR-0003-full-stack-compose-samowystarczalny.md)
+i [ADR-0002](../adr/ADR-0002-konteneryzacja-full-stack.md)).
 
 | Tryb                | Komenda            | Co uruchamia                                              |
 | ------------------- | ------------------ | --------------------------------------------------------- |
@@ -9,8 +11,10 @@ Trzy tryby. Domyślny dev-native jest niezmieniony; pełny stack dokładany over
 | Pełny **prod-like** | `pnpm docker:full` | Postgres + mailhog + API + web + admin (zbudowane obrazy) |
 | Pełny **dev (HMR)** | `pnpm docker:dev`  | jw., ale API/web/admin w watch, źródło bind-mount         |
 
-Porty hosta domyślnie: API **3000**, web **5173**, admin **5174** (nadpisz w `.env`:
-`API_PORT`/`WEB_PORT`/`ADMIN_PORT` — np. gdy kolidują z innym projektem).
+Porty hosta domyślnie: API **3000**, web **5173**, admin **5174**, mailhog UI **8025**. **Postgres w
+trybie pełnym NIE jest publikowany na host** (API łączy się wewnętrznie `postgres:5432`) — więc lokalny
+port 5432 nie powoduje kolizji. Kolizje pozostałych portów: ustaw `API_PORT`/`WEB_PORT`/`ADMIN_PORT`
+(ew. `MAILHOG_UI_PORT`) w `.env`.
 
 ## Prod-like (`pnpm docker:full`)
 
@@ -18,17 +22,32 @@ Porty hosta domyślnie: API **3000**, web **5173**, admin **5174** (nadpisz w `.
 2. Zaseeduj konto admina (`admin@example.com` / `admin12345`):
    ```bash
    pnpm docker:full:seed
+   # albo: docker compose -f docker-compose.app.yml exec api node dist/db/cli/seed.cli.js
    ```
-   (albo `docker compose -f docker-compose.yml -f docker-compose.app.yml exec api node dist/db/cli/seed.cli.js`)
-3. Otwórz: web `http://localhost:5173`, admin `http://localhost:5174/login`. API: `http://localhost:3000/health`.
+3. Otwórz: web `http://localhost:5173`, admin `http://localhost:5174/login`, API `http://localhost:3000/health`.
 
 Migracje robi API przy starcie. Edycja kodu wymaga przebudowy (`--build`).
 
 ## Dev HMR (`pnpm docker:dev`)
 
 - Usługa `install` raz instaluje zależności (linux) i buduje pakiety-biblioteki, potem API/web/admin
-  startują w watch. Edycja `apps/*/src` → HMR/`tsx watch`. Seed: `docker compose … exec api pnpm db:seed`.
-- **Zmiana biblioteki** (`packages/*`, `design-system`) wymaga rebuildu: `docker compose … exec api pnpm turbo run build --filter=@repo/<pakiet>` (HMR pokrywa src skorup i API, nie dist bibliotek).
+  startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`. Seed:
+  ```bash
+  docker compose -f docker-compose.dev.yml exec api pnpm db:seed
+  ```
+- **Zmiana biblioteki** (`packages/*`, `design-system`) wymaga rebuildu:
+  `docker compose -f docker-compose.dev.yml exec api pnpm turbo run build --filter=@repo/<pakiet>`
+  (HMR pokrywa src skorup i API, nie dist bibliotek).
+
+## Dostęp do bazy z hosta (opcjonalnie)
+
+Postgres nie jest publikowany, więc łącz się przez kontener:
+
+```bash
+docker compose -f docker-compose.app.yml exec postgres psql -U app -d app
+```
+
+Jeśli potrzebujesz portu na host — dodaj `ports: ["5433:5432"]` do usługi `postgres` w danym pliku.
 
 ## Pułapki (dlaczego tak)
 
@@ -41,6 +60,15 @@ Migracje robi API przy starcie. Edycja kodu wymaga przebudowy (`--build`).
   w **named-volume** kontenera (nie bind-mount z hosta). Reset: `docker compose … down -v`.
 - **Watch na macOS/Windows** przez bind-mount używa pollingu (`VITE_USE_POLLING`, `CHOKIDAR_USEPOLLING`
   ustawione w `docker-compose.dev.yml`).
+
+## Troubleshooting
+
+- **`Error: getaddrinfo ENOTFOUND postgres`** — API nie widzi bazy. Upewnij się, że używasz
+  **samowystarczalnego** pliku (`pnpm docker:full` / `docker:dev`, pojedynczy `-f`), a nie samego
+  overlaya. Postgres nie jest publikowany, więc lokalny 5432 nie przeszkadza.
+- **`Bind for 0.0.0.0:3000 failed: port is already allocated`** — port aplikacji zajęty (np. inny
+  projekt na 3000). Ustaw `API_PORT` (oraz w razie potrzeby `WEB_PORT`/`ADMIN_PORT`/`MAILHOG_UI_PORT`)
+  w `.env` i uruchom ponownie — `VITE_API_URL` i CORS dostosują się automatycznie.
 
 ## Poza zakresem bootstrapa
 

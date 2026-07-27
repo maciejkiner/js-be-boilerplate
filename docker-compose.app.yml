@@ -1,11 +1,32 @@
-# Full-stack PROD-LIKE (zbudowane obrazy). Overlay na docker-compose.yml (Postgres + mailhog).
-#   docker compose -f docker-compose.yml -f docker-compose.app.yml up --build
-# Skrót: pnpm docker:full
+# Full-stack PROD-LIKE (zbudowane obrazy) — SAMOWYSTARCZALNY plik (Postgres + mailhog + API + web + admin).
+#   docker compose -f docker-compose.app.yml up --build      (skrót: pnpm docker:full)
 #
-# Sieć wewnętrzna: API → postgres:5432 / mailhog:1025 (nazwy usług).
-# Przeglądarka (host) → API po http://localhost:${API_PORT} — stąd VITE_API_URL i *_ORIGIN.
+# Sieć wewnętrzna: API → postgres:5432 / mailhog:1025 (nazwy usług). Postgres NIE jest publikowany
+# na host (API łączy się wewnętrznie) — brak kolizji z lokalnym 5432. Dostęp z hosta w razie potrzeby:
+#   docker compose -f docker-compose.app.yml exec postgres psql -U app -d app
+# Przeglądarka (host) → API po http://localhost:${API_PORT}. Porty zajęte? ustaw API_PORT/WEB_PORT/
+# ADMIN_PORT w .env (VITE_API_URL i CORS dostosują się automatycznie).
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+
   api:
     build:
       context: .
@@ -54,7 +75,7 @@ services:
       - "${ADMIN_PORT:-5174}:80"
 
   # One-shot seed (admin@example.com / admin12345). Nie startuje z `up` (profil).
-  #   docker compose -f docker-compose.yml -f docker-compose.app.yml --profile seed run --rm seed
+  #   docker compose -f docker-compose.app.yml --profile seed run --rm seed   (skrót: pnpm docker:full:seed)
   seed:
     build:
       context: .
@@ -68,3 +89,6 @@ services:
         condition: service_healthy
     command: ["node", "dist/db/cli/seed.cli.js"]
     profiles: ["seed"]
+
+volumes:
+  pgdata:

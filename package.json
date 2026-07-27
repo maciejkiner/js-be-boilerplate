@@ -15,9 +15,9 @@
     "format:check": "prettier --check .",
     "generate:client": "pnpm --filter @repo/api openapi:dump && pnpm --filter @repo/api-client generate",
     "docker:up": "docker compose up -d",
-    "docker:full": "docker compose -f docker-compose.yml -f docker-compose.app.yml up --build",
-    "docker:full:seed": "docker compose -f docker-compose.yml -f docker-compose.app.yml --profile seed run --rm seed",
-    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up"
+    "docker:full": "docker compose -f docker-compose.app.yml up --build",
+    "docker:full:seed": "docker compose -f docker-compose.app.yml --profile seed run --rm seed",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
