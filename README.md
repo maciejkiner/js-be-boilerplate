@@ -11,18 +11,18 @@ _AI-first_, _konwencja nad konfiguracją_.
 
 ## Stan budowy
 
-| Faza | Zakres                                            | Status         |
-| ---- | ------------------------------------------------- | -------------- |
-| 0    | Fundament: monorepo, config, DX, docs AI          | ✅ ukończona   |
-| 1    | API skeleton (Fastify + Zod, env, logi, 7807)     | ✅ ukończona   |
-| 2    | Baza (Drizzle, migracje, audyt, soft delete)      | ✅ ukończona   |
-| 3    | Auth (userzy, sesje, RBAC, reset hasła)           | ✅ ukończona   |
-| 4    | Encja referencyjna (Project + Task, CRUD)         | ✅ ukończona   |
-| 5    | Klient API z OpenAPI + hooki TanStack Query       | ✅ ukończona   |
-| 6    | Skorupy web + admin, DataTable, e2e (Playwright)  | ✅ ukończona   |
-| 7    | Silnik formularzy (`forms` + `forms-ui`) + wizard | ✅ ukończona   |
-| 8    | Scaffolder (uogólnienie kodu z faz 4–7)           | ⏳ następna    |
-| 9    | Domknięcie (changelog, wersjonowanie, opt-in)     | ⬜ zaplanowane |
+| Faza | Zakres                                            | Status       |
+| ---- | ------------------------------------------------- | ------------ |
+| 0    | Fundament: monorepo, config, DX, docs AI          | ✅ ukończona |
+| 1    | API skeleton (Fastify + Zod, env, logi, 7807)     | ✅ ukończona |
+| 2    | Baza (Drizzle, migracje, audyt, soft delete)      | ✅ ukończona |
+| 3    | Auth (userzy, sesje, RBAC, reset hasła)           | ✅ ukończona |
+| 4    | Encja referencyjna (Project + Task, CRUD)         | ✅ ukończona |
+| 5    | Klient API z OpenAPI + hooki TanStack Query       | ✅ ukończona |
+| 6    | Skorupy web + admin, DataTable, e2e (Playwright)  | ✅ ukończona |
+| 7    | Silnik formularzy (`forms` + `forms-ui`) + wizard | ✅ ukończona |
+| 8    | Scaffolder (`pnpm scaffold` — generacja encji)    | ✅ ukończona |
+| 9    | Domknięcie (changelog, wersjonowanie, opt-in)     | ⏳ następna  |
 
 Poza fazami: **konteneryzacja full-stack** (ADR-0002) — patrz „Uruchomienie". Szczegóły i checkboxy:
 [`PLAN.md`](./PLAN.md).
@@ -74,15 +74,16 @@ Pełny opis trybów Dockera i pułapek: [`docs/recipes/jak-uruchomic-w-dockerze.
 
 ## Komendy
 
-| Komenda                                         | Opis                                              |
-| ----------------------------------------------- | ------------------------------------------------- |
-| `pnpm lint` / `typecheck` / `build` / `test`    | pipeline przez Turborepo (cały monorepo)          |
-| `pnpm format` / `pnpm format:check`             | Prettier                                          |
-| `pnpm turbo run test --filter=@repo/<pkg>`      | zawężenie do jednego workspace                    |
-| `pnpm --filter @repo/{api,web,admin} dev`       | dev pojedynczej aplikacji                         |
-| `pnpm generate:client`                          | regeneracja klienta z OpenAPI (po zmianie API)    |
-| `pnpm --filter @repo/e2e test:e2e`              | testy e2e (Playwright startuje API + web + admin) |
-| `pnpm docker:up` / `docker:full` / `docker:dev` | infra / cały stack prod-like / cały stack HMR     |
+| Komenda                                         | Opis                                                   |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| `pnpm lint` / `typecheck` / `build` / `test`    | pipeline przez Turborepo (cały monorepo)               |
+| `pnpm format` / `pnpm format:check`             | Prettier                                               |
+| `pnpm turbo run test --filter=@repo/<pkg>`      | zawężenie do jednego workspace                         |
+| `pnpm --filter @repo/{api,web,admin} dev`       | dev pojedynczej aplikacji                              |
+| `pnpm generate:client`                          | regeneracja klienta z OpenAPI (po zmianie API)         |
+| `pnpm --filter @repo/e2e test:e2e`              | testy e2e (Playwright startuje API + web + admin)      |
+| `pnpm docker:up` / `docker:full` / `docker:dev` | infra / cały stack prod-like / cały stack HMR          |
+| `pnpm scaffold <encja>`                         | generuje encję (BE+admin+hooki+test) z `@repo/schemas` |
 
 Testy integracyjne bazy/API i e2e wymagają Postgresa (`TEST_DATABASE_URL`/`DATABASE_URL`).
 
@@ -93,6 +94,7 @@ apps/       api (Fastify+Zod) · web · admin  (skorupy Vite + React + TanStack 
 packages/   schemas · api-client · api-react · ui · config · forms · forms-ui
 design-system/   DS jako git subtree (mock na Tailwind; READ-ONLY) — docelowo silk
 e2e/        testy end-to-end (Playwright)
+tools/      scaffold (generator encji: `pnpm scaffold <encja>`)
 docs/       recipes (przepisy) · adr/ · ds-component-inventory.md · ds-gap-analysis.md
 spec/       specyfikacja projektu
 ```

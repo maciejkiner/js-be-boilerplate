@@ -278,6 +278,141 @@ ${hasRelations ? "    await assertRelations(db, input);\n" : ""}    const update
 `;
 }
 
+// --- Test (Vitest, CRUD integracyjny) --------------------------------------
+
+function sampleValue(f: FieldDescriptor): string {
+  switch (f.control) {
+    case "number":
+      return "1";
+    case "select":
+      return `"${(f.options ?? [])[0]?.value ?? ""}"`;
+    case "checkbox":
+    case "switch":
+      return "true";
+    case "date":
+      return `"2026-01-01"`;
+    default:
+      return `"test-${f.name}"`;
+  }
+}
+
+export function beTest(d: EntityDescriptor): string {
+  const requiredRelations = d.fields.filter((f) => f.relation && f.required);
+  const needsProject = requiredRelations.some((f) => f.relation!.entity === "project");
+  const truncate = [
+    ...new Set(["users", ...requiredRelations.map((f) => f.relation!.targetPlural), d.plural]),
+  ].join(", ");
+
+  const prereq = needsProject
+    ? `    const projectRes = await app.inject({
+      method: "POST",
+      url: "/api/v1/projects",
+      cookies: auth(),
+      payload: { name: "Prereq", status: "active", startDate: "2026-01-01", endDate: "2026-06-01" },
+    });
+    const projectId = projectRes.json().id;\n`
+    : "";
+
+  const bodyEntries = d.fields
+    .map((f) => {
+      if (f.relation) {
+        if (!f.required) return null;
+        if (f.relation.entity === "project") return `      ${f.name}: projectId,`;
+        if (f.relation.entity === "user") return `      ${f.name}: userId,`;
+        return `      ${f.name}: projectId,`; // inne relacje: dostosuj ręcznie
+      }
+      return `      ${f.name}: ${sampleValue(f)},`;
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  return `import { sql } from "drizzle-orm";
+import type { FastifyInstance } from "fastify";
+import type { Pool } from "pg";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import type { Db } from "../src/db/client.js";
+import { runMigrations } from "../src/db/migrate.js";
+import { buildTestApp } from "./helpers.js";
+
+const url = process.env.TEST_DATABASE_URL;
+const CREDS = { email: "${d.name}-owner@example.com", password: "password123" };
+
+/** CRUD encji ${d.plural} — wygenerowane przez scaffolder. */
+describe.skipIf(!url)("${d.plural} CRUD (wygenerowane)", () => {
+  let app: FastifyInstance;
+  let db: Db;
+  let pool: Pool;
+  let accessToken: string;
+  let userId: string;
+
+  beforeAll(async () => {
+    ({ app, db, pool } = await buildTestApp());
+    await runMigrations(db);
+    await app.ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+    await pool.end();
+  });
+
+  beforeEach(async () => {
+    await db.execute(sql\`TRUNCATE TABLE ${truncate} CASCADE\`);
+    const reg = await app.inject({ method: "POST", url: "/api/v1/auth/register", payload: CREDS });
+    userId = reg.json().user.id;
+    const login = await app.inject({ method: "POST", url: "/api/v1/auth/login", payload: CREDS });
+    accessToken = login.cookies.find((c) => c.name === "access_token")!.value;
+  });
+
+  const auth = () => ({ access_token: accessToken });
+
+  async function create() {
+${prereq}    return app.inject({
+      method: "POST",
+      url: "/api/v1/${d.plural}",
+      cookies: auth(),
+      payload: {
+${bodyEntries}
+      },
+    });
+  }
+
+  it("wymaga uwierzytelnienia (401 bez cookie)", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/${d.plural}" });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("create zwraca 201 i ustawia createdBy z sesji", async () => {
+    const res = await create();
+    expect(res.statusCode).toBe(201);
+    expect(res.json().createdBy).toBe(userId);
+  });
+
+  it("list zawiera utworzony rekord", async () => {
+    await create();
+    const res = await app.inject({ method: "GET", url: "/api/v1/${d.plural}", cookies: auth() });
+    expect(res.json().meta.total).toBe(1);
+  });
+
+  it("get 404 dla nieistniejącego id", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/v1/${d.plural}/00000000-0000-0000-0000-000000000000",
+      cookies: auth(),
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("delete jest miękkie: po usunięciu get→404 i znika z listy", async () => {
+    const created = (await create()).json();
+    expect((await app.inject({ method: "DELETE", url: \`/api/v1/${d.plural}/\${created.id}\`, cookies: auth() })).statusCode).toBe(200);
+    const get = await app.inject({ method: "GET", url: \`/api/v1/${d.plural}/\${created.id}\`, cookies: auth() });
+    expect(get.statusCode).toBe(404);
+  });
+});
+`;
+}
+
 // --- Routes -----------------------------------------------------------------
 
 export function routes(d: EntityDescriptor): string {

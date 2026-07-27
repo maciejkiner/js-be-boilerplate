@@ -3,12 +3,27 @@
 Krok po kroku, jak dodać kompletną encję domenową: **jedno źródło prawdy** (schemat Zod +
 metadane) → tabela Drizzle → migracja → CRUD (paginacja/filtry/sort/soft delete) → OpenAPI.
 
-Encje referencyjne (kod wzorcowy pisany ręcznie): **`Project`** i **`Task`**. Ten przepis opisuje
-proces, który w Fazie 8 uogólni scaffolder — dlatego zmiany na istniejące pliki to **jedna linia
-przy kotwicy** (registry pattern, bez parsowania AST).
+Encje referencyjne (kod wzorcowy pisany ręcznie): **`Project`** i **`Task`**. Sekcje 1–6 opisują
+proces, który **uogólnia scaffolder** (Faza 8) — to ten sam proces, generator i przepis się nie rozjeżdżają.
 
 > Konwencja nazw: encja pojedyncza (`project`), ścieżka/tabela w liczbie mnogiej (`projects`),
 > pliki `apps/api/src/modules/<plural>/<plural>.{schema,dto,repository,service,routes}.ts`.
+
+## Szybka ścieżka: scaffolder (zalecane)
+
+```bash
+# 1. Napisz encję (jedyne źródło prawdy) + wyeksportuj w packages/schemas/src/index.ts, potem:
+pnpm --filter @repo/schemas build
+# 2. Wygeneruj Drizzle + moduł API + hooki api-react + widoki admina + test CRUD:
+pnpm scaffold <name>                    # np. pnpm scaffold invoice
+# 3. Kroki po:
+pnpm --filter @repo/api db:generate     # migracja
+pnpm generate:client                    # klient z OpenAPI
+```
+
+Generator czyta encję z `@repo/schemas` i rejestruje warstwy przy kotwicach (bez AST). Szczegóły i
+ograniczenia: `tools/scaffold/README.md`. Poniżej opis **co dokładnie** powstaje (i jak zrobić to
+ręcznie / dostosować).
 
 ## 1. Schemat + metadane w `packages/schemas`
 

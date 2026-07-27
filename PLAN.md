@@ -175,12 +175,12 @@ Cel: headless silnik + renderery na DS; formularz encji referencyjnej jako pierw
 
 Cel: generator wyciągnięty z istniejącego kodu wzorcowego — szablony powstają z encji referencyjnej, nie odwrotnie.
 
-- [ ] **[DECYZJA] #2 — kontrakt scaffoldera**: interfejs komendy (`add entity …`), co generuje (schemat+metadane, Drizzle+migracja, endpointy CRUD, wpisy OpenAPI, widoki admina, formularz, hooki), gdzie i jak rejestruje (rejestry vs kotwice `// scaffolder:… — do not remove`). Zaprojektuj i **ZATRZYMAJ SIĘ do akceptacji**.
-- [ ] Szablony wygenerowane przez uogólnienie modułu encji referencyjnej (fazy 4–7) — parametryzacja po schemacie+metadanych.
-- [ ] Registry pattern + kotwice: generator dopisuje jedną rejestrację (linia w indeksie lub plik w konwencjonalnym katalogu). **Bez parsowania AST / inteligentnego mergowania** — konwencja + kotwice; reszta w przepisach.
-- [ ] Zakres: relacje **1:N — tak**; M:N z atrybutami — **poza generatorem** (przepis ręczny); soft delete + audyt — domyślnie; upload — opt-in; full-text — poza zakresem.
-- [ ] Test: wygenerowanie nowej encji generatorem daje moduł równoważny wzorcowi (kompiluje się, testy generowanego CRUD przechodzą, widoki i formularz działają).
-- [ ] Przepis **„jak dodać encję"** finalizowany **równolegle z generatorem** (ten sam proces = dokumentacja + instrukcja agenta + spec scaffodera). Aktualizacja CLAUDE.md.
+- [x] **[DECYZJA] #2 — kontrakt scaffoldera**. → **Zaakceptowano:** „napisz encję → generuj resztę" (generator czyta encję z `@repo/schemas`); generuje też testy CRUD. `tools/scaffold` (CLI `pnpm scaffold <encja>`).
+- [x] Szablony wygenerowane przez uogólnienie modułu encji referencyjnej (fazy 4–7) — parametryzacja po schemacie+metadanych. → `control` → Drizzle/Zod/komponent; sort/filtry z `list`; `required` z Zod.
+- [x] Registry pattern + kotwice: generator dopisuje jedną rejestrację. **Bez parsowania AST / inteligentnego mergowania** — konwencja + kotwice; idempotentnie (stabilny dedupe). Dodane kotwice: `entities-import`, `hooks-export`, `admin-import`.
+- [x] Zakres: relacje **1:N — tak**; M:N z atrybutami — **poza generatorem**; soft delete + audyt — domyślnie; upload/full-text — poza zakresem.
+- [x] Test: wygenerowanie nowej encji generatorem daje moduł równoważny wzorcowi. → zweryfikowane encją `Widget` (relacja→project): typecheck+build+lint+format zielone, migracja OK, **test CRUD 5/5 zielony**; artefakty usunięte.
+- [x] Przepis **„jak dodać encję"** finalizowany równolegle z generatorem (sekcja „scaffolder" + opis co generuje). Aktualizacja CLAUDE.md + `tools/scaffold/README.md`.
 
 **DoD fazy 8:** `add entity` generuje kompletny, działający moduł end-to-end (BE+admin+formularz+klient) rejestrowany przez rejestry/kotwice; przepis i generator opisują ten sam proces i się nie rozjeżdżają; testy zielone.
 

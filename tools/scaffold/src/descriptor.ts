@@ -11,6 +11,7 @@ export interface FieldDescriptor {
   required: boolean;
   sortable: boolean;
   filterable: boolean;
+  visible: boolean;
 }
 
 export interface EntityDescriptor {
@@ -56,6 +57,7 @@ export function buildDescriptor(entity: Entity<z.ZodRawShape>): EntityDescriptor
     required: shape[name] ? !shape[name].isOptional() : true,
     sortable: Boolean(meta.list?.sortable),
     filterable: Boolean(meta.list?.filterable),
+    visible: meta.list?.visible !== false,
   }));
   return {
     name: entity.name,

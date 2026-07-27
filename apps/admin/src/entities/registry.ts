@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react";
 import { ProjectCreate, ProjectDetail, ProjectEdit, ProjectsList } from "./projects";
 import { TaskCreate, TaskDetail, TaskEdit, TasksList } from "./tasks";
+// scaffolder:admin-import — do not remove
 
 export interface EntityRoute {
   name: string;

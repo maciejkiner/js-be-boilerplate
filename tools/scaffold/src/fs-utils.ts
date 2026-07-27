@@ -12,10 +12,19 @@ export function writeNew(path: string, content: string): void {
   writeFileSync(path, content.endsWith("\n") ? content : `${content}\n`);
 }
 
-/** Wstawia `line` bezpośrednio przed linią z kotwicą `anchor`. Idempotentnie (pomija, gdy już jest). */
-export function insertBeforeAnchor(path: string, anchor: string, line: string): void {
+/**
+ * Wstawia `line` bezpośrednio przed linią z kotwicą `anchor`. Idempotentnie: pomija, gdy plik już
+ * zawiera `dedupeKey` (stabilny token odporny na reformatowanie Prettiera — np. ścieżka importu).
+ * Bez `dedupeKey` porównuje po treści linii.
+ */
+export function insertBeforeAnchor(
+  path: string,
+  anchor: string,
+  line: string,
+  dedupeKey?: string,
+): void {
   const src = readFileSync(path, "utf8");
-  if (src.includes(line.trim())) {
+  if (src.includes(dedupeKey ?? line.trim())) {
     return;
   }
   const idx = src.indexOf(anchor);
