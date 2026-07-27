@@ -11,17 +11,18 @@ _AI-first_, _konwencja nad konfiguracją_.
 
 ## Stan budowy
 
-| Faza | Zakres                                           | Status         |
-| ---- | ------------------------------------------------ | -------------- |
-| 0    | Fundament: monorepo, config, DX, docs AI         | ✅ ukończona   |
-| 1    | API skeleton (Fastify + Zod, env, logi, 7807)    | ✅ ukończona   |
-| 2    | Baza (Drizzle, migracje, audyt, soft delete)     | ✅ ukończona   |
-| 3    | Auth (userzy, sesje, RBAC, reset hasła)          | ✅ ukończona   |
-| 4    | Encja referencyjna (Project + Task, CRUD)        | ✅ ukończona   |
-| 5    | Klient API z OpenAPI + hooki TanStack Query      | ✅ ukończona   |
-| 6    | Skorupy web + admin, DataTable, e2e (Playwright) | ✅ ukończona   |
-| 7    | Silnik formularzy (`forms` + `forms-ui`)         | ⏳ następna    |
-| 8–9  | Scaffolder, domknięcie (changelog, opt-in)       | ⬜ zaplanowane |
+| Faza | Zakres                                            | Status         |
+| ---- | ------------------------------------------------- | -------------- |
+| 0    | Fundament: monorepo, config, DX, docs AI          | ✅ ukończona   |
+| 1    | API skeleton (Fastify + Zod, env, logi, 7807)     | ✅ ukończona   |
+| 2    | Baza (Drizzle, migracje, audyt, soft delete)      | ✅ ukończona   |
+| 3    | Auth (userzy, sesje, RBAC, reset hasła)           | ✅ ukończona   |
+| 4    | Encja referencyjna (Project + Task, CRUD)         | ✅ ukończona   |
+| 5    | Klient API z OpenAPI + hooki TanStack Query       | ✅ ukończona   |
+| 6    | Skorupy web + admin, DataTable, e2e (Playwright)  | ✅ ukończona   |
+| 7    | Silnik formularzy (`forms` + `forms-ui`) + wizard | ✅ ukończona   |
+| 8    | Scaffolder (uogólnienie kodu z faz 4–7)           | ⏳ następna    |
+| 9    | Domknięcie (changelog, wersjonowanie, opt-in)     | ⬜ zaplanowane |
 
 Poza fazami: **konteneryzacja full-stack** (ADR-0002) — patrz „Uruchomienie". Szczegóły i checkboxy:
 [`PLAN.md`](./PLAN.md).
@@ -89,7 +90,7 @@ Testy integracyjne bazy/API i e2e wymagają Postgresa (`TEST_DATABASE_URL`/`DATA
 
 ```
 apps/       api (Fastify+Zod) · web · admin  (skorupy Vite + React + TanStack Router)
-packages/   schemas · api-client · api-react · ui · config · forms · forms-ui (Faza 7)
+packages/   schemas · api-client · api-react · ui · config · forms · forms-ui
 design-system/   DS jako git subtree (mock na Tailwind; READ-ONLY) — docelowo silk
 e2e/        testy end-to-end (Playwright)
 docs/       recipes (przepisy) · adr/ · ds-component-inventory.md · ds-gap-analysis.md
