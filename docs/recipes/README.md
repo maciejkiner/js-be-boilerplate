@@ -11,6 +11,7 @@ Planowane (wypełniane w odpowiednich fazach — patrz `PLAN.md`):
 - [x] `jak-dodac-encje.md` — Faza 4 (wzorzec) → finalizowany w Fazie 8 (równolegle ze scaffolderem)
 - [x] `jak-regenerowac-klienta.md` — Faza 5
 - [x] `struktura-skorupy-fe.md` — Faza 6
+- [x] `jak-uruchomic-w-dockerze.md` — konteneryzacja full-stack (wymaganie organizacyjne; ADR-0002)
 - [ ] `jak-zdefiniowac-formularz.md` — Faza 7
 - [ ] `jak-zaktualizowac-ds.md` — Faza 9
 - [ ] `paginacja-cursor-based.md` — Faza 9

@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1
+# Wspólny obraz dev (HMR) dla API/web/admin. Źródło jest bind-mountowane, a zależności
+# instalowane W KONTENERZE (linux) — patrz docker-compose.dev.yml. Komenda per usługa nadawana
+# w compose (`pnpm --filter <app> dev`).
+FROM node:22-alpine
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+# Store pnpm WEWNĄTRZ wolumenu node_modules (ta sama FS co node_modules → hardlinki, zero
+# fallbackowego `.pnpm-store` na bind-mount hosta).
+ENV npm_config_store_dir=/app/node_modules/.pnpm-store
+RUN corepack enable
+WORKDIR /app

@@ -49,6 +49,7 @@ Oprócz DoD specyficznego dla fazy, zawsze:
 - **D. `design-system/`** to na teraz zwykły katalog-placeholder (mock na prymitywach HTML + Tailwind) w docelowej ścieżce montowania subtree; interfejsy komponentów zgodne z inwentarzem sekcji 10, tak by podmiana na prawdziwy subtree nie ruszała `packages/ui` ani `packages/forms-ui`. Reguła „DS read-only" obowiązuje od fazy 0. Komponenty dorabiane just-in-time (fazy 6/7), nie na zapas.
 - **E. Paginacja** offset-based w core; cursor-based tylko jako przepis.
 - **F. Aktualność dokumentacji AI** pilnowana pozycją w szablonie PR; automatyczny check CI pozostaje otwartą kwestią (sekcja 13 spec) — nie implementujemy go teraz.
+- **G. Konteneryzacja full-stack (poza-fazowe, wymaganie organizacyjne).** `docker-compose.yml` zostaje infra-only (dev-native). Cały stack w kontenerach dokładany overlayami: `docker-compose.app.yml` (prod-like) i `docker-compose.dev.yml` (HMR); Dockerfile'e w `apps/*` + `docker/`. Nie renumeruje faz. Decyzja: **ADR-0002**; przepis: `docs/recipes/jak-uruchomic-w-dockerze.md`.
 
 ---
 

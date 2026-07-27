@@ -9,6 +9,9 @@ build/
 # Turborepo
 .turbo/
 
+# pnpm store (gdyby kiedyś powstał lokalnie, np. z uruchomień w kontenerze)
+.pnpm-store/
+
 # Test / coverage
 coverage/
 playwright-report/

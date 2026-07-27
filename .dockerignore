@@ -1,0 +1,15 @@
+# Kontekst budowania obrazów — wykluczamy śmieci i artefakty (mniejszy, szybszy, bezpieczniejszy build).
+**/node_modules
+**/dist
+**/.turbo
+.turbo
+.git
+.github
+**/coverage
+playwright-report
+test-results
+**/*.log
+# Sekrety nigdy nie trafiają do obrazu — env wstrzykiwany przez compose/run.
+**/.env
+**/.env.*
+!**/.env.example

@@ -1,0 +1,70 @@
+# Full-stack PROD-LIKE (zbudowane obrazy). Overlay na docker-compose.yml (Postgres + mailhog).
+#   docker compose -f docker-compose.yml -f docker-compose.app.yml up --build
+# Skrót: pnpm docker:full
+#
+# Sieć wewnętrzna: API → postgres:5432 / mailhog:1025 (nazwy usług).
+# Przeglądarka (host) → API po http://localhost:${API_PORT} — stąd VITE_API_URL i *_ORIGIN.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgres://app:app@postgres:5432/app
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_FROM: no-reply@example.com
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-min-32-characters}
+      WEB_ORIGIN: http://localhost:${WEB_PORT:-5173}
+      ADMIN_ORIGIN: http://localhost:${ADMIN_PORT:-5174}
+      COOKIE_SECURE: "false"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    ports:
+      - "${API_PORT:-3000}:3000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Wstrzykiwany w build (Vite inlinuje) — URL widziany z przeglądarki.
+        VITE_API_URL: http://localhost:${API_PORT:-3000}
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-5173}:80"
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:${API_PORT:-3000}
+    depends_on:
+      - api
+    ports:
+      - "${ADMIN_PORT:-5174}:80"
+
+  # One-shot seed (admin@example.com / admin12345). Nie startuje z `up` (profil).
+  #   docker compose -f docker-compose.yml -f docker-compose.app.yml --profile seed run --rm seed
+  seed:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://app:app@postgres:5432/app
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-min-32-characters}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["node", "dist/db/cli/seed.cli.js"]
+    profiles: ["seed"]

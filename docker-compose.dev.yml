@@ -1,0 +1,84 @@
+# Full-stack DEV (HMR, edycja na żywo). Overlay na docker-compose.yml (Postgres + mailhog).
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Skrót: pnpm docker:dev
+#
+# Źródło bind-mountowane z hosta; node_modules i store pnpm w named-volumes (linux binaria
+# @node-rs/argon2, esbuild — NIE mieszamy z node_modules hosta). `install` instaluje raz i buduje
+# pakiety-biblioteki (dist), które konsumują skorupy/API; potem api/web/admin startują w watch.
+
+x-dev-build: &dev-build
+  context: .
+  dockerfile: docker/Dockerfile.dev
+
+x-dev-volumes: &dev-volumes
+  - .:/app
+  - node_modules:/app/node_modules
+
+services:
+  install:
+    build: *dev-build
+    volumes: *dev-volumes
+    command:
+      - sh
+      - -c
+      - >-
+        pnpm install --frozen-lockfile &&
+        pnpm turbo run build
+        --filter=@repo/schemas --filter=@repo/api-client --filter=@repo/api-react
+        --filter=@repo/ui --filter=@repo/design-system
+
+  api:
+    build: *dev-build
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      DATABASE_URL: postgres://app:app@postgres:5432/app
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-min-32-characters}
+      WEB_ORIGIN: http://localhost:${WEB_PORT:-5173}
+      ADMIN_ORIGIN: http://localhost:${ADMIN_PORT:-5174}
+      COOKIE_SECURE: "false"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes: *dev-volumes
+    depends_on:
+      install:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    command: ["pnpm", "--filter", "@repo/api", "dev"]
+    ports:
+      - "${API_PORT:-3000}:3000"
+
+  web:
+    build: *dev-build
+    environment:
+      PORT: "5173"
+      VITE_API_URL: http://localhost:${API_PORT:-3000}
+      VITE_USE_POLLING: "true"
+    volumes: *dev-volumes
+    depends_on:
+      install:
+        condition: service_completed_successfully
+    command: ["pnpm", "--filter", "@repo/web", "dev"]
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+
+  admin:
+    build: *dev-build
+    environment:
+      PORT: "5174"
+      VITE_API_URL: http://localhost:${API_PORT:-3000}
+      VITE_USE_POLLING: "true"
+    volumes: *dev-volumes
+    depends_on:
+      install:
+        condition: service_completed_successfully
+    command: ["pnpm", "--filter", "@repo/admin", "dev"]
+    ports:
+      - "${ADMIN_PORT:-5174}:5174"
+
+volumes:
+  node_modules:

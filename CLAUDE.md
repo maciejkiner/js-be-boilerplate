@@ -37,7 +37,8 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - `pnpm install` — instalacja (workspace).
 - `pnpm lint` / `pnpm typecheck` / `pnpm build` / `pnpm test` — przez Turborepo, cały monorepo.
 - `pnpm format` / `pnpm format:check` — Prettier.
-- `docker compose up -d` — Postgres (5432) + mailhog (SMTP 1025, UI 8025).
+- `docker compose up -d` (lub `pnpm docker:up`) — infra: Postgres (5432) + mailhog (SMTP 1025, UI 8025); apka natywnie `pnpm dev`.
+- Cały stack w kontenerach: `pnpm docker:full` (prod-like: obrazy API + web/admin przez nginx) lub `pnpm docker:dev` (HMR). Seed admina: `pnpm docker:full:seed`. Porty: `API_PORT`/`WEB_PORT`/`ADMIN_PORT`. Przepis: `docs/recipes/jak-uruchomic-w-dockerze.md` (ADR-0002).
 - Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
 - API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. Pojedynczy test: `pnpm --filter @repo/api test -- <wzorzec>`.
 - Baza: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Testy integracyjne DB wymagają `TEST_DATABASE_URL` (inaczej pomijane).
