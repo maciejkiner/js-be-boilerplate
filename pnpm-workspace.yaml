@@ -5,3 +5,5 @@ packages:
   - "design-system"
   # Testy e2e (Playwright) — poza pipeline'em unit (własny skrypt test:e2e).
   - "e2e"
+  # Narzędzia deweloperskie (scaffolder).
+  - "tools/*"

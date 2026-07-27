@@ -4,6 +4,7 @@ import type { Mailer } from "../lib/mailer/index.js";
 import { projectsRoutes } from "./projects/projects.routes.js";
 import { tasksRoutes } from "./tasks/tasks.routes.js";
 import { usersRoutes } from "./users/users.routes.js";
+// scaffolder:entities-import — do not remove
 
 /**
  * Rejestr modułów domenowych montowanych pod `/api/v1`.

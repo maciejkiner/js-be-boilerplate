@@ -36,3 +36,6 @@ export type {
   UserListQuery,
   InviteMembersBody,
 } from "./types.js";
+
+// Encje generowane przez scaffolder — jeden `export *` na encję (hooki + typy w pliku encji).
+// scaffolder:hooks-export — do not remove
