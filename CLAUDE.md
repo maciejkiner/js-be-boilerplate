@@ -123,7 +123,7 @@ error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
 - [ ] Brak sekretów/PII.
 - [ ] Nazwy i konwencje zachowane; granice (DS read-only, packages bez routera/`import.meta.env`) nienaruszone.
 - [ ] ADR dodany, jeśli to decyzja architektoniczna.
-- [ ] **Dokumentacja AI zaktualizowana w tym samym PR** (`CLAUDE.md` / przepisy / inwentarz DS). Nieaktualna dokumentacja = zmiana niezakończona.
+- [ ] **Dokumentacja zaktualizowana w tym samym commicie/PR — przy KAŻDEJ zmianie, która powinna być tam odwzorowana** (`README.md` — uruchamianie/komendy/stan budowy · `CLAUDE.md` — konwencje/granice/komendy · `docs/recipes/*` — procesy · `docs/adr/*` — znaczące decyzje · inwentarz DS). Nieaktualna dokumentacja = zmiana niezakończona.
 - [ ] Opis PR wg `pull-request-template.md` (co/dlaczego, testy, ryzyka, rollback).
 
 ## Gdy coś niejasne
