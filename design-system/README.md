@@ -11,9 +11,10 @@ klasy to zwykłe stringi, a Tailwind przetwarza je w skorupie (Vite) przez `@sou
 
 ## Zawartość mocka (dorabiana just-in-time — Fazy 6–7)
 
-`Button` · `Input` · `Select` · `Badge` · `Spinner` · `Skeleton` · prymitywy tabeli
-(`Table/Thead/Tbody/Tr/Th/Td`) · `Modal` · `ToastProvider`+`useToast`. Kolejne (combobox
-async, radio, checkbox, switch, date picker, stepper) dokładane w Fazie 7 pod formularze.
+`Button` · `Input` · `Select` · `Textarea` · `Checkbox` · `Switch` · `RadioGroup` · `DateInput` ·
+`Combobox` (sync + async-ready) · `Badge` · `Spinner` · `Skeleton` · prymitywy tabeli
+(`Table/Thead/Tbody/Tr/Th/Td`) · `Modal` · `ToastProvider`+`useToast` · `Stepper` (kroki wizarda).
+Mapowanie „typ pola → komponent" żyje w `packages/forms-ui` (Faza 7).
 
 ## Reguła twarda: DS jest READ-ONLY w projekcie
 
