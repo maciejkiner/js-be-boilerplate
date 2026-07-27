@@ -23,3 +23,9 @@ export type CreateTaskBody =
   paths["/api/v1/tasks/"]["post"]["requestBody"]["content"]["application/json"];
 export type UpdateTaskBody =
   paths["/api/v1/tasks/{id}"]["patch"]["requestBody"]["content"]["application/json"];
+
+export type UserListQuery = NonNullable<paths["/api/v1/users/"]["get"]["parameters"]["query"]>;
+export type UserList =
+  paths["/api/v1/users/"]["get"]["responses"][200]["content"]["application/json"];
+export type InviteMembersBody =
+  paths["/api/v1/projects/{id}/invitations"]["post"]["requestBody"]["content"]["application/json"];

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Db } from "../../db/client.js";
 import { NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
+import type { Mailer } from "../../lib/mailer/index.js";
 import {
   type CreateProjectSchema,
   type ProjectListQuery,
@@ -44,5 +45,26 @@ export const projectsService = {
     if (!deleted) {
       throw new NotFoundError("Projekt nie istnieje.");
     }
+  },
+
+  /**
+   * Wysyła zaproszenia mailem (mailer), BEZ zapisu do bazy. Świadomie inny handler niż CRUD —
+   * dowód separacji silnika formularzy od persystencji (wizard: część danych → baza, część → mailer).
+   */
+  async inviteMembers(db: Db, projectId: string, emails: string[], mailer: Mailer) {
+    const project = await projectsRepository.findById(db, projectId);
+    if (!project) {
+      throw new NotFoundError("Projekt nie istnieje.");
+    }
+    await Promise.all(
+      emails.map((to) =>
+        mailer.send({
+          to,
+          subject: `Zaproszenie do projektu: ${project.name}`,
+          text: `Zaproszono Cię do współpracy przy projekcie „${project.name}".`,
+        }),
+      ),
+    );
+    return { invited: emails.length };
   },
 };

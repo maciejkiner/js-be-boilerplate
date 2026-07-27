@@ -27,4 +27,11 @@ export const ProjectListResponseSchema = paginatedResponse(ProjectResponseSchema
 
 export const IdParamSchema = z.object({ id: z.string().uuid() });
 
+/** Zaproszenia członków — maile idą do mailera, NIE do bazy (dowód separacji w wizardzie). */
+export const InviteMembersSchema = z.object({
+  emails: z.array(z.string().email()).min(1),
+});
+
+export const InviteResultSchema = z.object({ invited: z.number().int() });
+
 export type ProjectListQuery = z.infer<typeof ProjectListQuerySchema>;

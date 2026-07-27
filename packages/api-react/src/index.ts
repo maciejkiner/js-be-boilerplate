@@ -8,7 +8,9 @@ export {
   useCreateProject,
   useUpdateProject,
   useDeleteProject,
+  useInviteProjectMembers,
 } from "./projects.js";
+export { userKeys, userListQuery, useUsers } from "./users.js";
 export {
   taskKeys,
   taskListQuery,
@@ -30,4 +32,7 @@ export type {
   TaskListQuery,
   CreateTaskBody,
   UpdateTaskBody,
+  UserList,
+  UserListQuery,
+  InviteMembersBody,
 } from "./types.js";

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "./context.js";
 import type {
   CreateProjectBody,
+  InviteMembersBody,
   Project,
   ProjectList,
   ProjectListQuery,
@@ -79,5 +80,19 @@ export function useDeleteProject() {
     mutationFn: async (id: string) =>
       unwrap(await client.DELETE("/api/v1/projects/{id}", { params: { path: { id } } })),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+  });
+}
+
+/** Zaproszenia członków → mailer (bez zapisu). Osobny handler — używany w wizardzie. */
+export function useInviteProjectMembers() {
+  const client = useApiClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; emails: InviteMembersBody["emails"] }) =>
+      unwrap(
+        await client.POST("/api/v1/projects/{id}/invitations", {
+          params: { path: { id: vars.id } },
+          body: { emails: vars.emails },
+        }),
+      ),
   });
 }

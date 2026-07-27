@@ -1,9 +1,12 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import type { Db } from "../../db/client.js";
+import type { Mailer } from "../../lib/mailer/index.js";
 import { MessageSchema } from "../auth/auth.dto.js";
 import {
   CreateProjectSchema,
   IdParamSchema,
+  InviteMembersSchema,
+  InviteResultSchema,
   ProjectListQuerySchema,
   ProjectListResponseSchema,
   ProjectResponseSchema,
@@ -15,9 +18,9 @@ import { projectsService } from "./projects.service.js";
  * CRUD projektów pod /api/v1/projects. Wzorzec modułu domenowego: kontroler (trasy) →
  * service → repository. Wszystkie operacje wymagają uwierzytelnienia; `createdBy` z sesji.
  */
-export function projectsRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
+export function projectsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginAsyncZod {
   return async (app) => {
-    const { db } = deps;
+    const { db, mailer } = deps;
 
     app.get(
       "/",
@@ -88,6 +91,29 @@ export function projectsRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
       async (request) => {
         await projectsService.remove(db, request.params.id);
         return { message: "Projekt usunięty." };
+      },
+    );
+
+    // Zaproszenia → mailer (bez zapisu do bazy). Wizard używa tego jako osobnego handlera.
+    app.post(
+      "/:id/invitations",
+      {
+        preHandler: [app.authenticate],
+        schema: {
+          tags: ["projects"],
+          params: IdParamSchema,
+          body: InviteMembersSchema,
+          response: { 202: InviteResultSchema },
+        },
+      },
+      async (request, reply) => {
+        const result = await projectsService.inviteMembers(
+          db,
+          request.params.id,
+          request.body.emails,
+          mailer,
+        );
+        return reply.status(202).send(result);
       },
     );
   };
