@@ -12,9 +12,9 @@ proces, który **uogólnia scaffolder** (Faza 8) — to ten sam proces, generato
 ## Szybka ścieżka: scaffolder (zalecane)
 
 ```bash
-# 1. Napisz encję (jedyne źródło prawdy) + wyeksportuj w packages/schemas/src/index.ts, potem:
-pnpm --filter @repo/schemas build
-# 2. Wygeneruj Drizzle + moduł API + hooki api-react + widoki admina + test CRUD:
+# 1. Napisz encję (jedyne źródło prawdy) + wyeksportuj w packages/schemas/src/index.ts.
+# 2. Wygeneruj Drizzle + moduł API + hooki api-react + widoki admina + test CRUD
+#    (pakiet @repo/schemas budowany jest automatycznie przed generacją):
 pnpm scaffold <name>                    # np. pnpm scaffold invoice
 # 3. Kroki po:
 pnpm --filter @repo/api db:generate     # migracja

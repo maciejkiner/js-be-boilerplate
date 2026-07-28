@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "scaffold": "tsx src/scaffold.ts",
+    "scaffold": "pnpm --filter @repo/schemas build && tsx src/scaffold.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

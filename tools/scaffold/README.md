@@ -9,15 +9,17 @@ Drizzle + moduł API + hooki `api-react` + widoki admina + test CRUD — i rejes
 ```bash
 # 1. Napisz encję (jedyne źródło prawdy) i wyeksportuj ją w packages/schemas/src/index.ts:
 #    packages/schemas/src/<name>/<name>.entity.ts  (defineEntity: schemat Zod + metadane)
-pnpm --filter @repo/schemas build
 
-# 2. Wygeneruj resztę:
+# 2. Wygeneruj resztę (pakiet @repo/schemas budowany jest automatycznie przed generacją):
 pnpm scaffold <name>          # np. pnpm scaffold invoice
 
 # 3. Kroki po (wypisywane przez CLI):
 pnpm --filter @repo/api db:generate   # migracja ze schematu
 pnpm generate:client                  # klient z OpenAPI
 ```
+
+> Scaffolder czyta encję ze skompilowanego `dist` `@repo/schemas`, dlatego skrypt `scaffold`
+> **buduje ten pakiet automatycznie** (jak `db:generate` dla drizzle-kit) — nie musisz pamiętać o `build`.
 
 ## Co generuje
 

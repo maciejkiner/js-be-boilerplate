@@ -18,7 +18,7 @@ function main(): void {
   if (!name) {
     console.error("Użycie: pnpm scaffold <encja>  (np. `pnpm scaffold widget`)");
     console.error(
-      "Najpierw utwórz i wyeksportuj encję w packages/schemas, potem zbuduj: pnpm --filter @repo/schemas build",
+      "Najpierw utwórz encję w packages/schemas i wyeksportuj ją w src/index.ts (pakiet budowany jest automatycznie).",
     );
     process.exit(1);
   }
@@ -27,7 +27,7 @@ function main(): void {
     Entity<z.ZodRawShape> | undefined;
   if (!entity) {
     console.error(
-      `Nie znaleziono encji \`${name}Entity\` w @repo/schemas. Dodaj plik encji, wyeksportuj go w src/index.ts i zbuduj pakiet.`,
+      `Nie znaleziono encji \`${name}Entity\` w @repo/schemas. Utwórz plik encji i wyeksportuj go w packages/schemas/src/index.ts (pakiet budowany jest automatycznie przed scaffoldingiem).`,
     );
     process.exit(1);
   }
