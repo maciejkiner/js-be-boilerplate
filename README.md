@@ -30,6 +30,36 @@ _AI-first_, _konwencja nad konfiguracją_.
 Poza fazami: **konteneryzacja full-stack** (ADR-0002) — patrz „Uruchomienie". Szczegóły i checkboxy:
 [`PLAN.md`](./PLAN.md).
 
+## Start nowego projektu (z tego boilerplate'a)
+
+Filozofia **fork & forget**: projekt **posiada** swój kod; aktualizacje z boilerplate'a idą przez
+wpisy-przepisy w [`CHANGELOG.md`](./CHANGELOG.md) + `BOOTSTRAP_VERSION`, **nie** przez `git merge`.
+
+1. **Utwórz repo** z tego (nie klasyczny fork): GitHub → **„Use this template” → Create a new
+   repository** (czysta historia, pełna własność). Dla organizacji: włącz na tym repo
+   Settings → **Template repository** — wtedy każdy projekt to jeden klik.
+2. **Sklonuj:** `git clone <repo-projektu> && cd <projekt>`.
+
+### Konfiguracja (PRZED pierwszym uruchomieniem)
+
+- **`.env`:** `cp .env.example .env`, następnie ustaw:
+  - realny **`JWT_SECRET`** (`openssl rand -hex 32`) — wymagany, fail-fast przy starcie API;
+  - **`COMPOSE_PROJECT_NAME=<projekt>`** — izolacja kontenerów/portów od innych projektów;
+  - pod środowiska: `SENTRY_DSN`, `COOKIE_DOMAIN`/`COOKIE_SECURE`, w razie kolizji `*_PORT`/`*_ORIGIN`.
+  - `.env` **nigdy** do repo.
+- **Zależności:** `pnpm install`.
+
+Dopiero teraz uruchom (patrz „Uruchomienie" niżej): `pnpm docker:full` + `pnpm docker:full:seed`.
+
+### Porządki (gdy już działa)
+
+- **Tożsamość:** `name` w root `package.json`; tytuł/opis w `README.md`.
+- **Encje referencyjne `Project`/`Task`:** wzorzec dla scaffoldera — dodawaj własne
+  (`pnpm scaffold <encja>`) i usuwaj zbędne (moduł API + `packages/schemas` + admin + hooki +
+  wpisy przy kotwicach `// scaffolder:…`).
+- **`PLAN.md`:** zastąp roadmapą projektu (albo usuń). `CLAUDE.md` zostaje jako kanon dla zespołu i AI.
+- **`BOOTSTRAP_VERSION`:** zostaw — zapisuje wersję startową; przyszłe poprawki bierz z `CHANGELOG.md`.
+
 ## Wymagania
 
 - **Node 22 LTS** (patrz `.nvmrc`), **pnpm** (`corepack enable`)
