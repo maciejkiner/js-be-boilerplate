@@ -188,12 +188,12 @@ Cel: generator wyciągnięty z istniejącego kodu wzorcowego — szablony powsta
 
 Cel: pętla aktualizacji przez instrukcje + komplet dokumentacji AI + przepisy modułów opt-in (bez implementacji).
 
-- [ ] `CHANGELOG.md`: format **wpisów-przepisów pod agenta** (co naprawiono, dlaczego, jak znaleźć fragment w projekcie, czym zastąpić).
-- [ ] `BOOTSTRAP_VERSION` (data/hash) — stemplowany przy starcie projektu; wyznacza od którego wpisu czytać.
-- [ ] Szablon PR rozszerzony o sekcję **„wpis changeloga"** (`pull-request-template.md`).
-- [ ] Komplet dokumentacji AI: `CLAUDE.md`/`AGENTS.md` (architektura, komendy, konwencje, granice), README per moduł z nieoczywistymi regułami, **inwentarz komponentów DS z przykładami** (finalny), przepisy: „jak dodać encję", „jak dodać providera tożsamości", „jak zaktualizować DS", „jak regenerować klienta". Część przepisów opcjonalnie jako komendy/skille.
-- [ ] **Przepisy modułów opt-in — TYLKO przepisy/interfejsy, zero implementacji**: multi-tenancy (organizacje/zaproszenia/role per org — dotyka schematu, przepis), upload plików (abstrakcja storage — interfejs+przepis), save & resume wizardów (persystencja częściowego stanu — przepis), OpenTelemetry (przepis), kolejki/background jobs (przepis).
-- [ ] Przepis „paginacja cursor-based" (dla publicznych list) jako uzupełnienie offset-based z core.
+- [x] `CHANGELOG.md`: format **wpisów-przepisów pod agenta** (co/dlaczego/jak znaleźć/co zrobić) + pętla aktualizacji.
+- [x] `BOOTSTRAP_VERSION` (data + hash) — znacznik wersji startowej; wyznacza, od którego wpisu czytać.
+- [x] Szablon PR rozszerzony o sekcję **„wpis changeloga"** (`pull-request-template.md`).
+- [x] Komplet dokumentacji AI: `CLAUDE.md`/`AGENTS.md`, README per moduł, **inwentarz DS z przykładami** (finalny), przepisy (dodać encję / providera / zaktualizować DS / regenerować klienta / formularz / docker).
+- [x] **Przepisy modułów opt-in — TYLKO przepisy/interfejsy, zero implementacji**: `docs/recipes/opt-in/` (multi-tenancy, upload, save&resume, OpenTelemetry, kolejki/jobs).
+- [x] Przepis „paginacja cursor-based" (`docs/recipes/paginacja-cursor-based.md`) jako uzupełnienie offset-based.
 
 **DoD fazy 9:** changelog-przepisy + BOOTSTRAP_VERSION + szablon PR gotowe; dokumentacja AI kompletna i spójna z kodem; moduły opt-in obecne wyłącznie jako przepisy/interfejsy; jawnie poza zakresem — nietknięte.
 

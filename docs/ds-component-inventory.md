@@ -3,30 +3,33 @@
 Słownik dla generatorów i agentów: komponenty, na których wolno budować `packages/ui` i
 `packages/forms-ui`. Cel — agenty nie halucynują API i nie przemycają gołego HTML obok DS.
 
-**Status:** STUB (Faza 0). Interfejsy (propsy) i przykłady użycia dorabiane just-in-time wraz z
-mockiem DS w Fazach 6–7. Prawdziwe API pojawi się po podmianie placeholdera na subtree DS.
+**Status:** mock DS (`@repo/design-system`) pokrywa całą sekcję 10 (dorobione just-in-time w Fazach
+6–7). Prawdziwe API pojawi się po podmianie placeholdera na subtree silk — patrz niżej.
 
-> Docelowy DS: `netguru/silk-storybook` (`@silk/components`). Analiza luk (co dorobić przed
-> podmianą mocka na subtree): [`ds-gap-analysis.md`](./ds-gap-analysis.md).
+> Docelowy DS: `netguru/silk-storybook` (`@silk/components`). Analiza luk (co dorobić w silk przed
+> podmianą) + luki integracyjne: [`ds-gap-analysis.md`](./ds-gap-analysis.md). Podmiana:
+> [`recipes/jak-zaktualizowac-ds.md`](./recipes/jak-zaktualizowac-ds.md).
 
-## Wymagane pokrycie (spec sekcja 10)
+## Pokrycie (spec sekcja 10) — mock `@repo/design-system`
 
-| Komponent                 | Zastosowanie                | Status          |
-| ------------------------- | --------------------------- | --------------- |
-| input                     | pola tekstowe               | ☐ do dorobienia |
-| textarea                  | tekst wieloliniowy          | ☐               |
-| select                    | wybór z listy               | ☐               |
-| combobox (async search)   | pola relacji                | ☐               |
-| checkbox                  | boolean / wielokrotny wybór | ☐               |
-| radio                     | pojedynczy wybór            | ☐               |
-| switch                    | boolean                     | ☐               |
-| date picker               | daty                        | ☐               |
-| tabela / prymitywy tabeli | listy (DataTable)           | ☐               |
-| modal / dialog            | potwierdzenia, formularze   | ☐               |
-| toast                     | powiadomienia               | ☐               |
-| pagination                | nawigacja list              | ☐               |
-| tabs / stepper            | wizardy                     | ☐               |
-| skeleton / spinner        | stany ładowania             | ☐               |
+| Komponent                 | Eksport w mocku                          | Zastosowanie                |
+| ------------------------- | ---------------------------------------- | --------------------------- |
+| input                     | `Input`                                  | pola tekstowe / number      |
+| textarea                  | `Textarea`                               | tekst wieloliniowy          |
+| select                    | `Select`                                 | wybór z listy / filtry      |
+| combobox (async search)   | `Combobox` (sync + `onSearch`/`loading`) | pola relacji                |
+| checkbox                  | `Checkbox`                               | boolean / wielokrotny wybór |
+| radio                     | `RadioGroup`                             | pojedynczy wybór            |
+| switch                    | `Switch`                                 | boolean                     |
+| date picker               | `DateInput` (mock: `input[type=date]`)   | daty                        |
+| tabela / prymitywy tabeli | `Table/Thead/Tbody/Tr/Th/Td`             | listy (DataTable)           |
+| modal / dialog            | `Modal`                                  | potwierdzenia, formularze   |
+| toast                     | `ToastProvider` + `useToast`             | powiadomienia               |
+| pagination                | (kompozycja w `@repo/ui` DataTable)      | nawigacja list              |
+| tabs / stepper            | `Stepper`                                | wizardy                     |
+| skeleton / spinner        | `Skeleton`, `Spinner`                    | stany ładowania             |
 
-Braki w prawdziwym DS są dorabiane **w DS** (upstream) przed pisaniem szablonów scaffoldera —
-nigdy przez lokalną modyfikację `design-system/` (reguła DS read-only).
+Mapowanie „typ pola → komponent" (przykłady użycia): `packages/forms-ui/README.md`.
+
+Braki w prawdziwym DS są dorabiane **w DS** (upstream) — nigdy przez lokalną modyfikację
+`design-system/` (reguła DS read-only).

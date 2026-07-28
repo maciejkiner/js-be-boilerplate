@@ -1,0 +1,6 @@
+# Znacznik wersji bootstrapa, od której wystartował ten projekt.
+# Format: data (YYYY-MM-DD) + krótki hash commita bootstrapa.
+# Przy forku ustaw tę wartość na wersję bootstrapa, z której korzystasz. Później czytaj wpisy
+# z CHANGELOG.md NOWSZE niż ta data, by wiedzieć, co warto przenieść do projektu (fork & forget
+# z opcjonalną pętlą aktualizacji przez wpisy-przepisy). Patrz nagłówek CHANGELOG.md.
+2026-07-27 8694bcd

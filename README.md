@@ -22,7 +22,10 @@ _AI-first_, _konwencja nad konfiguracją_.
 | 6    | Skorupy web + admin, DataTable, e2e (Playwright)  | ✅ ukończona |
 | 7    | Silnik formularzy (`forms` + `forms-ui`) + wizard | ✅ ukończona |
 | 8    | Scaffolder (`pnpm scaffold` — generacja encji)    | ✅ ukończona |
-| 9    | Domknięcie (changelog, wersjonowanie, opt-in)     | ⏳ następna  |
+| 9    | Domknięcie (changelog, wersjonowanie, opt-in)     | ✅ ukończona |
+
+**Bootstrap kompletny** (fazy 0–9). Aktualizacje do forków: `CHANGELOG.md` (wpisy-przepisy) +
+`BOOTSTRAP_VERSION`. Moduły opt-in jako przepisy: [`docs/recipes/opt-in/`](./docs/recipes/opt-in/README.md).
 
 Poza fazami: **konteneryzacja full-stack** (ADR-0002) — patrz „Uruchomienie". Szczegóły i checkboxy:
 [`PLAN.md`](./PLAN.md).

@@ -33,6 +33,14 @@ Linked ticket: ABC-123
 
 - [ ] Added/updated logs, metrics, or tracing for the new path (if applicable)
 
+## Changelog entry (recipe for downstream projects)
+
+If this change is worth backporting to forked projects, add an entry at the top of `CHANGELOG.md`
+in the recipe format (Co / Dlaczego / Jak znaleźć w projekcie / Co zrobić). Skip only for changes
+irrelevant downstream (e.g. internal test tweaks).
+
+- [ ] Changelog entry added, or N/A (why): ...
+
 ## Review checklist
 
 - [ ] Code is readable, names follow the conventions

@@ -62,7 +62,7 @@ error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
   skorupy. Reguła egzekwowana przez `@repo/config/eslint-package`. `apps/admin` jako druga skorupa
   jest permanentnym testem tej granicy.
 - **Moduły opt-in** (multi-tenancy, upload, save&resume, OTel, kolejki) i pozycje „poza zakresem"
-  (patrz `PLAN.md`): nie implementuj — tylko przepisy/interfejsy.
+  (patrz `PLAN.md`): nie implementuj — tylko przepisy/interfejsy (`docs/recipes/opt-in/`).
 
 ## Priorytety (w tej kolejności)
 
