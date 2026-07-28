@@ -31,6 +31,10 @@ Encja = **czysty schemat Zod** (kształt + walidacja, w tym międzypolowa) **+ c
 metadanych** (wyłącznie prezentacja). Parytet kluczy `fields` ↔ schemat wymusza TypeScript —
 dodasz pole do schematu bez metadanej i kod się nie skompiluje.
 
+> **Nie deklaruj pól audytowych** (`id`, `createdAt`, `updatedAt`, `deletedAt`, `createdBy`) — są
+> dokładane automatycznie do każdej tabeli z `apps/api/src/db/columns.ts`. Scaffolder odrzuci encję,
+> która je zawiera (kolidowałyby ze spreadem helperów w schemacie Drizzle).
+
 ```ts
 // packages/schemas/src/project/project.entity.ts
 import { z } from "zod";

@@ -32,7 +32,13 @@ function main(): void {
     process.exit(1);
   }
 
-  const d = buildDescriptor(entity);
+  let d: EntityDescriptor;
+  try {
+    d = buildDescriptor(entity);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
   console.log(`Scaffolding encji: ${d.name} (${d.plural})`);
 
   // --- BE: pliki modułu API + schemat Drizzle ---
