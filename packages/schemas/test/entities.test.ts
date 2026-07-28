@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
+import type { FieldMeta } from "../src/index.js";
 import { projectEntity, taskEntity } from "../src/index.js";
+
+// Type-level: unia FieldMeta wymusza dodatki zależne od `control` (sprawdzane przez `tsc`, nie runtime).
+() => {
+  const simple: FieldMeta = { label: "Name", control: "text" }; // bez options/relation — OK
+  const choice: FieldMeta = { label: "Status", control: "select", options: [] }; // OK
+  const relation: FieldMeta = {
+    label: "Project",
+    control: "relation",
+    relation: { entity: "project", displayField: "name" },
+  }; // OK
+  // @ts-expect-error select bez options = błąd
+  const missingOptions: FieldMeta = { label: "Status", control: "select" };
+  // @ts-expect-error relation bez relation = błąd
+  const missingRelation: FieldMeta = { label: "Project", control: "relation" };
+  // @ts-expect-error text z options = błąd (pole niedozwolone dla tej kontrolki)
+  const extraOptions: FieldMeta = { label: "Name", control: "text", options: [] };
+  return [simple, choice, relation, missingOptions, missingRelation, extraOptions];
+};
 
 describe("definicje encji", () => {
   it("metadane fields pokrywają dokładnie klucze schematu", () => {

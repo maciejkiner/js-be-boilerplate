@@ -34,6 +34,24 @@ agenta w sforkowanym projekcie** — jak przenieść poprawkę do kodu, który j
 
 <!-- Nowe wpisy dodawaj NA GÓRZE (pod tym komentarzem), najnowsze pierwsze. -->
 
+## 2026-07-28 — `FieldMeta` jako unia dyskryminowana po `control`
+
+- **Co:** `FieldMeta` (metadane pola encji) z płaskiego interfejsu (wszystko opcjonalne) przerobione
+  na **unię dyskryminowaną** `SimpleFieldMeta | ChoiceFieldMeta | RelationFieldMeta`. Typ wymusza
+  teraz dodatki zależne od `control`: `select`/`radio` → `options` (wymagane), `relation` → `relation`
+  (wymagane), pola proste → bez `options`/`relation` (`?: never`). README i JSDoc pełnią rolę
+  katalogu wszystkich typów pól; type-level test (`@ts-expect-error`) pilnuje wymuszania.
+- **Dlaczego:** metadane były niejednorodne, ale typ tego nie odzwierciedlał — można było zapomnieć
+  `options` przy `select` albo dodać je do `text` i nic tego nie łapało do runtime'u.
+- **Jak znaleźć w projekcie:** `packages/schemas/src/lib/define-entity.ts` (`FieldMeta` + warianty
+  `*FieldMeta`); odczyty `meta.options`/`meta.relation` w `packages/forms-ui/src/derive-fields.ts`
+  i `tools/scaffold/src/descriptor.ts` (działają bez zmian — `?: never` zachowuje dostęp do pól).
+- **Co zrobić:** zastąp `interface FieldMeta {…}` bazą `FieldMetaBase` + trzema wariantami z
+  dyskryminatorem `control` i unią `type FieldMeta = …`. Encje z poprawnymi metadanymi kompilują się
+  bez zmian; niepoprawne (brak `options`/`relation`) dostaną błąd do naprawienia (to cel).
+- **Ryzyko/rollback:** zmiana typu (nie runtime). Poprawne encje niezmienione; jeśli backport ujawni
+  braki `options`/`relation`, uzupełnij je. Rollback = powrót do płaskiego `FieldMeta`.
+
 ## 2026-07-28 — Dokumentacja `defineEntity` + podłączenie pola `help`
 
 - **Co:** (1) doprecyzowana dokumentacja `defineEntity` — JSDoc na `name`/`plural`/`label`/`labelPlural`,

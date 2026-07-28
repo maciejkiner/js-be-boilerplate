@@ -33,22 +33,53 @@ export interface ListColumnMeta {
   filterable?: boolean;
 }
 
-/**
- * Metadane pola — WYŁĄCZNIE prezentacja. Walidacji nie duplikujemy tu (wynika z Zoda);
- * walidacje międzypolowe idą przez `refine` na encji.
- */
-export interface FieldMeta {
+/** Pola wspólne dla KAŻDEGO typu kontrolki. Prezentacja — walidacja wynika z Zoda. */
+interface FieldMetaBase {
   /** Etykieta pola (formularz + nagłówek kolumny). */
   label: string;
-  control: FieldControl;
-  /** Tekst-podpowiedź renderowany pod polem w formularzu (`forms-ui`). */
+  /** Opcjonalna podpowiedź renderowana pod polem w formularzu (`forms-ui`). */
   help?: string;
-  /** Wymagane dla control `select`/`radio`. */
-  options?: FieldOption[];
-  /** Wymagane dla control `relation`. */
-  relation?: RelationMeta;
+  /** Opcjonalna konfiguracja kolumny w DataTable admina (widoczność/sort/filtr). */
   list?: ListColumnMeta;
 }
+
+/**
+ * Pola proste — bez dodatkowych metadanych.
+ * Paruj z: `text`/`textarea`→`z.string()`, `number`→`z.number()`, `date`→`z.coerce.date()`,
+ * `checkbox`/`switch`→`z.boolean()`.
+ */
+export interface SimpleFieldMeta extends FieldMetaBase {
+  control: "text" | "textarea" | "number" | "date" | "checkbox" | "switch";
+  options?: never;
+  relation?: never;
+}
+
+/** Wybór z zamkniętej listy — WYMAGA `options`. Paruj z `z.enum([...])`. */
+export interface ChoiceFieldMeta extends FieldMetaBase {
+  control: "select" | "radio";
+  options: FieldOption[];
+  relation?: never;
+}
+
+/** Relacja do innej encji — WYMAGA `relation`. Paruj z `z.string().uuid()`. */
+export interface RelationFieldMeta extends FieldMetaBase {
+  control: "relation";
+  relation: RelationMeta;
+  options?: never;
+}
+
+/**
+ * Metadane pola — WYŁĄCZNIE prezentacja (walidacja wynika z Zoda; międzypolowa przez `refine`).
+ *
+ * **Unia dyskryminowana po `control`** — dostępne pola zależą od typu kontrolki, a kompilator
+ * wymusza komplet (`select` bez `options` = błąd; `text` z `options` = błąd). Warianty:
+ * - {@link SimpleFieldMeta} — `text` `textarea` `number` `date` `checkbox` `switch` (bez dodatków)
+ * - {@link ChoiceFieldMeta} — `select` `radio` (wymaga `options`)
+ * - {@link RelationFieldMeta} — `relation` (wymaga `relation`)
+ *
+ * Wspólne opcjonalne: `help` (podpowiedź) i `list` (kolumna admina) — patrz {@link FieldMetaBase}.
+ */
+export type FieldMeta = SimpleFieldMeta | ChoiceFieldMeta | RelationFieldMeta;
 
 export interface EntityDefinition<Shape extends z.ZodRawShape> {
   /** Nazwa encji w liczbie pojedynczej (np. `project`). Scaffolder tworzy z niej `PascalCase`. */

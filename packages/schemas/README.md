@@ -17,22 +17,24 @@ kompilacji, brak dryfu.
 - `entity.validation` — schemat z `refine` (albo `schema`, gdy `refine` nieustawione). Używany jako
   body tworzenia w API.
 - `entity.fields` — metadane prezentacji per pole. `control` mapuje się na komponent DS (Faza 7).
-- Relacje: `control: "relation"` + `relation: { entity, displayField }`.
 
-### Parowanie `control` ↔ typ Zod
+### Typy pól (`FieldMeta`)
 
-Każde pole ma `control` (metadane) i odpowiadający mu typ w schemacie — **muszą być spójne**:
+`FieldMeta` to **unia dyskryminowana po `control`** — dostępne pola zależą od typu kontrolki, a `tsc`
+wymusza komplet (`select` bez `options` = błąd kompilacji, `text` z `options` = błąd). Każdy `control`
+paruje się też z konkretnym typem Zod w schemacie — muszą być spójne:
 
-| `control`             | typ Zod             | wymaga w metadanych |
-| --------------------- | ------------------- | ------------------- |
-| `text` / `textarea`   | `z.string()`        | —                   |
-| `number`              | `z.number()`        | —                   |
-| `date`                | `z.coerce.date()`   | —                   |
-| `select` / `radio`    | `z.enum([...])`     | `options`           |
-| `checkbox` / `switch` | `z.boolean()`       | —                   |
-| `relation`            | `z.string().uuid()` | `relation`          |
+| `control`             | typ Zod             | wymaga dodatkowo | wariant typu        |
+| --------------------- | ------------------- | ---------------- | ------------------- |
+| `text` / `textarea`   | `z.string()`        | —                | `SimpleFieldMeta`   |
+| `number`              | `z.number()`        | —                | `SimpleFieldMeta`   |
+| `date`                | `z.coerce.date()`   | —                | `SimpleFieldMeta`   |
+| `checkbox` / `switch` | `z.boolean()`       | —                | `SimpleFieldMeta`   |
+| `select` / `radio`    | `z.enum([...])`     | `options`        | `ChoiceFieldMeta`   |
+| `relation`            | `z.string().uuid()` | `relation`       | `RelationFieldMeta` |
 
-`help?` (opcjonalny) renderuje się jako podpowiedź pod polem w `forms-ui`.
+Pola **wspólne** dla każdego typu (opcjonalne): `help` — podpowiedź renderowana pod polem w `forms-ui`;
+`list` — konfiguracja kolumny w adminie (`{ visible?, sortable?, filterable? }`).
 
 ### Przykład
 
