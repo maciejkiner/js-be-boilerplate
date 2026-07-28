@@ -64,6 +64,17 @@ describe("FormFields (mapowanie typ→komponent)", () => {
     expect(screen.getByRole("alert").textContent).toContain("wymagane");
   });
 
+  it("renderuje podpowiedź z pola help pod kontrolką", () => {
+    const { form } = makeForm({ name: "" });
+    render(
+      <FormFields
+        fields={[{ name: "name", label: "Nazwa", control: "text", help: "Widoczna publicznie" }]}
+        form={form}
+      />,
+    );
+    expect(screen.getByText("Widoczna publicznie")).toBeTruthy();
+  });
+
   it("warunkowa widoczność: pole z visibleWhen renderuje się tylko gdy warunek spełniony", () => {
     const conditional: FieldDef[] = [
       { name: "kind", label: "Rodzaj", control: "text" },

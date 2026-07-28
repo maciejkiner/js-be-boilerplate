@@ -12,6 +12,7 @@ export function deriveFields<Shape extends z.ZodRawShape>(entity: Entity<Shape>)
     name,
     label: meta.label,
     control: meta.control,
+    help: meta.help,
     options: meta.options,
     relation: meta.relation,
     required: shape[name] ? !shape[name].isOptional() : undefined,

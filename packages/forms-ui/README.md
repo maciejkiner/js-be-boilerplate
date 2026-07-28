@@ -28,7 +28,8 @@ Jawne i jedyne — definiowane w `src/field-renderer.tsx` (`Control`). Nowy typ 
 - **`FormFields({ fields, form, relationSource })`** — renderuje pola spięte ze stanem `@repo/forms`
   (`useForm` lub `useWizard` — wspólny interfejs `FormLike`): `value`/`error`/`onChange` per pole.
   Pole z `visibleWhen(values)` renderuje się tylko, gdy warunek spełniony (zależności/warunkowa widoczność).
-- **`FieldRenderer` / `Field`** — pojedyncze pole (wrapper: etykieta + `*` gdy wymagane + błąd `role=alert`).
+- **`FieldRenderer` / `Field`** — pojedyncze pole (wrapper: etykieta + `*` gdy wymagane +
+  podpowiedź z `FieldMeta.help` + błąd `role=alert`).
 - **`RelationSource`** — skorupa wstrzykuje źródło opcji pól relacji (dociąga z API: `options`/`onSearch`/`loading`).
 
 ```tsx

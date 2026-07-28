@@ -33,3 +33,19 @@ agenta w sforkowanym projekcie** — jak przenieść poprawkę do kodu, który j
 - **Co zrobić:** nic — to punkt odniesienia. Ustaw `BOOTSTRAP_VERSION` na `2026-07-27 8694bcd`.
 
 <!-- Nowe wpisy dodawaj NA GÓRZE (pod tym komentarzem), najnowsze pierwsze. -->
+
+## 2026-07-28 — Dokumentacja `defineEntity` + podłączenie pola `help`
+
+- **Co:** (1) doprecyzowana dokumentacja `defineEntity` — JSDoc na `name`/`plural`/`label`/`labelPlural`,
+  parowanie `control` ↔ typ Zod (który wymaga `options`/`relation`), przykład użycia i cross-linki;
+  README `packages/schemas` dostał tabelę parowania i przykład. (2) Pole `FieldMeta.help` (dotąd
+  martwe) jest teraz renderowane jako podpowiedź pod polem w `forms-ui`.
+- **Dlaczego:** DX — pisząc encję od zera nie było wiadomo, jaki typ Zod paruje z danym `control`,
+  co napędza `plural`, ani że `help` nie działa (zadeklarowane, nierenderowane → mylące).
+- **Jak znaleźć w projekcie:** `packages/schemas/src/lib/define-entity.ts` (JSDoc `FieldControl`,
+  `FieldMeta`, `EntityDefinition`, `defineEntity`); `packages/schemas/README.md`;
+  `packages/forms-ui/src/{field-renderer.tsx,derive-fields.ts}` (`FieldDef.help`, render w `Field`).
+- **Co zrobić:** przenieś JSDoc/README z komitu; w `forms-ui` dodaj `help?: string` do `FieldDef`,
+  skopiuj `meta.help` w `deriveFields`, i wyrenderuj `field.help` w `Field` (hint `<p>` pod kontrolką,
+  przed błędem). Tylko dokumentacja + addytywne renderowanie — brak zmian kontraktu.
+- **Ryzyko/rollback:** brak (addytywne; encje bez `help` działają jak dotąd).

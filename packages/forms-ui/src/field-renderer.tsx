@@ -16,6 +16,8 @@ export interface FieldDef {
   name: string;
   label: string;
   control: FieldControl;
+  /** Tekst-podpowiedź renderowany pod polem (z `FieldMeta.help`). */
+  help?: string;
   options?: FieldOption[];
   relation?: RelationMeta;
   required?: boolean;
@@ -140,7 +142,7 @@ function Control({ field, value, onChange, relationSource, disabled }: FieldRend
   }
 }
 
-/** Pole = etykieta (+ `*` gdy wymagane) + kontrolka DS + komunikat błędu. */
+/** Pole = etykieta (+ `*` gdy wymagane) + kontrolka DS + podpowiedź (`help`) + komunikat błędu. */
 export function Field({
   field,
   error,
@@ -161,6 +163,11 @@ export function Field({
         )}
       </label>
       {children}
+      {field.help && (
+        <p id={`field-${field.name}-help`} className="text-xs text-slate-500">
+          {field.help}
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
