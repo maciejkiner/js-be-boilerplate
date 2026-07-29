@@ -299,11 +299,23 @@ function sampleValue(f: FieldDescriptor): string {
 export function beTest(d: EntityDescriptor): string {
   const requiredRelations = d.fields.filter((f) => f.relation && f.required);
   const needsProject = requiredRelations.some((f) => f.relation!.entity === "project");
+  // Relacje wymagane, których scaffolder NIE potrafi automatycznie zseedować: encja docelowa
+  // inna niż `project` (jedyna, której payload zna) i `user` (mamy `userId` z rejestracji).
+  // Dla nich generujemy kompilowalny stub + TODO, a cały suite jest pominięty (RELATIONS_TODO) —
+  // zamiast udawać przechodzący albo generować łamiący się/niekompilujący test.
+  const manualRelations = requiredRelations.filter(
+    (f) => f.relation!.entity !== "project" && f.relation!.entity !== "user",
+  );
   const truncate = [
-    ...new Set(["users", ...requiredRelations.map((f) => f.relation!.targetPlural), d.plural]),
+    ...new Set([
+      "users",
+      ...(needsProject ? ["projects"] : []),
+      ...requiredRelations.map((f) => f.relation!.targetPlural),
+      d.plural,
+    ]),
   ].join(", ");
 
-  const prereq = needsProject
+  const projectPrereq = needsProject
     ? `    const projectRes = await app.inject({
       method: "POST",
       url: "/api/v1/projects",
@@ -312,19 +324,42 @@ export function beTest(d: EntityDescriptor): string {
     });
     const projectId = projectRes.json().id;\n`
     : "";
+  const manualPrereq = manualRelations
+    .map(
+      (f) =>
+        `    // TODO: utwórz rekord \`${f.relation!.entity}\` (relacja wymagana) i podstaw jego id.\n    const ${f.name} = "";\n`,
+    )
+    .join("");
+  const prereq = projectPrereq + manualPrereq;
 
+  const relationValue = (f: FieldDescriptor): string =>
+    f.relation!.entity === "project"
+      ? "projectId"
+      : f.relation!.entity === "user"
+        ? "userId"
+        : f.name;
   const bodyEntries = d.fields
     .map((f) => {
       if (f.relation) {
         if (!f.required) return null;
-        if (f.relation.entity === "project") return `      ${f.name}: projectId,`;
-        if (f.relation.entity === "user") return `      ${f.name}: userId,`;
-        return `      ${f.name}: projectId,`; // inne relacje: dostosuj ręcznie
+        const value = relationValue(f);
+        // shorthand, gdy nazwa pola == nazwa zmiennej (unika object-shorthand w lincie)
+        return value === f.name ? `      ${f.name},` : `      ${f.name}: ${value},`;
       }
       return `      ${f.name}: ${sampleValue(f)},`;
     })
     .filter(Boolean)
     .join("\n");
+
+  const relationsTodo = manualRelations.length > 0;
+  const todoNote = relationsTodo
+    ? `\n// Scaffolder nie potrafił automatycznie zseedować relacji wymaganych: ${manualRelations
+        .map((f) => f.name)
+        .join(
+          ", ",
+        )}.\n// Uzupełnij tworzenie rekordów-prerekwizytów w create() i ustaw RELATIONS_TODO = false, aby włączyć test.\nconst RELATIONS_TODO: boolean = true;\n`
+    : "";
+  const skipCond = relationsTodo ? "!url || RELATIONS_TODO" : "!url";
 
   return `import { sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
@@ -336,9 +371,9 @@ import { buildTestApp } from "./helpers.js";
 
 const url = process.env.TEST_DATABASE_URL;
 const CREDS = { email: "${d.name}-owner@example.com", password: "password123" };
-
+${todoNote}
 /** CRUD encji ${d.plural} — wygenerowane przez scaffolder. */
-describe.skipIf(!url)("${d.plural} CRUD (wygenerowane)", () => {
+describe.skipIf(${skipCond})("${d.plural} CRUD (wygenerowane)", () => {
   let app: FastifyInstance;
   let db: Db;
   let pool: Pool;

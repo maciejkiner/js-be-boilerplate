@@ -120,6 +120,12 @@ function detailValue(f: FieldDescriptor): string {
 
 export function adminEntity(d: EntityDescriptor): string {
   const filterSelects = d.fields.filter((f) => f.filterable && f.control === "select");
+  // `formatDate` używane tylko przy polach `date` (kolumna/detal) — importuj warunkowo,
+  // inaczej encja bez pola date daje nieużywany import (błąd typecheck/lint/build).
+  const hasDate = d.fields.some((f) => f.control === "date");
+  const uiImport = hasDate
+    ? `import { formatDate, Page } from "../ui";`
+    : `import { Page } from "../ui";`;
   const columns = d.fields
     .filter((f) => f.visible)
     .map((f) => {
@@ -177,7 +183,7 @@ import { type Column, DataTable, type SortState } from "@repo/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useRelationSource } from "../relation-source";
-import { formatDate, Page } from "../ui";
+${uiImport}
 import { EntityForm, recordToFormValues } from "./entity-form";
 
 type ${d.Pascal}Row = ${d.Pascal}List["items"][number];
