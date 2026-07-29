@@ -27,5 +27,11 @@ export type UpdateTaskBody =
 export type UserListQuery = NonNullable<paths["/api/v1/users/"]["get"]["parameters"]["query"]>;
 export type UserList =
   paths["/api/v1/users/"]["get"]["responses"][200]["content"]["application/json"];
+export type User =
+  paths["/api/v1/users/{id}"]["get"]["responses"][200]["content"]["application/json"];
+export type InviteUserBody =
+  paths["/api/v1/users/"]["post"]["requestBody"]["content"]["application/json"];
+export type UpdateUserRolesBody =
+  paths["/api/v1/users/{id}/roles"]["patch"]["requestBody"]["content"]["application/json"];
 export type InviteMembersBody =
   paths["/api/v1/projects/{id}/invitations"]["post"]["requestBody"]["content"]["application/json"];

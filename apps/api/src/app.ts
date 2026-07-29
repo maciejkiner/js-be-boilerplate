@@ -78,7 +78,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   await app.register(healthRoutes);
   await app.register(authRoutes({ db, env, mailer }), { prefix: "/api/v1/auth" });
-  await app.register(apiV1Routes({ db, mailer }), { prefix: "/api/v1" });
+  await app.register(apiV1Routes({ db, mailer, env }), { prefix: "/api/v1" });
 
   app.get("/api/v1/openapi.json", { schema: { hide: true } }, async () => app.swagger());
 

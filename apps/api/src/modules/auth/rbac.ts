@@ -1,6 +1,10 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { ForbiddenError } from "../../lib/http/problem.js";
 
+/** Dozwolone role w systemie (RBAC na userze). Rozszerzaj listę tutaj — jedno źródło prawdy. */
+export const APP_ROLES = ["admin", "user"] as const;
+export type AppRole = (typeof APP_ROLES)[number];
+
 /**
  * Guard RBAC. Użyj po `app.authenticate` w preHandler:
  *   preHandler: [app.authenticate, requireRoles("admin")]

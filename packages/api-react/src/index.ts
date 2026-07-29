@@ -10,7 +10,18 @@ export {
   useDeleteProject,
   useInviteProjectMembers,
 } from "./projects.js";
-export { userKeys, userListQuery, useUsers } from "./users.js";
+export {
+  userKeys,
+  userListQuery,
+  userDetailQuery,
+  useUsers,
+  useUser,
+  useInviteUser,
+  useUpdateUserRoles,
+  useDeactivateUser,
+  useReactivateUser,
+  useSendPasswordReset,
+} from "./users.js";
 export {
   taskKeys,
   taskListQuery,
@@ -34,8 +45,12 @@ export type {
   UpdateTaskBody,
   UserList,
   UserListQuery,
+  User,
+  InviteUserBody,
+  UpdateUserRolesBody,
   InviteMembersBody,
 } from "./types.js";
 
 // Encje generowane przez scaffolder — jeden `export *` na encję (hooki + typy w pliku encji).
+export * from "./comments.js";
 // scaffolder:hooks-export — do not remove

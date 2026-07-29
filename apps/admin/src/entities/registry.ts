@@ -1,6 +1,8 @@
 import type { FunctionComponent } from "react";
 import { ProjectCreate, ProjectDetail, ProjectEdit, ProjectsList } from "./projects";
 import { TaskCreate, TaskDetail, TaskEdit, TasksList } from "./tasks";
+import { UserDetail, UserInvite, UsersList } from "./users";
+import { CommentsList, CommentDetail, CommentCreate, CommentEdit } from "./comments";
 // scaffolder:admin-import — do not remove
 
 export interface EntityRoute {
@@ -38,6 +40,25 @@ export const entityRegistry: EntityRoute[] = [
     Detail: TaskDetail,
     Create: TaskCreate,
     Edit: TaskEdit,
+  },
+  {
+    // Encja CORE (auth), nie scaffoldowana: zarządzanie userami (role/dezaktywacja) w widoku detalu,
+    // `Create` = zaproszenie. Brak `Edit` (role edytowane w Detail). Endpointy tylko dla admina.
+    name: "user",
+    label: "Użytkownicy",
+    path: "/users",
+    List: UsersList,
+    Detail: UserDetail,
+    Create: UserInvite,
+  },
+  {
+    name: "comment",
+    label: "Comments",
+    path: "/comments",
+    List: CommentsList,
+    Detail: CommentDetail,
+    Create: CommentCreate,
+    Edit: CommentEdit,
   },
   // scaffolder:admin-entities — do not remove
 ];

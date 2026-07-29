@@ -10,4 +10,5 @@
 export * from "../modules/auth/auth.schema.js";
 export * from "../modules/projects/projects.schema.js";
 export * from "../modules/tasks/tasks.schema.js";
+export * from "../modules/comments/comments.schema.js";
 // scaffolder:schema-export — do not remove

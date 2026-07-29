@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gt, ilike, isNull, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gt, ilike, isNotNull, isNull, type SQL } from "drizzle-orm";
 import type { Db } from "../../db/client.js";
 import { passwordCredentials, passwordResetTokens, sessions, users } from "./auth.schema.js";
 
@@ -20,16 +20,36 @@ export const authRepository = {
       .execute();
   },
 
-  /** Lista userów (id + email) do pól relacji (assignee). Offset + opcjonalny filtr po e-mailu. */
-  async listUsers(db: Db, query: { page: number; pageSize: number; q?: string }) {
-    const conditions: SQL[] = [isNull(users.deletedAt)];
-    if (query.q) {
-      conditions.push(ilike(users.email, `%${query.q}%`));
-    }
-    const where = and(...conditions);
+  /** Detal usera niezależnie od stanu (także dezaktywowanego) — zarządzanie w panelu admina. */
+  findUserByIdAny(db: Db, id: string) {
+    return db.query.users.findFirst({ where: eq(users.id, id) }).execute();
+  },
+
+  /** Sprawdzenie unikalności e-maila przy zaproszeniu — łapie też konta dezaktywowane. */
+  findUserByEmailAny(db: Db, email: string) {
+    return db.query.users.findFirst({ where: eq(users.email, email) }).execute();
+  },
+
+  /**
+   * Lista userów (id, email, roles, createdAt, deletedAt). Offset + filtr po e-mailu + status.
+   * `active` (domyślnie) = nieusunięci; pola relacji (`assignee`) korzystają z tego domyślnego widoku.
+   */
+  async listUsers(db: Db, query: { page: number; pageSize: number; q?: string; status?: string }) {
+    const status = query.status ?? "active";
+    const conditions: SQL[] = [];
+    if (status === "active") conditions.push(isNull(users.deletedAt));
+    else if (status === "inactive") conditions.push(isNotNull(users.deletedAt));
+    if (query.q) conditions.push(ilike(users.email, `%${query.q}%`));
+    const where = conditions.length ? and(...conditions) : undefined;
     const [items, [totals]] = await Promise.all([
       db
-        .select({ id: users.id, email: users.email })
+        .select({
+          id: users.id,
+          email: users.email,
+          roles: users.roles,
+          createdAt: users.createdAt,
+          deletedAt: users.deletedAt,
+        })
         .from(users)
         .where(where)
         .orderBy(asc(users.email))
@@ -46,6 +66,34 @@ export const authRepository = {
       .values({ email: data.email, roles: data.roles })
       .returning();
     return row!;
+  },
+
+  async updateUserRoles(db: Db, id: string, roles: string[]) {
+    const [row] = await db
+      .update(users)
+      .set({ roles })
+      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .returning();
+    return row;
+  },
+
+  /** Dezaktywacja = soft delete (egzekwowane przez auth: login/me filtrują `deletedAt`). */
+  async deactivateUser(db: Db, id: string) {
+    const [row] = await db
+      .update(users)
+      .set({ deletedAt: new Date(), isActive: false })
+      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .returning();
+    return row;
+  },
+
+  async reactivateUser(db: Db, id: string) {
+    const [row] = await db
+      .update(users)
+      .set({ deletedAt: null, isActive: true })
+      .where(eq(users.id, id))
+      .returning();
+    return row;
   },
 
   async setPasswordCredential(db: Db, userId: string, passwordHash: string) {
