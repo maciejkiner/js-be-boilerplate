@@ -6,6 +6,10 @@ import { defineConfig } from "vite";
 // Port nadpisywalny przez PORT (kolizje dev / e2e na alternatywnych portach).
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Informacje techniczne wstrzykiwane w czasie budowania/startu dev (stopka panelu).
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   server: {
     port: Number(process.env.PORT ?? "5174"),
     strictPort: true,

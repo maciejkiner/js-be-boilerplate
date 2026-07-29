@@ -6,6 +6,9 @@ export interface AdminLayoutProps {
   nav: ReactNode;
   /** Akcje w nagłówku (np. e-mail zalogowanego, wyloguj). */
   actions?: ReactNode;
+  /** Stopka panelu — miejsce na informacje techniczne (build time, flagi debug). Skorupa wstrzykuje
+   * treść, bo dane pochodzą z `import.meta.env`/`define` (packages/ui ich nie zna). */
+  footer?: ReactNode;
   children: ReactNode;
 }
 
@@ -13,7 +16,7 @@ export interface AdminLayoutProps {
  * Szkielet panelu admina (sidebar + header + main). Router-agnostyczny: `nav`/`actions` to sloty,
  * do których skorupa wstrzykuje `<Link>`i. Dzięki temu granica „router tylko w apps/*" trzyma.
  */
-export function AdminLayout({ brand, nav, actions, children }: AdminLayoutProps) {
+export function AdminLayout({ brand, nav, actions, footer, children }: AdminLayoutProps) {
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
       <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -27,6 +30,11 @@ export function AdminLayout({ brand, nav, actions, children }: AdminLayoutProps)
           {actions}
         </header>
         <main className="min-w-0 flex-1 p-6">{children}</main>
+        {footer && (
+          <footer className="border-t border-slate-200 bg-white px-6 py-2 text-xs text-slate-500">
+            {footer}
+          </footer>
+        )}
       </div>
     </div>
   );

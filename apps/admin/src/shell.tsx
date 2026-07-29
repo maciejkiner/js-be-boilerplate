@@ -41,6 +41,27 @@ function UserMenu({ email }: { email: string }) {
   );
 }
 
+/**
+ * Stopka z informacjami technicznymi. Rozszerzalna — dokładaj kolejne pozycje do `items`
+ * (np. wersja API, flagi debug). Wartości pochodzą z Vite (`import.meta.env`/`__BUILD_TIME__`),
+ * więc żyją TYLKO w skorupie; do `packages/ui` trafiają jako gotowy `ReactNode`.
+ */
+function TechInfo() {
+  const items: Array<[string, string]> = [
+    ["Build", new Date(__BUILD_TIME__).toLocaleString()],
+    ["Env", import.meta.env.MODE],
+  ];
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1">
+      {items.map(([label, value]) => (
+        <span key={label}>
+          <span className="text-slate-400">{label}:</span> {value}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Layout chroniony sesją: dopóki nie wiadomo → spinner; brak sesji → /login. */
 export function ProtectedShell() {
   const me = useMe();
@@ -51,7 +72,12 @@ export function ProtectedShell() {
     return <Navigate to="/login" />;
   }
   return (
-    <AdminLayout brand="Admin" nav={<Nav />} actions={<UserMenu email={me.data.email} />}>
+    <AdminLayout
+      brand="Admin"
+      nav={<Nav />}
+      actions={<UserMenu email={me.data.email} />}
+      footer={<TechInfo />}
+    >
       <Outlet />
     </AdminLayout>
   );
