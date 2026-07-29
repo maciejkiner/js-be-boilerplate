@@ -1,9 +1,11 @@
+import { count } from "drizzle-orm";
 import { buildApp } from "./app.js";
 import { type Env, parseEnv } from "./config/env.js";
 import { createDb } from "./db/client.js";
 import { runMigrations } from "./db/migrate.js";
 import { createErrorTracker } from "./lib/error-tracking/index.js";
 import { createMailer } from "./lib/mailer/index.js";
+import { users } from "./modules/auth/auth.schema.js";
 
 async function main(): Promise<void> {
   let env: Env;
@@ -31,6 +33,19 @@ async function main(): Promise<void> {
   } catch (error) {
     app.log.error(error);
     process.exit(1);
+  }
+
+  // Discoverability: przy pustej tabeli users login pada bez czytelnego powodu. Osobny try/catch —
+  // to tylko wskazówka, nigdy nie może wywalić startu.
+  try {
+    const [row] = await db.select({ value: count() }).from(users);
+    if ((row?.value ?? 0) === 0) {
+      app.log.warn(
+        "Brak użytkowników w bazie — utwórz konto admina seedem: `pnpm db:seed` (dev natywny) lub `pnpm docker:full:seed` (Docker). Domyślnie: admin@example.com / admin12345.",
+      );
+    }
+  } catch (err) {
+    app.log.debug({ err }, "Nie udało się sprawdzić liczby użytkowników przy starcie.");
   }
 }
 
