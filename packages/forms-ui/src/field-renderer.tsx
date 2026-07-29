@@ -5,12 +5,12 @@ import {
   Input,
   RadioGroup,
   Select,
-  type SelectOption,
   Switch,
   Textarea,
 } from "@repo/design-system";
 import type { FieldControl, FieldOption, RelationMeta } from "@repo/schemas";
-import type { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { type ReactNode, useState } from "react";
 
 export interface FieldDef {
   name: string;
@@ -25,12 +25,16 @@ export interface FieldDef {
   visibleWhen?: (values: Record<string, unknown>) => boolean;
 }
 
-/** Źródło opcji pól relacji (wstrzykiwane przez skorupę — dociąga z API). */
-export type RelationSource = (relation: RelationMeta) => {
-  options: SelectOption[];
-  onSearch?: (query: string) => void;
-  loading?: boolean;
-};
+/**
+ * Źródło opcji pól relacji: generyczny, async fetcher wstrzykiwany przez skorupę. Dostaje `relation`
+ * (encja docelowa + `displayField`) i frazę wyszukiwania; zwraca surowe wiersze encji (z `id`).
+ * Label liczy `RelationControl` z `relation.displayField` — dzięki temu ta sama encja-cel może być
+ * pokazywana różnymi polami (np. `task` po `title` w jednym miejscu, po `priority` w innym).
+ */
+export type RelationSource = (
+  relation: RelationMeta,
+  query: string,
+) => Promise<Array<{ id: string } & Record<string, unknown>>>;
 
 export interface FieldRendererProps {
   field: FieldDef;
@@ -40,6 +44,50 @@ export interface FieldRendererProps {
   onBlur?: () => void;
   relationSource?: RelationSource;
   disabled?: boolean;
+}
+
+/**
+ * Pole relacji: async-fetch opcji przez wstrzyknięty `relationSource` (jeden `useQuery` na pole →
+ * zgodne z rules-of-hooks). Label liczony z `relation.displayField`. `onSearch` odświeża zapytanie
+ * (server-side `?q` tam, gdzie wspierane), a wynik jest dodatkowo filtrowany lokalnie po label
+ * (filtr-po-wpisaniu działa też dla encji bez `?q`).
+ */
+function RelationControl({
+  relation,
+  value,
+  onChange,
+  relationSource,
+  disabled,
+}: {
+  relation?: RelationMeta;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  relationSource?: RelationSource;
+  disabled?: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const { data, isFetching } = useQuery({
+    queryKey: ["relation-options", relation?.entity, query],
+    queryFn: () => relationSource!(relation!, query),
+    enabled: Boolean(relation && relationSource),
+  });
+  const q = query.trim().toLowerCase();
+  const options = (data ?? [])
+    .map((item) => ({
+      value: item.id,
+      label: relation ? String(item[relation.displayField] ?? item.id) : item.id,
+    }))
+    .filter((option) => !q || option.label.toLowerCase().includes(q));
+  return (
+    <Combobox
+      value={(value as string) ?? ""}
+      onValueChange={onChange}
+      options={options}
+      onSearch={setQuery}
+      loading={isFetching}
+      disabled={disabled}
+    />
+  );
 }
 
 /**
@@ -121,22 +169,16 @@ function Control({ field, value, onChange, relationSource, disabled }: FieldRend
           onValueChange={onChange}
         />
       );
-    case "relation": {
-      const source =
-        field.relation && relationSource
-          ? relationSource(field.relation)
-          : { options: [] as SelectOption[] };
+    case "relation":
       return (
-        <Combobox
-          value={(value as string) ?? ""}
-          onValueChange={onChange}
-          options={source.options}
-          onSearch={source.onSearch}
-          loading={source.loading}
+        <RelationControl
+          relation={field.relation}
+          value={value}
+          onChange={onChange}
+          relationSource={relationSource}
           disabled={disabled}
         />
       );
-    }
     default:
       return null;
   }

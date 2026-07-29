@@ -1,7 +1,15 @@
 import type { FormApi } from "@repo/forms";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { type FieldDef, FormFields } from "../src/index.js";
+
+/** Render z QueryClientProvider — pola relacji używają `useQuery` (async fetch opcji). */
+function renderWithClient(ui: ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 function makeForm(values: Record<string, unknown>, errors: Record<string, string> = {}) {
   const setValue = vi.fn();
@@ -39,13 +47,7 @@ const fields: FieldDef[] = [
 describe("FormFields (mapowanie typ→komponent)", () => {
   it("renderuje kontrolki z mapowania; zmiana → form.setValue(name, value)", () => {
     const { form, setValue } = makeForm({ name: "", status: "", isBlocked: false, projectId: "" });
-    render(
-      <FormFields
-        fields={fields}
-        form={form}
-        relationSource={() => ({ options: [{ value: "p1", label: "Alpha" }] })}
-      />,
-    );
+    renderWithClient(<FormFields fields={fields} form={form} relationSource={async () => []} />);
 
     fireEvent.change(screen.getByLabelText(/Nazwa/), { target: { value: "Beta" } });
     expect(setValue).toHaveBeenCalledWith("name", "Beta");
@@ -53,20 +55,34 @@ describe("FormFields (mapowanie typ→komponent)", () => {
     fireEvent.click(screen.getByRole("switch"));
     expect(setValue).toHaveBeenCalledWith("isBlocked", true);
 
-    // relation → DS Combobox (identyfikowany po placeholderze; natywny <select> też ma rolę combobox)
+    // relation → DS Combobox (identyfikowany po placeholderze)
     expect(screen.getByText("Wybierz…")).toBeTruthy();
+  });
+
+  it("relacja: opcje z async fetchera, label z displayField", async () => {
+    const { form } = makeForm({ projectId: "" });
+    renderWithClient(
+      <FormFields
+        fields={[fields[3]!]}
+        form={form}
+        relationSource={async () => [{ id: "p1", name: "Alpha" }]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("combobox"));
+    // label pochodzi z pola `name` (displayField relacji), nie z hardkodu
+    expect(await screen.findByText("Alpha")).toBeTruthy();
   });
 
   it("wymagane pole ma znacznik, a błąd renderuje się jako alert", () => {
     const { form } = makeForm({ name: "" }, { name: "wymagane" });
-    render(<FormFields fields={[fields[0]!]} form={form} />);
+    renderWithClient(<FormFields fields={[fields[0]!]} form={form} />);
     expect(screen.getByText(/\*/)).toBeTruthy(); // required marker
     expect(screen.getByRole("alert").textContent).toContain("wymagane");
   });
 
   it("renderuje podpowiedź z pola help pod kontrolką", () => {
     const { form } = makeForm({ name: "" });
-    render(
+    renderWithClient(
       <FormFields
         fields={[{ name: "name", label: "Nazwa", control: "text", help: "Widoczna publicznie" }]}
         form={form}
@@ -81,7 +97,7 @@ describe("FormFields (mapowanie typ→komponent)", () => {
       { name: "extra", label: "Dodatkowe", control: "text", visibleWhen: (v) => v.kind === "b" },
     ];
     const hidden = makeForm({ kind: "a", extra: "" });
-    const { rerender } = render(<FormFields fields={conditional} form={hidden.form} />);
+    const { rerender } = renderWithClient(<FormFields fields={conditional} form={hidden.form} />);
     expect(screen.queryByLabelText("Dodatkowe")).toBeNull();
 
     const shown = makeForm({ kind: "b", extra: "" });

@@ -25,9 +25,17 @@ polach. Wzorzec pokrywa Project i Task — nic nie piszemy per encja poza podpi�
 
 ## Pola relacji (async)
 
-Skorupa wstrzykuje `RelationSource` (dociąga opcje z API). Patrz `apps/admin/src/relation-source.ts`:
-`project` → `useProjects` (filtr lokalny), `user` → `useUsers` z async-search (`?q=`). Endpoint
-`GET /api/v1/users` (RBAC admin) jest źródłem dla `assignee`.
+Skorupa wstrzykuje **generyczny** `RelationSource` (`apps/admin/src/relation-source.ts`): jeden async
+fetcher `(relation, query) => Promise<wiersze>` uderzający w `GET /api/v1/<plural>`. Działa dla
+**dowolnej** encji-celu bez rejestracji — nowa encja od razu jest dostępna jako cel relacji (żadnych
+per-encja gałęzi). Label liczy `forms-ui` (`RelationControl`, `useQuery` per pole) z
+`relation.displayField`, więc **ta sama encja-cel może być pokazywana różnymi polami** (np.
+`comment`→`task` po `title`, a `subtask`→`task` po `priority`).
+
+Filtrowanie: wpisywana fraza idzie do endpointu (`?q=` tam, gdzie moduł to wspiera, np. `users`) i
+dodatkowo filtruje lokalnie po etykiecie. Limit: pobierane top 50 — dla dużych tabel dodaj obsługę
+`?q=` w danym module API. Endpoint listy musi być dostępny dla roli używającej panelu (np.
+`GET /api/v1/users` jest `admin`-only).
 
 ## Dodanie nowego typu pola
 
