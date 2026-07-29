@@ -48,13 +48,49 @@ dodatkowo filtruje lokalnie po etykiecie. Limit: pobierane top 50 — dla dużyc
 
 Tabela mapowania `FieldControl → komponent DS`: `packages/forms-ui/README.md`.
 
-## Wizard (wiele handlerów submitu)
+## Wizard
 
-`useWizard({ steps, defaultValues, onComplete })` — kroki z własnymi schematami Zod, `next/prev/submit`.
-Kluczowe: **`onComplete` orkiestruje dowolne handlery**. Referencyjny „utwórz projekt"
-(`apps/admin/src/entities/project-wizard.tsx`): dane → `createProject` (baza), zaproszenia →
-`inviteProjectMembers` (**mailer, bez zapisu**), zadania → `createTask` hurtem. To dowód, że silnik
-formularzy jest niezależny od CRUD (część danych do bazy, część do innych handlerów).
+**Domyślnie:** komponent `<Wizard>` z `@repo/forms-ui` — NARZUCA strukturę (Stepper + treść kroku +
+pasek Wstecz/Dalej/Zakończ) oraz stan i walidację-gating. Wstrzykujesz tylko kroki i logikę; nie
+wymyślasz mechaniki na nowo.
+
+```tsx
+<Wizard<Record<string, unknown>>
+  steps={[
+    {
+      id: "project",
+      label: "Dane projektu",
+      schema: projectEntity.validation,
+      render: (w) => <FormFields fields={deriveFields(projectEntity)} form={w} />,
+    },
+    {
+      id: "tasks",
+      label: "Zadania",
+      schema: z.object({ taskTitlesText: z.string().optional() }),
+      render: (w) => (
+        <MyStep value={w.values.taskTitlesText} onChange={(v) => w.setValue("taskTitlesText", v)} />
+      ),
+    },
+  ]}
+  defaultValues={{ ...emptyValues(projectEntity), taskTitlesText: "" }}
+  labels={{ next: "Dalej", submit: "Utwórz" }} // domyślnie Wstecz/Dalej/Zakończ
+  onComplete={async (values) => {
+    /* orkiestracja handlerów */
+  }}
+/>
+```
+
+- Każdy krok = `{ id, label, schema, render(wizard) }`. `WizardApi` spełnia `FormLike`, więc krok wprost
+  renderuje `<FormFields form={wizard} … />`. Walidacja per krok (schemat Zod) blokuje „Dalej".
+- **Helper** `entityStep(entity, { relationSource? })` — krok = formularz encji bez boilerplate'u
+  (`schema`/pola z encji).
+- **`onComplete` orkiestruje dowolne handlery** — kluczowe: część danych → baza, część → inne cele.
+  Referencyjny „utwórz projekt" (`apps/admin/src/entities/project-wizard.tsx`): dane → `createProject`
+  (baza), zaproszenia → `inviteProjectMembers` (**mailer, bez zapisu**), zadania → `createTask` hurtem.
+  Dowód, że silnik formularzy jest niezależny od CRUD.
+
+**Escape hatch:** `useWizard({ steps, defaultValues, onComplete })` z `@repo/forms` — sam silnik (stan,
+kroki, `next/prev/submit`) bez narzuconego chrome, gdy potrzebujesz nietypowego layoutu.
 
 ## Świadomie POMINIĘTE
 
