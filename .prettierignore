@@ -12,3 +12,7 @@ spec/
 # (CI regeneruje i robi `git diff`), więc Prettier tych plików nie dotyka.
 apps/api/openapi.json
 packages/api-client/src/generated/**
+
+# Metadane migracji pisane przez drizzle-kit — sformatowanie ich rozjechałoby się przy każdym
+# `db:generate` (i wywracało `format:check`).
+apps/api/drizzle/meta/**
