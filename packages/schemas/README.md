@@ -62,7 +62,8 @@ Jedna deklaracja produkuje **obie** strony: schemat Zod i metadane. Dzięki temu
 | `f.text()`                       | `z.string()`         | `.min` `.max` `.email` `.url` `.regex` |
 | `f.textarea()`                   | `z.string()`         | jak `text`                             |
 | `f.number()`                     | `z.number()`         | `.int` `.min` `.max` `.nonnegative`    |
-| `f.date()`                       | `z.coerce.date()`    | —                                      |
+| `f.date()`                       | `z.coerce.date()`    | — (sama data)                          |
+| `f.datetime()`                   | `z.coerce.date()`    | — (data z godziną)                     |
 | `f.checkbox()` / `f.switch()`    | `z.boolean()`        | —                                      |
 | `f.select(map)` / `f.radio(map)` | `z.enum(klucze map)` | — (mapa niesie wartości i etykiety)    |
 | `f.relation(encja, pole)`        | `z.string().uuid()`  | —                                      |
@@ -122,7 +123,7 @@ ale parowanie `control` ↔ typ Zod pilnujesz **sam**:
 | --------------------- | ------------------- | ---------------- | ------------------- |
 | `text` / `textarea`   | `z.string()`        | —                | `SimpleFieldMeta`   |
 | `number`              | `z.number()`        | —                | `SimpleFieldMeta`   |
-| `date`                | `z.coerce.date()`   | —                | `SimpleFieldMeta`   |
+| `date` / `datetime`   | `z.coerce.date()`   | —                | `SimpleFieldMeta`   |
 | `checkbox` / `switch` | `z.boolean()`       | —                | `SimpleFieldMeta`   |
 | `select` / `radio`    | `z.enum([...])`     | `options`        | `ChoiceFieldMeta`   |
 | `relation`            | `z.string().uuid()` | `relation`       | `RelationFieldMeta` |

@@ -9,6 +9,7 @@ describe("buildery pól (f.*)", () => {
       { built: f.textarea().build(), control: "textarea", type: z.ZodString },
       { built: f.number().build(), control: "number", type: z.ZodNumber },
       { built: f.date().build(), control: "date", type: z.ZodDate },
+      { built: f.datetime().build(), control: "datetime", type: z.ZodDate },
       { built: f.checkbox().build(), control: "checkbox", type: z.ZodBoolean },
       { built: f.switch().build(), control: "switch", type: z.ZodBoolean },
       { built: f.select({ a: "A" }).build(), control: "select", type: z.ZodEnum },

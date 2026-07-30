@@ -155,6 +155,43 @@ describe("radio traktowane jak select (lista zamknięta)", () => {
   });
 });
 
+describe("kontrolka datetime", () => {
+  const agenda = buildDescriptor(
+    defineEntity({
+      name: "agendaItem",
+      plural: "agendaItems",
+      label: "Agenda item",
+      labelPlural: "Agenda items",
+      displayField: "day",
+      fields: {
+        day: f.date().sortable(),
+        startsAt: f.datetime().sortable(),
+      },
+    }),
+  );
+
+  it("w bazie to ta sama kolumna co `date` (timestamptz)", () => {
+    const generated = drizzleSchema(agenda);
+
+    expect(generated).toContain(`day: timestamp("day", { withTimezone: true }).notNull()`);
+    expect(generated).toContain(
+      `startsAt: timestamp("starts_at", { withTimezone: true }).notNull()`,
+    );
+  });
+
+  it("admin formatuje datę i datę z godziną osobnymi helperami", () => {
+    const generated = adminEntity(agenda);
+
+    expect(generated).toContain('import { formatDate, formatDateTime, Page } from "../ui";');
+    expect(generated).toContain("formatDate(row.day)");
+    expect(generated).toContain("formatDateTime(row.startsAt)");
+  });
+
+  it("test CRUD wysyła wartość z godziną", () => {
+    expect(beTest(agenda)).toContain(`startsAt: "2026-01-01T10:00:00.000Z"`);
+  });
+});
+
 describe("importy w widoku admina są warunkowe", () => {
   // Nieużywany import to błąd `noUnusedLocals` — encja bez listy zamkniętej nie może dostać
   // `Badge`, a encja bez filtrów nie może dostać `Select`.

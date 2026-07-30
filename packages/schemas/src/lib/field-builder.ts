@@ -201,7 +201,9 @@ export class NumberFieldBuilder<Opt extends boolean = false> extends BaseFieldBu
 /** Etykieta uzupełniana przez `defineEntity` z nazwy pola, gdy `.label()` pominięto. */
 const LABEL_FROM_KEY = "";
 
-function simpleMeta(control: "text" | "textarea" | "number" | "date" | "checkbox" | "switch") {
+function simpleMeta(
+  control: "text" | "textarea" | "number" | "date" | "datetime" | "checkbox" | "switch",
+) {
   return { label: LABEL_FROM_KEY, control } satisfies FieldMeta;
 }
 
@@ -237,7 +239,10 @@ export const f = {
   text: () => new TextFieldBuilder(initialState(z.string(), simpleMeta("text"))),
   textarea: () => new TextFieldBuilder(initialState(z.string(), simpleMeta("textarea"))),
   number: () => new NumberFieldBuilder(initialState(z.number(), simpleMeta("number"))),
+  /** Sama data (bez godziny) — `<input type="date">`. */
   date: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("date"))),
+  /** Data z godziną — `<input type="datetime-local">`; w bazie ta sama kolumna `timestamptz`. */
+  datetime: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("datetime"))),
   checkbox: () => new PlainFieldBuilder(initialState(z.boolean(), simpleMeta("checkbox"))),
   switch: () => new PlainFieldBuilder(initialState(z.boolean(), simpleMeta("switch"))),
 

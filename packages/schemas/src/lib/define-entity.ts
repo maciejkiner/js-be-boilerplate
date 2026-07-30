@@ -7,13 +7,22 @@ import { isFieldBuilder, isLabelFromKey, labelFromKey } from "./field-builder.js
  * w scaffolderze. **Paruj z odpowiednim typem Zod** w schemacie encji:
  * - `text` / `textarea` → `z.string()`
  * - `number` → `z.number()`
- * - `date` → `z.coerce.date()`
+ * - `date` / `datetime` → `z.coerce.date()` (`datetime` niesie też godzinę)
  * - `select` / `radio` → `z.enum([...])` — wymaga `options` w metadanych pola
  * - `checkbox` / `switch` → `z.boolean()`
  * - `relation` → `z.string().uuid()` — wymaga `relation` w metadanych pola
  */
 export type FieldControl =
-  "text" | "textarea" | "number" | "select" | "checkbox" | "radio" | "switch" | "date" | "relation";
+  | "text"
+  | "textarea"
+  | "number"
+  | "select"
+  | "checkbox"
+  | "radio"
+  | "switch"
+  | "date"
+  | "datetime"
+  | "relation";
 
 export interface FieldOption {
   value: string;
@@ -47,11 +56,11 @@ interface FieldMetaBase {
 
 /**
  * Pola proste — bez dodatkowych metadanych.
- * Paruj z: `text`/`textarea`→`z.string()`, `number`→`z.number()`, `date`→`z.coerce.date()`,
+ * Paruj z: `text`/`textarea`→`z.string()`, `number`→`z.number()`, `date`/`datetime`→`z.coerce.date()`,
  * `checkbox`/`switch`→`z.boolean()`.
  */
 export interface SimpleFieldMeta extends FieldMetaBase {
-  control: "text" | "textarea" | "number" | "date" | "checkbox" | "switch";
+  control: "text" | "textarea" | "number" | "date" | "datetime" | "checkbox" | "switch";
   options?: never;
   relation?: never;
 }
@@ -75,7 +84,7 @@ export interface RelationFieldMeta extends FieldMetaBase {
  *
  * **Unia dyskryminowana po `control`** — dostępne pola zależą od typu kontrolki, a kompilator
  * wymusza komplet (`select` bez `options` = błąd; `text` z `options` = błąd). Warianty:
- * - {@link SimpleFieldMeta} — `text` `textarea` `number` `date` `checkbox` `switch` (bez dodatków)
+ * - {@link SimpleFieldMeta} — `text` `textarea` `number` `date` `datetime` `checkbox` `switch`
  * - {@link ChoiceFieldMeta} — `select` `radio` (wymaga `options`)
  * - {@link RelationFieldMeta} — `relation` (wymaga `relation`)
  *

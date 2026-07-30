@@ -32,6 +32,7 @@ function drizzleColumn(f: FieldDescriptor): string {
     case "switch":
       return `boolean("${f.snake}").notNull().default(false)`;
     case "date":
+    case "datetime":
       return `timestamp("${f.snake}", { withTimezone: true })${notNull}`;
     case "relation":
       return `uuid("${f.snake}")${notNull}.references(() => ${f.relation!.targetIdent}.id, { onDelete: "${f.required ? "cascade" : "set null"}" })`;
@@ -46,7 +47,7 @@ export function drizzleSchema(d: EntityDescriptor): string {
     if (f.control === "text" || f.control === "textarea" || isChoiceField(f)) cols.add("text");
     if (f.control === "number") cols.add("integer");
     if (f.control === "checkbox" || f.control === "switch") cols.add("boolean");
-    if (f.control === "date") cols.add("timestamp");
+    if (f.control === "date" || f.control === "datetime") cols.add("timestamp");
   }
   if (d.unique.length > 0) cols.add("uniqueIndex");
   const relationImports = [
@@ -334,6 +335,8 @@ function sampleValue(f: FieldDescriptor): string {
       return "true";
     case "date":
       return `"2026-01-01"`;
+    case "datetime":
+      return `"2026-01-01T10:00:00.000Z"`;
     default:
       return `"test-${f.name}"`;
   }

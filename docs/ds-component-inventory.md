@@ -22,6 +22,7 @@ Słownik dla generatorów i agentów: komponenty, na których wolno budować `pa
 | radio                     | `RadioGroup`                             | pojedynczy wybór            |
 | switch                    | `Switch`                                 | boolean                     |
 | date picker               | `DateInput` (mock: `input[type=date]`)   | daty                        |
+| datetime picker           | brak w DS — `Input[type=datetime-local]` | daty z godziną (`datetime`) |
 | tabela / prymitywy tabeli | `Table/Thead/Tbody/Tr/Th/Td`             | listy (DataTable)           |
 | modal / dialog            | `Modal`                                  | potwierdzenia, formularze   |
 | toast                     | `ToastProvider` + `useToast`             | powiadomienia               |

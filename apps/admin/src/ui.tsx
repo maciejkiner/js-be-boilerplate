@@ -65,3 +65,13 @@ export function FullSpinner() {
 export function formatDate(iso: string | null | undefined): string {
   return iso ? new Date(iso).toLocaleDateString("pl-PL") : "—";
 }
+
+/** Data z godziną (ISO) → format lokalny (pl-PL) albo „—" dla braku. */
+export function formatDateTime(iso: string | null | undefined): string {
+  return iso
+    ? new Date(iso).toLocaleString("pl-PL", {
+        dateStyle: "short",
+        timeStyle: "short",
+      })
+    : "—";
+}

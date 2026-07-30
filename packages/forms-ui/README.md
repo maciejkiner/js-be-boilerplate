@@ -9,17 +9,18 @@ Jawne i jedyne — definiowane w `src/field-renderer.tsx` (`Control`). Nowy typ 
 
 - wpis w tej tabeli i w `docs/ds-component-inventory.md`.
 
-| `FieldControl` | Komponent DS    | Adapter wartości                                  |
-| -------------- | --------------- | ------------------------------------------------- |
-| `text`         | `Input`         | `value: string` / `onChange(e.target.value)`      |
-| `number`       | `Input[number]` | `Number(value)`; `""` → `undefined`               |
-| `textarea`     | `Textarea`      | `string`                                          |
-| `select`       | `Select`        | `string` + `options`                              |
-| `checkbox`     | `Checkbox`      | `checked: boolean` / `onChange(e.target.checked)` |
-| `switch`       | `Switch`        | `checked: boolean` / `onCheckedChange`            |
-| `radio`        | `RadioGroup`    | `string` + `options`                              |
-| `date`         | `DateInput`     | `string` (`yyyy-mm-dd`; Zod `coerce.date`)        |
-| `relation`     | `Combobox`      | `string`; opcje z `relationSource` (async z API)  |
+| `FieldControl` | Komponent DS                 | Adapter wartości                                               |
+| -------------- | ---------------------------- | -------------------------------------------------------------- |
+| `text`         | `Input`                      | `value: string` / `onChange(e.target.value)`                   |
+| `number`       | `Input[number]`              | `Number(value)`; `""` → `undefined`                            |
+| `textarea`     | `Textarea`                   | `string`                                                       |
+| `select`       | `Select`                     | `string` + `options`                                           |
+| `checkbox`     | `Checkbox`                   | `checked: boolean` / `onChange(e.target.checked)`              |
+| `switch`       | `Switch`                     | `checked: boolean` / `onCheckedChange`                         |
+| `radio`        | `RadioGroup`                 | `string` + `options`                                           |
+| `date`         | `DateInput`                  | `string` (`yyyy-mm-dd`; Zod `coerce.date`)                     |
+| `datetime`     | `Input[type=datetime-local]` | `string` (`yyyy-mm-ddThh:mm`, czas lokalny; Zod `coerce.date`) |
+| `relation`     | `Combobox`                   | `string`; opcje z `relationSource` (async z API)               |
 
 ## API
 

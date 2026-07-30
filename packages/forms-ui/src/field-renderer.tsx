@@ -137,6 +137,19 @@ function Control({ field, value, onChange, relationSource, disabled }: FieldRend
           onChange={(event) => onChange(event.target.value)}
         />
       );
+    // DS (read-only) nie ma osobnej kontrolki daty z godziną — składamy ją z prymitywu `Input`,
+    // tak samo jak `text` i `number`. Wartość to `YYYY-MM-DDTHH:mm` w czasie LOKALNYM przeglądarki;
+    // `z.coerce.date()` na granicy API interpretuje ją jako czas lokalny serwera.
+    case "datetime":
+      return (
+        <Input
+          id={id}
+          type="datetime-local"
+          value={(value as string) ?? ""}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      );
     case "select":
       return (
         <Select

@@ -100,6 +100,8 @@ function cellRender(f: FieldDescriptor): string {
       return `render: (row) => <Badge>{row.${f.name}}</Badge>`;
     case "date":
       return `render: (row) => formatDate(row.${f.name})`;
+    case "datetime":
+      return `render: (row) => formatDateTime(row.${f.name})`;
     case "checkbox":
     case "switch":
       return `render: (row) => (row.${f.name} ? "Tak" : "Nie")`;
@@ -117,6 +119,8 @@ function detailValue(f: FieldDescriptor): string {
       return `<Badge>{row.${f.name}}</Badge>`;
     case "date":
       return `{formatDate(row.${f.name})}`;
+    case "datetime":
+      return `{formatDateTime(row.${f.name})}`;
     case "checkbox":
     case "switch":
       return `{row.${f.name} ? "Tak" : "Nie"}`;
@@ -130,10 +134,12 @@ export function adminEntity(d: EntityDescriptor): string {
   // Importy DS i `ui` budujemy WARUNKOWO — nieużywany import to błąd typecheck/lint/build
   // (`noUnusedLocals`). Każdy z tych symboli pojawia się w kodzie tylko dla części encji:
   // `formatDate` przy polach `date`, `Badge` przy listach zamkniętych, `Select` przy ich filtrach.
-  const hasDate = d.fields.some((f) => f.control === "date");
-  const uiImport = hasDate
-    ? `import { formatDate, Page } from "../ui";`
-    : `import { Page } from "../ui";`;
+  const uiImports = [
+    ...(d.fields.some((f) => f.control === "date") ? ["formatDate"] : []),
+    ...(d.fields.some((f) => f.control === "datetime") ? ["formatDateTime"] : []),
+    "Page",
+  ].join(", ");
+  const uiImport = `import { ${uiImports} } from "../ui";`;
   const hasChoice = d.fields.some(isChoiceField);
   const dsImports = [
     ...(hasChoice ? ["Badge"] : []),
