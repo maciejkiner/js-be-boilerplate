@@ -3,6 +3,23 @@ import { ProjectCreate, ProjectDetail, ProjectEdit, ProjectsList } from "./proje
 import { TaskCreate, TaskDetail, TaskEdit, TasksList } from "./tasks";
 import { UserDetail, UserInvite, UsersList } from "./users";
 import { CommentsList, CommentDetail, CommentCreate, CommentEdit } from "./comments";
+import { VenuesList, VenueDetail, VenueCreate, VenueEdit } from "./venues";
+import { SpeakersList, SpeakerDetail, SpeakerCreate, SpeakerEdit } from "./speakers";
+import { RoomsList, RoomDetail, RoomCreate, RoomEdit } from "./rooms";
+import { EventsList, EventDetail, EventCreate, EventEdit } from "./events";
+import { TalksList, TalkDetail, TalkCreate, TalkEdit } from "./talks";
+import {
+  RegistrationsList,
+  RegistrationDetail,
+  RegistrationCreate,
+  RegistrationEdit,
+} from "./registrations";
+import {
+  TalkSpeakersList,
+  TalkSpeakerDetail,
+  TalkSpeakerCreate,
+  TalkSpeakerEdit,
+} from "./talk-speakers";
 // scaffolder:admin-import — do not remove
 
 export interface EntityRoute {
@@ -59,6 +76,69 @@ export const entityRegistry: EntityRoute[] = [
     Detail: CommentDetail,
     Create: CommentCreate,
     Edit: CommentEdit,
+  },
+  {
+    name: "venue",
+    label: "Venues",
+    path: "/venues",
+    List: VenuesList,
+    Detail: VenueDetail,
+    Create: VenueCreate,
+    Edit: VenueEdit,
+  },
+  {
+    name: "speaker",
+    label: "Speakers",
+    path: "/speakers",
+    List: SpeakersList,
+    Detail: SpeakerDetail,
+    Create: SpeakerCreate,
+    Edit: SpeakerEdit,
+  },
+  {
+    name: "room",
+    label: "Rooms",
+    path: "/rooms",
+    List: RoomsList,
+    Detail: RoomDetail,
+    Create: RoomCreate,
+    Edit: RoomEdit,
+  },
+  {
+    name: "event",
+    label: "Events",
+    path: "/events",
+    List: EventsList,
+    Detail: EventDetail,
+    Create: EventCreate,
+    Edit: EventEdit,
+  },
+  {
+    name: "talk",
+    label: "Talks",
+    path: "/talks",
+    List: TalksList,
+    Detail: TalkDetail,
+    Create: TalkCreate,
+    Edit: TalkEdit,
+  },
+  {
+    name: "registration",
+    label: "Registrations",
+    path: "/registrations",
+    List: RegistrationsList,
+    Detail: RegistrationDetail,
+    Create: RegistrationCreate,
+    Edit: RegistrationEdit,
+  },
+  {
+    name: "talkSpeaker",
+    label: "Talk speakers",
+    path: "/talk-speakers",
+    List: TalkSpeakersList,
+    Detail: TalkSpeakerDetail,
+    Create: TalkSpeakerCreate,
+    Edit: TalkSpeakerEdit,
   },
   // scaffolder:admin-entities — do not remove
 ];

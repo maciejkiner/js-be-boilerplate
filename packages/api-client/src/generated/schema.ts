@@ -1531,6 +1531,1747 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/venues/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    sort?: "name" | "city" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                name: string;
+                                city: string;
+                                address?: string | null;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        city: string;
+                        address?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            city: string;
+                            address?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/venues/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            city: string;
+                            address?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        city?: string;
+                        address?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            city: string;
+                            address?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/speakers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    sort?: "fullName" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                fullName: string;
+                                /** Format: email */
+                                email: string;
+                                bio?: string | null;
+                                company?: string | null;
+                                /** Format: uri */
+                                website?: string | null;
+                                isConfirmed: boolean;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        fullName: string;
+                        /** Format: email */
+                        email: string;
+                        bio?: string | null;
+                        company?: string | null;
+                        /** Format: uri */
+                        website?: string | null;
+                        isConfirmed: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            bio?: string | null;
+                            company?: string | null;
+                            /** Format: uri */
+                            website?: string | null;
+                            isConfirmed: boolean;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/speakers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            bio?: string | null;
+                            company?: string | null;
+                            /** Format: uri */
+                            website?: string | null;
+                            isConfirmed: boolean;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        fullName?: string;
+                        /** Format: email */
+                        email?: string;
+                        bio?: string | null;
+                        company?: string | null;
+                        /** Format: uri */
+                        website?: string | null;
+                        isConfirmed?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            bio?: string | null;
+                            company?: string | null;
+                            /** Format: uri */
+                            website?: string | null;
+                            isConfirmed: boolean;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/rooms/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    venueId?: string;
+                    sort?: "name" | "capacity" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                name: string;
+                                capacity: number;
+                                hasProjector: boolean;
+                                /** Format: uuid */
+                                venueId: string;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        capacity: number;
+                        hasProjector: boolean;
+                        /** Format: uuid */
+                        venueId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            capacity: number;
+                            hasProjector: boolean;
+                            /** Format: uuid */
+                            venueId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rooms/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            capacity: number;
+                            hasProjector: boolean;
+                            /** Format: uuid */
+                            venueId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        capacity?: number;
+                        hasProjector?: boolean;
+                        /** Format: uuid */
+                        venueId?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            capacity: number;
+                            hasProjector: boolean;
+                            /** Format: uuid */
+                            venueId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/events/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    status?: "draft" | "published" | "cancelled";
+                    sort?: "name" | "startsAt" | "endsAt" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                name: string;
+                                slug: string;
+                                description?: string | null;
+                                /** Format: date-time */
+                                startsAt: string;
+                                /** Format: date-time */
+                                endsAt: string;
+                                /** @enum {string} */
+                                status: "draft" | "published" | "cancelled";
+                                isPublic: boolean;
+                                capacity: number;
+                                /** Format: uuid */
+                                venueId?: string | null;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        slug: string;
+                        description?: string | null;
+                        /** Format: date-time */
+                        startsAt: string;
+                        /** Format: date-time */
+                        endsAt: string;
+                        /** @enum {string} */
+                        status: "draft" | "published" | "cancelled";
+                        isPublic: boolean;
+                        capacity: number;
+                        /** Format: uuid */
+                        venueId?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            slug: string;
+                            description?: string | null;
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            /** @enum {string} */
+                            status: "draft" | "published" | "cancelled";
+                            isPublic: boolean;
+                            capacity: number;
+                            /** Format: uuid */
+                            venueId?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            slug: string;
+                            description?: string | null;
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            /** @enum {string} */
+                            status: "draft" | "published" | "cancelled";
+                            isPublic: boolean;
+                            capacity: number;
+                            /** Format: uuid */
+                            venueId?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        slug?: string;
+                        description?: string | null;
+                        /** Format: date-time */
+                        startsAt?: string;
+                        /** Format: date-time */
+                        endsAt?: string;
+                        /** @enum {string} */
+                        status?: "draft" | "published" | "cancelled";
+                        isPublic?: boolean;
+                        capacity?: number;
+                        /** Format: uuid */
+                        venueId?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            slug: string;
+                            description?: string | null;
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            /** @enum {string} */
+                            status: "draft" | "published" | "cancelled";
+                            isPublic: boolean;
+                            capacity: number;
+                            /** Format: uuid */
+                            venueId?: string | null;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/talks/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    track?: "product" | "engineering" | "design" | "business";
+                    level?: "intro" | "intermediate" | "advanced";
+                    eventId?: string;
+                    roomId?: string;
+                    sort?: "title" | "startsAt" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                title: string;
+                                abstract?: string | null;
+                                /** @enum {string} */
+                                track: "product" | "engineering" | "design" | "business";
+                                /** @enum {string} */
+                                level: "intro" | "intermediate" | "advanced";
+                                /** Format: date-time */
+                                startsAt: string;
+                                /** Format: date-time */
+                                endsAt: string;
+                                isRecorded: boolean;
+                                /** Format: uuid */
+                                eventId: string;
+                                /** Format: uuid */
+                                roomId: string;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        title: string;
+                        abstract?: string | null;
+                        /** @enum {string} */
+                        track: "product" | "engineering" | "design" | "business";
+                        /** @enum {string} */
+                        level: "intro" | "intermediate" | "advanced";
+                        /** Format: date-time */
+                        startsAt: string;
+                        /** Format: date-time */
+                        endsAt: string;
+                        isRecorded: boolean;
+                        /** Format: uuid */
+                        eventId: string;
+                        /** Format: uuid */
+                        roomId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            title: string;
+                            abstract?: string | null;
+                            /** @enum {string} */
+                            track: "product" | "engineering" | "design" | "business";
+                            /** @enum {string} */
+                            level: "intro" | "intermediate" | "advanced";
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            isRecorded: boolean;
+                            /** Format: uuid */
+                            eventId: string;
+                            /** Format: uuid */
+                            roomId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/talks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            title: string;
+                            abstract?: string | null;
+                            /** @enum {string} */
+                            track: "product" | "engineering" | "design" | "business";
+                            /** @enum {string} */
+                            level: "intro" | "intermediate" | "advanced";
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            isRecorded: boolean;
+                            /** Format: uuid */
+                            eventId: string;
+                            /** Format: uuid */
+                            roomId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        title?: string;
+                        abstract?: string | null;
+                        /** @enum {string} */
+                        track?: "product" | "engineering" | "design" | "business";
+                        /** @enum {string} */
+                        level?: "intro" | "intermediate" | "advanced";
+                        /** Format: date-time */
+                        startsAt?: string;
+                        /** Format: date-time */
+                        endsAt?: string;
+                        isRecorded?: boolean;
+                        /** Format: uuid */
+                        eventId?: string;
+                        /** Format: uuid */
+                        roomId?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            title: string;
+                            abstract?: string | null;
+                            /** @enum {string} */
+                            track: "product" | "engineering" | "design" | "business";
+                            /** @enum {string} */
+                            level: "intro" | "intermediate" | "advanced";
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            isRecorded: boolean;
+                            /** Format: uuid */
+                            eventId: string;
+                            /** Format: uuid */
+                            roomId: string;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/registrations/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    eventId?: string;
+                    ticketType?: "standard" | "student" | "speaker";
+                    status?: "pending" | "confirmed" | "cancelled";
+                    sort?: "fullName" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                /** Format: uuid */
+                                eventId: string;
+                                fullName: string;
+                                /** Format: email */
+                                email: string;
+                                /** @enum {string} */
+                                ticketType: "standard" | "student" | "speaker";
+                                needsCatering: boolean;
+                                acceptsTerms: boolean;
+                                /** @enum {string} */
+                                status: "pending" | "confirmed" | "cancelled";
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        eventId: string;
+                        fullName: string;
+                        /** Format: email */
+                        email: string;
+                        /** @enum {string} */
+                        ticketType: "standard" | "student" | "speaker";
+                        needsCatering: boolean;
+                        acceptsTerms: boolean;
+                        /** @enum {string} */
+                        status: "pending" | "confirmed" | "cancelled";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            eventId: string;
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            /** @enum {string} */
+                            ticketType: "standard" | "student" | "speaker";
+                            needsCatering: boolean;
+                            acceptsTerms: boolean;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "cancelled";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registrations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            eventId: string;
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            /** @enum {string} */
+                            ticketType: "standard" | "student" | "speaker";
+                            needsCatering: boolean;
+                            acceptsTerms: boolean;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "cancelled";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        eventId?: string;
+                        fullName?: string;
+                        /** Format: email */
+                        email?: string;
+                        /** @enum {string} */
+                        ticketType?: "standard" | "student" | "speaker";
+                        needsCatering?: boolean;
+                        acceptsTerms?: boolean;
+                        /** @enum {string} */
+                        status?: "pending" | "confirmed" | "cancelled";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            eventId: string;
+                            fullName: string;
+                            /** Format: email */
+                            email: string;
+                            /** @enum {string} */
+                            ticketType: "standard" | "student" | "speaker";
+                            needsCatering: boolean;
+                            acceptsTerms: boolean;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "cancelled";
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/talk-speakers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    talkId?: string;
+                    speakerId?: string;
+                    sort?: "orderIndex" | "createdAt";
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                /** Format: uuid */
+                                talkId: string;
+                                /** Format: uuid */
+                                speakerId: string;
+                                /** @enum {string} */
+                                role: "speaker" | "moderator" | "panelist";
+                                orderIndex: number;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                            meta: {
+                                page: number;
+                                pageSize: number;
+                                total: number;
+                                totalPages: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        talkId: string;
+                        /** Format: uuid */
+                        speakerId: string;
+                        /** @enum {string} */
+                        role: "speaker" | "moderator" | "panelist";
+                        orderIndex: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            talkId: string;
+                            /** Format: uuid */
+                            speakerId: string;
+                            /** @enum {string} */
+                            role: "speaker" | "moderator" | "panelist";
+                            orderIndex: number;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/talk-speakers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            talkId: string;
+                            /** Format: uuid */
+                            speakerId: string;
+                            /** @enum {string} */
+                            role: "speaker" | "moderator" | "panelist";
+                            orderIndex: number;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        talkId?: string;
+                        /** Format: uuid */
+                        speakerId?: string;
+                        /** @enum {string} */
+                        role?: "speaker" | "moderator" | "panelist";
+                        orderIndex?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            talkId: string;
+                            /** Format: uuid */
+                            speakerId: string;
+                            /** @enum {string} */
+                            role: "speaker" | "moderator" | "panelist";
+                            orderIndex: number;
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            createdBy: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {

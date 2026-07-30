@@ -1,0 +1,17 @@
+import { boolean, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { createdBy, softDelete, timestamps } from "../../db/columns.js";
+import { venues } from "../venues/venues.schema.js";
+
+/** Tabela rooms — wygenerowana przez scaffolder z encji `@repo/schemas`. */
+export const rooms = pgTable("rooms", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  capacity: integer("capacity").notNull(),
+  hasProjector: boolean("has_projector").notNull().default(false),
+  venueId: uuid("venue_id")
+    .notNull()
+    .references(() => venues.id, { onDelete: "cascade" }),
+  ...timestamps,
+  ...softDelete,
+  ...createdBy,
+});

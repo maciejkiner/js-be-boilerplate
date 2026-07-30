@@ -1,0 +1,25 @@
+import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { createdBy, softDelete, timestamps } from "../../db/columns.js";
+import { events } from "../events/events.schema.js";
+import { rooms } from "../rooms/rooms.schema.js";
+
+/** Tabela talks — wygenerowana przez scaffolder z encji `@repo/schemas`. */
+export const talks = pgTable("talks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  abstract: text("abstract"),
+  track: text("track").$type<"product" | "engineering" | "design" | "business">().notNull(),
+  level: text("level").$type<"intro" | "intermediate" | "advanced">().notNull(),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  isRecorded: boolean("is_recorded").notNull().default(false),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  roomId: uuid("room_id")
+    .notNull()
+    .references(() => rooms.id, { onDelete: "cascade" }),
+  ...timestamps,
+  ...softDelete,
+  ...createdBy,
+});

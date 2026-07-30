@@ -1,0 +1,29 @@
+import { sql } from "drizzle-orm";
+import { integer, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { createdBy, softDelete, timestamps } from "../../db/columns.js";
+import { talks } from "../talks/talks.schema.js";
+import { speakers } from "../speakers/speakers.schema.js";
+
+/** Tabela talk_speakers — wygenerowana przez scaffolder z encji `@repo/schemas`. */
+export const talkSpeakers = pgTable(
+  "talk_speakers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    talkId: uuid("talk_id")
+      .notNull()
+      .references(() => talks.id, { onDelete: "cascade" }),
+    speakerId: uuid("speaker_id")
+      .notNull()
+      .references(() => speakers.id, { onDelete: "cascade" }),
+    role: text("role").$type<"speaker" | "moderator" | "panelist">().notNull(),
+    orderIndex: integer("order_index").notNull(),
+    ...timestamps,
+    ...softDelete,
+    ...createdBy,
+  },
+  (table) => [
+    uniqueIndex("talk_speakers_talk_id_speaker_id_key")
+      .on(table.talkId, table.speakerId)
+      .where(sql`${table.deletedAt} is null`),
+  ],
+);

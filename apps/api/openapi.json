@@ -2787,6 +2787,3973 @@
           }
         }
       }
+    },
+    "/api/v1/venues/": {
+      "get": {
+        "tags": [
+          "venues"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "city",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          },
+                          "city": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "address": {
+                            "type": "string",
+                            "maxLength": 80,
+                            "nullable": true
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "city",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "venues"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "city"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "city": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "address": {
+                      "type": "string",
+                      "maxLength": 80,
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "city",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/venues/{id}": {
+      "get": {
+        "tags": [
+          "venues"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "city": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "address": {
+                      "type": "string",
+                      "maxLength": 80,
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "city",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "venues"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "city": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "address": {
+                      "type": "string",
+                      "maxLength": 80,
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "city",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "venues"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/speakers/": {
+      "get": {
+        "tags": [
+          "speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fullName",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "bio": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "nullable": true
+                          },
+                          "company": {
+                            "type": "string",
+                            "maxLength": 120,
+                            "nullable": true
+                          },
+                          "website": {
+                            "type": "string",
+                            "format": "uri",
+                            "nullable": true
+                          },
+                          "isConfirmed": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "fullName",
+                          "email",
+                          "isConfirmed",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "speakers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "bio": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "nullable": true
+                  },
+                  "company": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "website": {
+                    "type": "string",
+                    "format": "uri",
+                    "nullable": true
+                  },
+                  "isConfirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "fullName",
+                  "email",
+                  "isConfirmed"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "bio": {
+                      "type": "string",
+                      "maxLength": 2000,
+                      "nullable": true
+                    },
+                    "company": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "nullable": true
+                    },
+                    "website": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "isConfirmed": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "fullName",
+                    "email",
+                    "isConfirmed",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/speakers/{id}": {
+      "get": {
+        "tags": [
+          "speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "bio": {
+                      "type": "string",
+                      "maxLength": 2000,
+                      "nullable": true
+                    },
+                    "company": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "nullable": true
+                    },
+                    "website": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "isConfirmed": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "fullName",
+                    "email",
+                    "isConfirmed",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "speakers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "bio": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "nullable": true
+                  },
+                  "company": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "website": {
+                    "type": "string",
+                    "format": "uri",
+                    "nullable": true
+                  },
+                  "isConfirmed": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "bio": {
+                      "type": "string",
+                      "maxLength": 2000,
+                      "nullable": true
+                    },
+                    "company": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "nullable": true
+                    },
+                    "website": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "isConfirmed": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "fullName",
+                    "email",
+                    "isConfirmed",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/": {
+      "get": {
+        "tags": [
+          "rooms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "venueId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "capacity",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          },
+                          "capacity": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5000
+                          },
+                          "hasProjector": {
+                            "type": "boolean"
+                          },
+                          "venueId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "capacity",
+                          "hasProjector",
+                          "venueId",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000
+                  },
+                  "hasProjector": {
+                    "type": "boolean"
+                  },
+                  "venueId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "name",
+                  "capacity",
+                  "hasProjector",
+                  "venueId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5000
+                    },
+                    "hasProjector": {
+                      "type": "boolean"
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "capacity",
+                    "hasProjector",
+                    "venueId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{id}": {
+      "get": {
+        "tags": [
+          "rooms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5000
+                    },
+                    "hasProjector": {
+                      "type": "boolean"
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "capacity",
+                    "hasProjector",
+                    "venueId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "rooms"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000
+                  },
+                  "hasProjector": {
+                    "type": "boolean"
+                  },
+                  "venueId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5000
+                    },
+                    "hasProjector": {
+                      "type": "boolean"
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "capacity",
+                    "hasProjector",
+                    "venueId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "rooms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "cancelled"
+              ]
+            },
+            "in": "query",
+            "name": "status",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "startsAt",
+                "endsAt",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "slug": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 80,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                          },
+                          "description": {
+                            "type": "string",
+                            "maxLength": 4000,
+                            "nullable": true
+                          },
+                          "startsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "endsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "published",
+                              "cancelled"
+                            ]
+                          },
+                          "isPublic": {
+                            "type": "boolean"
+                          },
+                          "capacity": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100000
+                          },
+                          "venueId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "slug",
+                          "startsAt",
+                          "endsAt",
+                          "status",
+                          "isPublic",
+                          "capacity",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80,
+                    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "nullable": true
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "cancelled"
+                    ]
+                  },
+                  "isPublic": {
+                    "type": "boolean"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100000
+                  },
+                  "venueId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "slug",
+                  "startsAt",
+                  "endsAt",
+                  "status",
+                  "isPublic",
+                  "capacity"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "slug": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 80,
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "published",
+                        "cancelled"
+                      ]
+                    },
+                    "isPublic": {
+                      "type": "boolean"
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100000
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "slug",
+                    "startsAt",
+                    "endsAt",
+                    "status",
+                    "isPublic",
+                    "capacity",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/{id}": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "slug": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 80,
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "published",
+                        "cancelled"
+                      ]
+                    },
+                    "isPublic": {
+                      "type": "boolean"
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100000
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "slug",
+                    "startsAt",
+                    "endsAt",
+                    "status",
+                    "isPublic",
+                    "capacity",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "events"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80,
+                    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "nullable": true
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "cancelled"
+                    ]
+                  },
+                  "isPublic": {
+                    "type": "boolean"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100000
+                  },
+                  "venueId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "slug": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 80,
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "published",
+                        "cancelled"
+                      ]
+                    },
+                    "isPublic": {
+                      "type": "boolean"
+                    },
+                    "capacity": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100000
+                    },
+                    "venueId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "slug",
+                    "startsAt",
+                    "endsAt",
+                    "status",
+                    "isPublic",
+                    "capacity",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/talks/": {
+      "get": {
+        "tags": [
+          "talks"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product",
+                "engineering",
+                "design",
+                "business"
+              ]
+            },
+            "in": "query",
+            "name": "track",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "intro",
+                "intermediate",
+                "advanced"
+              ]
+            },
+            "in": "query",
+            "name": "level",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "eventId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "roomId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "title",
+                "startsAt",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "abstract": {
+                            "type": "string",
+                            "maxLength": 4000,
+                            "nullable": true
+                          },
+                          "track": {
+                            "type": "string",
+                            "enum": [
+                              "product",
+                              "engineering",
+                              "design",
+                              "business"
+                            ]
+                          },
+                          "level": {
+                            "type": "string",
+                            "enum": [
+                              "intro",
+                              "intermediate",
+                              "advanced"
+                            ]
+                          },
+                          "startsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "endsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "isRecorded": {
+                            "type": "boolean"
+                          },
+                          "eventId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "roomId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "track",
+                          "level",
+                          "startsAt",
+                          "endsAt",
+                          "isRecorded",
+                          "eventId",
+                          "roomId",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "talks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "abstract": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "nullable": true
+                  },
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "product",
+                      "engineering",
+                      "design",
+                      "business"
+                    ]
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "intro",
+                      "intermediate",
+                      "advanced"
+                    ]
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "isRecorded": {
+                    "type": "boolean"
+                  },
+                  "eventId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "roomId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "title",
+                  "track",
+                  "level",
+                  "startsAt",
+                  "endsAt",
+                  "isRecorded",
+                  "eventId",
+                  "roomId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "abstract": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "track": {
+                      "type": "string",
+                      "enum": [
+                        "product",
+                        "engineering",
+                        "design",
+                        "business"
+                      ]
+                    },
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "intro",
+                        "intermediate",
+                        "advanced"
+                      ]
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "isRecorded": {
+                      "type": "boolean"
+                    },
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "roomId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "track",
+                    "level",
+                    "startsAt",
+                    "endsAt",
+                    "isRecorded",
+                    "eventId",
+                    "roomId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/talks/{id}": {
+      "get": {
+        "tags": [
+          "talks"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "abstract": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "track": {
+                      "type": "string",
+                      "enum": [
+                        "product",
+                        "engineering",
+                        "design",
+                        "business"
+                      ]
+                    },
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "intro",
+                        "intermediate",
+                        "advanced"
+                      ]
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "isRecorded": {
+                      "type": "boolean"
+                    },
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "roomId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "track",
+                    "level",
+                    "startsAt",
+                    "endsAt",
+                    "isRecorded",
+                    "eventId",
+                    "roomId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "talks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "abstract": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "nullable": true
+                  },
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "product",
+                      "engineering",
+                      "design",
+                      "business"
+                    ]
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "intro",
+                      "intermediate",
+                      "advanced"
+                    ]
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "isRecorded": {
+                    "type": "boolean"
+                  },
+                  "eventId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "roomId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "abstract": {
+                      "type": "string",
+                      "maxLength": 4000,
+                      "nullable": true
+                    },
+                    "track": {
+                      "type": "string",
+                      "enum": [
+                        "product",
+                        "engineering",
+                        "design",
+                        "business"
+                      ]
+                    },
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "intro",
+                        "intermediate",
+                        "advanced"
+                      ]
+                    },
+                    "startsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endsAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "isRecorded": {
+                      "type": "boolean"
+                    },
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "roomId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "track",
+                    "level",
+                    "startsAt",
+                    "endsAt",
+                    "isRecorded",
+                    "eventId",
+                    "roomId",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "talks"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/registrations/": {
+      "get": {
+        "tags": [
+          "registrations"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "eventId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "standard",
+                "student",
+                "speaker"
+              ]
+            },
+            "in": "query",
+            "name": "ticketType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "confirmed",
+                "cancelled"
+              ]
+            },
+            "in": "query",
+            "name": "status",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fullName",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "eventId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "ticketType": {
+                            "type": "string",
+                            "enum": [
+                              "standard",
+                              "student",
+                              "speaker"
+                            ]
+                          },
+                          "needsCatering": {
+                            "type": "boolean"
+                          },
+                          "acceptsTerms": {
+                            "type": "boolean"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "cancelled"
+                            ]
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "eventId",
+                          "fullName",
+                          "email",
+                          "ticketType",
+                          "needsCatering",
+                          "acceptsTerms",
+                          "status",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "ticketType": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "student",
+                      "speaker"
+                    ]
+                  },
+                  "needsCatering": {
+                    "type": "boolean"
+                  },
+                  "acceptsTerms": {
+                    "type": "boolean"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "confirmed",
+                      "cancelled"
+                    ]
+                  }
+                },
+                "required": [
+                  "eventId",
+                  "fullName",
+                  "email",
+                  "ticketType",
+                  "needsCatering",
+                  "acceptsTerms",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "ticketType": {
+                      "type": "string",
+                      "enum": [
+                        "standard",
+                        "student",
+                        "speaker"
+                      ]
+                    },
+                    "needsCatering": {
+                      "type": "boolean"
+                    },
+                    "acceptsTerms": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "confirmed",
+                        "cancelled"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "fullName",
+                    "email",
+                    "ticketType",
+                    "needsCatering",
+                    "acceptsTerms",
+                    "status",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/registrations/{id}": {
+      "get": {
+        "tags": [
+          "registrations"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "ticketType": {
+                      "type": "string",
+                      "enum": [
+                        "standard",
+                        "student",
+                        "speaker"
+                      ]
+                    },
+                    "needsCatering": {
+                      "type": "boolean"
+                    },
+                    "acceptsTerms": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "confirmed",
+                        "cancelled"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "fullName",
+                    "email",
+                    "ticketType",
+                    "needsCatering",
+                    "acceptsTerms",
+                    "status",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "ticketType": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "student",
+                      "speaker"
+                    ]
+                  },
+                  "needsCatering": {
+                    "type": "boolean"
+                  },
+                  "acceptsTerms": {
+                    "type": "boolean"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "confirmed",
+                      "cancelled"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "ticketType": {
+                      "type": "string",
+                      "enum": [
+                        "standard",
+                        "student",
+                        "speaker"
+                      ]
+                    },
+                    "needsCatering": {
+                      "type": "boolean"
+                    },
+                    "acceptsTerms": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "confirmed",
+                        "cancelled"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "fullName",
+                    "email",
+                    "ticketType",
+                    "needsCatering",
+                    "acceptsTerms",
+                    "status",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "registrations"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/talk-speakers/": {
+      "get": {
+        "tags": [
+          "talk-speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "talkId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "speakerId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "orderIndex",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "in": "query",
+            "name": "order",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "talkId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "speakerId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "speaker",
+                              "moderator",
+                              "panelist"
+                            ]
+                          },
+                          "orderIndex": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "talkId",
+                          "speakerId",
+                          "role",
+                          "orderIndex",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "pageSize",
+                        "total",
+                        "totalPages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "talk-speakers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "talkId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "speakerId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "speaker",
+                      "moderator",
+                      "panelist"
+                    ]
+                  },
+                  "orderIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "talkId",
+                  "speakerId",
+                  "role",
+                  "orderIndex"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "talkId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "speakerId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "speaker",
+                        "moderator",
+                        "panelist"
+                      ]
+                    },
+                    "orderIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "talkId",
+                    "speakerId",
+                    "role",
+                    "orderIndex",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/talk-speakers/{id}": {
+      "get": {
+        "tags": [
+          "talk-speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "talkId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "speakerId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "speaker",
+                        "moderator",
+                        "panelist"
+                      ]
+                    },
+                    "orderIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "talkId",
+                    "speakerId",
+                    "role",
+                    "orderIndex",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "talk-speakers"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "talkId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "speakerId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "speaker",
+                      "moderator",
+                      "panelist"
+                    ]
+                  },
+                  "orderIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "talkId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "speakerId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "speaker",
+                        "moderator",
+                        "panelist"
+                      ]
+                    },
+                    "orderIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "talkId",
+                    "speakerId",
+                    "role",
+                    "orderIndex",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "talk-speakers"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

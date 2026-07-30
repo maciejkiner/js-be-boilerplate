@@ -53,4 +53,11 @@ export type {
 
 // Encje generowane przez scaffolder — jeden `export *` na encję (hooki + typy w pliku encji).
 export * from "./comments.js";
+export * from "./venues.js";
+export * from "./speakers.js";
+export * from "./rooms.js";
+export * from "./events.js";
+export * from "./talks.js";
+export * from "./registrations.js";
+export * from "./talk-speakers.js";
 // scaffolder:hooks-export — do not remove

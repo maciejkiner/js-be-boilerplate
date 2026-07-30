@@ -1,0 +1,29 @@
+import { sql } from "drizzle-orm";
+import { boolean, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { createdBy, softDelete, timestamps } from "../../db/columns.js";
+import { events } from "../events/events.schema.js";
+
+/** Tabela registrations — wygenerowana przez scaffolder z encji `@repo/schemas`. */
+export const registrations = pgTable(
+  "registrations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    fullName: text("full_name").notNull(),
+    email: text("email").notNull(),
+    ticketType: text("ticket_type").$type<"standard" | "student" | "speaker">().notNull(),
+    needsCatering: boolean("needs_catering").notNull().default(false),
+    acceptsTerms: boolean("accepts_terms").notNull().default(false),
+    status: text("status").$type<"pending" | "confirmed" | "cancelled">().notNull(),
+    ...timestamps,
+    ...softDelete,
+    ...createdBy,
+  },
+  (table) => [
+    uniqueIndex("registrations_event_id_email_key")
+      .on(table.eventId, table.email)
+      .where(sql`${table.deletedAt} is null`),
+  ],
+);
