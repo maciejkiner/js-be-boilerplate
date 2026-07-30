@@ -16,7 +16,7 @@ import { type Column, DataTable, type SortState } from "@repo/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useRelationSource } from "../relation-source";
-import { formatDate, Page } from "../ui";
+import { formatDateTime, Page } from "../ui";
 import { EntityForm, recordToFormValues } from "./entity-form";
 
 type EventRow = EventList["items"][number];
@@ -41,9 +41,14 @@ export function EventsList() {
       key: "startsAt",
       header: "Starts at",
       sortable: true,
-      render: (row) => formatDate(row.startsAt),
+      render: (row) => formatDateTime(row.startsAt),
     },
-    { key: "endsAt", header: "Ends at", sortable: true, render: (row) => formatDate(row.endsAt) },
+    {
+      key: "endsAt",
+      header: "Ends at",
+      sortable: true,
+      render: (row) => formatDateTime(row.endsAt),
+    },
     { key: "status", header: "Status", render: (row) => <Badge>{row.status}</Badge> },
     { key: "isPublic", header: "Public", render: (row) => (row.isPublic ? "Tak" : "Nie") },
     { key: "capacity", header: "Capacity" },
@@ -137,9 +142,9 @@ export function EventDetail() {
         <dt className="text-slate-500">Description</dt>
         <dd className="text-slate-800">{row.description ?? "—"}</dd>
         <dt className="text-slate-500">Starts at</dt>
-        <dd className="text-slate-800">{formatDate(row.startsAt)}</dd>
+        <dd className="text-slate-800">{formatDateTime(row.startsAt)}</dd>
         <dt className="text-slate-500">Ends at</dt>
-        <dd className="text-slate-800">{formatDate(row.endsAt)}</dd>
+        <dd className="text-slate-800">{formatDateTime(row.endsAt)}</dd>
         <dt className="text-slate-500">Status</dt>
         <dd className="text-slate-800">
           <Badge>{row.status}</Badge>

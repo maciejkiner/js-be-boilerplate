@@ -26,8 +26,8 @@ export const talkEntity = defineEntity({
     level: f
       .radio({ intro: "Intro", intermediate: "Intermediate", advanced: "Advanced" })
       .filterable(),
-    startsAt: f.date().sortable(),
-    endsAt: f.date(),
+    startsAt: f.datetime().sortable(),
+    endsAt: f.datetime(),
     isRecorded: f.checkbox(),
     eventId: f.relation("event", "name").filterable(),
     roomId: f.relation("room", "name").filterable(),

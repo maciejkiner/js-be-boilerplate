@@ -22,8 +22,8 @@ export const eventEntity = defineEntity({
       .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
       .unique(),
     description: f.textarea().label("Description").max(4000).optional().hidden(),
-    startsAt: f.date().sortable(),
-    endsAt: f.date().sortable(),
+    startsAt: f.datetime().sortable(),
+    endsAt: f.datetime().sortable(),
     status: f
       .select({ draft: "Draft", published: "Published", cancelled: "Cancelled" })
       .label("Status")

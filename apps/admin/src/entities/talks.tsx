@@ -16,7 +16,7 @@ import { type Column, DataTable, type SortState } from "@repo/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useRelationSource } from "../relation-source";
-import { formatDate, Page } from "../ui";
+import { formatDateTime, Page } from "../ui";
 import { EntityForm, recordToFormValues } from "./entity-form";
 
 type TalkRow = TalkList["items"][number];
@@ -44,9 +44,9 @@ export function TalksList() {
       key: "startsAt",
       header: "Starts at",
       sortable: true,
-      render: (row) => formatDate(row.startsAt),
+      render: (row) => formatDateTime(row.startsAt),
     },
-    { key: "endsAt", header: "Ends at", render: (row) => formatDate(row.endsAt) },
+    { key: "endsAt", header: "Ends at", render: (row) => formatDateTime(row.endsAt) },
     { key: "isRecorded", header: "Is recorded", render: (row) => (row.isRecorded ? "Tak" : "Nie") },
     { key: "eventId", header: "Event", render: (row) => row.eventId ?? "—" },
     { key: "roomId", header: "Room", render: (row) => row.roomId ?? "—" },
@@ -160,9 +160,9 @@ export function TalkDetail() {
           <Badge>{row.level}</Badge>
         </dd>
         <dt className="text-slate-500">Starts at</dt>
-        <dd className="text-slate-800">{formatDate(row.startsAt)}</dd>
+        <dd className="text-slate-800">{formatDateTime(row.startsAt)}</dd>
         <dt className="text-slate-500">Ends at</dt>
-        <dd className="text-slate-800">{formatDate(row.endsAt)}</dd>
+        <dd className="text-slate-800">{formatDateTime(row.endsAt)}</dd>
         <dt className="text-slate-500">Is recorded</dt>
         <dd className="text-slate-800">{row.isRecorded ? "Tak" : "Nie"}</dd>
         <dt className="text-slate-500">Event</dt>
