@@ -1,4 +1,6 @@
-import type { z } from "zod";
+import { z } from "zod";
+import type { FieldBuilder } from "./field-builder.js";
+import { isFieldBuilder, isLabelFromKey, labelFromKey } from "./field-builder.js";
 
 /**
  * Typ pola. Steruje komponentem DS (mapowanie w `packages/forms-ui`) oraz typem kolumny Drizzle
@@ -97,6 +99,12 @@ export interface EntityDefinition<Shape extends z.ZodRawShape> {
   fields: { [K in keyof Shape]: FieldMeta };
   /** Walidacje międzypolowe — zwraca pełny schemat walidacji (np. z `.refine`). */
   refine?: (schema: z.ZodObject<Shape>) => z.ZodTypeAny;
+  /**
+   * Ograniczenia unikalności — każda pozycja to grupa pól unikalna łącznie
+   * (`[["slug"]]` = jedno pole, `[["talkId", "speakerId"]]` = para). Scaffolder wystawia z tego
+   * **częściowy** indeks unikalny (`where deleted_at is null`), a konflikt wraca jako 409.
+   */
+  unique?: (keyof Shape & string)[][];
 }
 
 export interface Entity<Shape extends z.ZodRawShape> extends EntityDefinition<Shape> {
@@ -104,42 +112,118 @@ export interface Entity<Shape extends z.ZodRawShape> extends EntityDefinition<Sh
   validation: z.ZodTypeAny;
 }
 
+/** Mapa pól zadeklarowanych builderami (`f.*`). */
+export type FieldBuilderMap = Record<string, FieldBuilder>;
+
+/** Kształt schematu wywiedziony z builderów — każde pole wnosi swój `_out`. */
+export type ShapeOfBuilders<M extends FieldBuilderMap> = { [K in keyof M]: M[K]["_out"] };
+
 /**
- * Definiuje encję: czysty schemat Zod + companion-map metadanych. **Jedno źródło prawdy** dla bazy
- * (typ Zod → kolumna Drizzle), walidacji BE/FE, OpenAPI, kolumn admina i formularzy. Parytet kluczy
- * `fields` ↔ klucze schematu wymusza TypeScript (brak metadanej dla pola = błąd kompilacji).
+ * Definicja encji na builderach: `schema` nie jest podawany, bo wynika z pól. Brak `schema`
+ * dyskryminuje ten wariant od surowego {@link EntityDefinition}.
+ */
+export interface BuilderEntityDefinition<M extends FieldBuilderMap> {
+  /** Nazwa encji w liczbie pojedynczej (np. `project`). Scaffolder tworzy z niej `PascalCase`. */
+  name: string;
+  /** Liczba mnoga — napędza ścieżkę API (`/api/v1/<plural>`) i nazwę tabeli Drizzle. */
+  plural: string;
+  /** Etykieta pojedyncza (UI / detal / nagłówek formularza). */
+  label: string;
+  /** Etykieta mnoga (menu i tytuł listy w adminie). */
+  labelPlural: string;
+  /** Pole używane jako etykieta encji (np. w comboboxach relacji do niej). */
+  displayField: keyof M & string;
+  /** Pola encji zbudowane fabrykami `f.*`. */
+  fields: M;
+  /** Walidacje międzypolowe — zwraca pełny schemat walidacji (np. z `.refine`). */
+  refine?: (schema: z.ZodObject<ShapeOfBuilders<M>>) => z.ZodTypeAny;
+  /**
+   * Unikalność **złożona** — grupy pól unikalne łącznie, np. `[["talkId", "speakerId"]]`.
+   * Unikalność jednopolową deklaruj na polu (`f.text().unique()`); obie trafiają do `entity.unique`.
+   */
+  unique?: (keyof M & string)[][];
+}
+
+/**
+ * Definiuje encję — **jedno źródło prawdy** dla bazy (typ Zod → kolumna Drizzle), walidacji BE/FE,
+ * OpenAPI, kolumn admina i formularzy. Zwraca też `entity.validation` (schemat z `refine`, albo
+ * `schema` gdy `refine` nieustawione), używany jako body tworzenia w API i przez silnik formularzy.
  *
- * Zwraca też `entity.validation` (schemat z `refine`, albo `schema` gdy `refine` nieustawione) —
- * używany jako body tworzenia w API i przez silnik formularzy.
+ * **Domyślnie deklaruj pola builderami `f.*`** — schemat Zod i metadane powstają wtedy z jednej
+ * deklaracji, więc `control` nie może rozjechać się z typem Zod. Etykieta pominięta w `.label()`
+ * wywodzi się z nazwy pola (`dueDate` → „Due date", `venueId` → „Venue").
+ *
+ * Wariant surowy (własny `schema` + companion-map `fields`) zostaje jako **escape hatch** dla
+ * kształtów, których buildery nie wyrażają; parytet kluczy `fields` ↔ schemat wymusza wtedy TS.
  *
  * Mapowanie `control` → komponent DS: `packages/forms-ui/README.md`. Pełny proces dodania encji
  * (scaffolder): `docs/recipes/jak-dodac-encje.md`.
  *
  * @example
- * const shape = z.object({
- *   title: z.string().min(1),
- *   status: z.enum(["open", "done"]),
- *   dueDate: z.coerce.date().nullish(),
- * });
  * export const ticketEntity = defineEntity({
  *   name: "ticket", plural: "tickets", label: "Ticket", labelPlural: "Tickets",
  *   displayField: "title",
- *   schema: shape,
  *   // opcjonalna walidacja MIĘDZYPOLOWA:
  *   refine: (s) => s.refine((v) => !v.dueDate || v.dueDate > new Date(), { path: ["dueDate"], message: "…" }),
  *   fields: {
- *     title: { label: "Title", control: "text", list: { sortable: true, filterable: true } },
- *     status: { label: "Status", control: "select", list: { filterable: true },
- *       options: [{ value: "open", label: "Open" }, { value: "done", label: "Done" }] },
- *     dueDate: { label: "Due date", control: "date", help: "Opcjonalny termin", list: { sortable: true } },
+ *     title: f.text().min(1).sortable().filterable(),
+ *     status: f.select({ open: "Open", done: "Done" }).filterable(),
+ *     dueDate: f.date().help("Opcjonalny termin").optional().sortable(),
  *   },
  * });
  */
+export function defineEntity<M extends FieldBuilderMap>(
+  definition: BuilderEntityDefinition<M>,
+): Entity<ShapeOfBuilders<M>>;
 export function defineEntity<Shape extends z.ZodRawShape>(
   definition: EntityDefinition<Shape>,
-): Entity<Shape> {
+): Entity<Shape>;
+export function defineEntity(
+  definition: EntityDefinition<z.ZodRawShape> | BuilderEntityDefinition<FieldBuilderMap>,
+): Entity<z.ZodRawShape> {
+  if ("schema" in definition) {
+    return {
+      ...definition,
+      validation: definition.refine ? definition.refine(definition.schema) : definition.schema,
+    };
+  }
+
+  const shape: z.ZodRawShape = {};
+  const fields: Record<string, FieldMeta> = {};
+  const singleFieldUnique: string[][] = [];
+  for (const [key, builder] of Object.entries(definition.fields)) {
+    if (!isFieldBuilder(builder)) {
+      throw new Error(
+        `Pole \`${definition.name}.${key}\` nie jest builderem. Użyj fabryki \`f.*\` ` +
+          `(np. \`f.text()\`) albo podaj własny \`schema\` i surowe metadane pól.`,
+      );
+    }
+    const built = builder.build();
+    shape[key] = built.zod;
+    // Etykieta pominięta w builderze — wywodzimy ją z nazwy pola (nazwa jest znana dopiero tutaj).
+    fields[key] = isLabelFromKey(built.meta.label)
+      ? ({ ...built.meta, label: labelFromKey(key) } as FieldMeta)
+      : built.meta;
+    if (built.isUnique) {
+      singleFieldUnique.push([key]);
+    }
+  }
+
+  const schema = z.object(shape);
+  const { name, plural, label, labelPlural, displayField, refine } = definition;
+  // `.unique()` na polach + grupy złożone z encji; pusta lista zostaje `undefined`, żeby encje
+  // bez ograniczeń miały dokładnie taki kształt jak przed wprowadzeniem `unique`.
+  const unique = [...singleFieldUnique, ...(definition.unique ?? [])];
   return {
-    ...definition,
-    validation: definition.refine ? definition.refine(definition.schema) : definition.schema,
+    name,
+    plural,
+    label,
+    labelPlural,
+    displayField,
+    schema,
+    fields,
+    refine,
+    ...(unique.length > 0 ? { unique } : {}),
+    validation: refine ? refine(schema) : schema,
   };
 }

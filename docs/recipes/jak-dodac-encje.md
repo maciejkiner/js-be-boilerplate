@@ -27,9 +27,9 @@ ręcznie / dostosować).
 
 ## 1. Schemat + metadane w `packages/schemas`
 
-Encja = **czysty schemat Zod** (kształt + walidacja, w tym międzypolowa) **+ companion-map
-metadanych** (wyłącznie prezentacja). Parytet kluczy `fields` ↔ schemat wymusza TypeScript —
-dodasz pole do schematu bez metadanej i kod się nie skompiluje.
+Encja = **schemat Zod** (kształt + walidacja, w tym międzypolowa) **+ metadane prezentacji** per pole.
+Pola deklaruj **builderami `f.*`**: jedna deklaracja produkuje obie strony, więc `control` nie może
+rozjechać się z typem Zod, a wartości `select` wpisujesz raz.
 
 > **Nie deklaruj pól audytowych** (`id`, `createdAt`, `updatedAt`, `deletedAt`, `createdBy`) — są
 > dokładane automatycznie do każdej tabeli z `apps/api/src/db/columns.ts`. Scaffolder odrzuci encję,
@@ -37,16 +37,8 @@ dodasz pole do schematu bez metadanej i kod się nie skompiluje.
 
 ```ts
 // packages/schemas/src/project/project.entity.ts
-import { z } from "zod";
 import { defineEntity } from "../lib/define-entity.js";
-
-const projectShape = z.object({
-  name: z.string().min(1).max(200),
-  description: z.string().max(2000).nullish(),
-  status: z.enum(["active", "archived"]),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-});
+import { f } from "../lib/field-builder.js";
 
 export const projectEntity = defineEntity({
   name: "project",
@@ -54,39 +46,41 @@ export const projectEntity = defineEntity({
   label: "Project",
   labelPlural: "Projects",
   displayField: "name", // pole-etykieta w comboboxach relacji do tej encji
-  schema: projectShape,
   // Walidacja MIĘDZYPOLOWA idzie przez `refine` (nie duplikuj jej w metadanych).
   refine: (schema) =>
     schema.refine((v) => v.endDate >= v.startDate, {
       message: "End date must be on or after the start date.",
       path: ["endDate"],
     }),
+  // Etykiety pominięte tam, gdzie wywiodą się z nazwy pola (`startDate` → „Start date").
   fields: {
-    name: { label: "Name", control: "text", list: { sortable: true, filterable: true } },
-    description: { label: "Description", control: "textarea", list: { visible: false } },
-    status: {
-      label: "Status",
-      control: "select",
-      options: [
-        { value: "active", label: "Active" },
-        { value: "archived", label: "Archived" },
-      ],
-      list: { filterable: true },
-    },
-    startDate: { label: "Start date", control: "date", list: { sortable: true } },
-    endDate: { label: "End date", control: "date", list: { sortable: true } },
+    name: f.text().min(1).max(200).sortable().filterable(),
+    description: f.textarea().max(2000).optional().hidden(),
+    status: f.select({ active: "Active", archived: "Archived" }).filterable(),
+    startDate: f.date().sortable(),
+    endDate: f.date().sortable(),
   },
 });
 ```
 
-Eksportuj encję z `packages/schemas/src/index.ts`. **Relacje** opisujesz przez `control: "relation"`
+Eksportuj encję z `packages/schemas/src/index.ts`.
 
-- `relation: { entity, displayField }` (patrz `task.entity.ts`: `projectId` → `project`,
+- **Kontrolki i metody** (`.min`, `.optional`, `.sortable`, `.hidden`, `.zod` …): tabela w
+  `packages/schemas/README.md`. `f.` w edytorze wypisuje wszystkie dostępne kontrolki.
+- **Relacje** — `f.relation(encja, poleEtykiety)` (patrz `task.entity.ts`: `projectId` → `project`,
   `assigneeId` → `user`). Metadane napędzają później kolumny admina, formularze i comboboxy.
-
-* `defineEntity` zwraca też `entity.validation` — schemat z walidacją międzypolową (albo sam
+- **Etykieta** pominięta w `.label()` wywodzi się z nazwy pola (`dueDate` → „Due date",
+  `venueId` → „Venue"). Podawaj ją jawnie tylko wtedy, gdy ma brzmieć inaczej.
+- **Unikalność** — `.unique()` na polu, złożona jako `unique: [["eventId", "email"]]` na encji.
+  Wychodzi z tego częściowy indeks unikalny (soft delete zwalnia wartość) i 409 przy konflikcie.
+- **Nazwa mnoga** może być zapisana dowolnie (`talkSpeakers`, `talk-speakers`, `talk_speakers`) —
+  scaffolder sam wyprowadza z niej identyfikatory (`camelCase`), nazwę tabeli (`snake_case`) oraz
+  ścieżkę API i nazwy plików (`kebab-case`). `name` encji musi być identyfikatorem camelCase.
+- `defineEntity` zwraca też `entity.validation` — schemat z walidacją międzypolową (albo sam
   `schema`, gdy `refine` nieustawione). To go używa API jako body tworzenia.
-* Etykiety (`label`, `options[].label`) są **po angielsku** (język admina). Reszta repo jest PL.
+- Etykiety (`label`, etykiety opcji) są **po angielsku** (język admina). Reszta repo jest PL.
+- Kształt, którego buildery nie wyrażają: podaj własny `schema` + surowe metadane pól
+  (escape hatch — opis w `packages/schemas/README.md`).
 
 ## 2. Tabela Drizzle
 

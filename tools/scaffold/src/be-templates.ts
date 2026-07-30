@@ -33,7 +33,7 @@ function drizzleColumn(f: FieldDescriptor): string {
     case "date":
       return `timestamp("${f.snake}", { withTimezone: true })${notNull}`;
     case "relation":
-      return `uuid("${f.snake}")${notNull}.references(() => ${f.relation!.targetPlural}.id, { onDelete: "${f.required ? "cascade" : "set null"}" })`;
+      return `uuid("${f.snake}")${notNull}.references(() => ${f.relation!.targetIdent}.id, { onDelete: "${f.required ? "cascade" : "set null"}" })`;
     default:
       return `text("${f.snake}")`;
   }
@@ -48,30 +48,43 @@ export function drizzleSchema(d: EntityDescriptor): string {
     if (f.control === "checkbox" || f.control === "switch") cols.add("boolean");
     if (f.control === "date") cols.add("timestamp");
   }
+  if (d.unique.length > 0) cols.add("uniqueIndex");
   const relationImports = [
     ...new Map(
       d.fields
         .filter((f) => f.relation)
         .map((f) => [
-          f.relation!.targetPlural,
+          f.relation!.targetIdent,
           f.relation!.core
             ? `import { users } from "../auth/auth.schema.js";`
-            : `import { ${f.relation!.targetPlural} } from "../${f.relation!.targetPlural}/${f.relation!.targetPlural}.schema.js";`,
+            : `import { ${f.relation!.targetIdent} } from "../${f.relation!.targetFile}/${f.relation!.targetFile}.schema.js";`,
         ]),
     ).values(),
   ];
   const columnLines = d.fields.map((f) => `  ${f.name}: ${drizzleColumn(f)},`).join("\n");
-  return `import { ${[...cols].sort().join(", ")} } from "drizzle-orm/pg-core";
+  // Indeks CZĘŚCIOWY (`where deleted_at is null`): soft delete zwalnia wartość, więc rekord
+  // usunięty miękko nie blokuje ponownego użycia unikalnego pola.
+  const uniqueLines = d.unique
+    .map(
+      (u) =>
+        `  uniqueIndex("${u.indexName}")\n    .on(${u.fields
+          .map((field) => `table.${field}`)
+          .join(", ")})\n    .where(sql\`\${table.deletedAt} is null\`),`,
+    )
+    .join("\n");
+  const extraConfig = d.unique.length > 0 ? `, (table) => [\n${uniqueLines}\n]` : "";
+  const sqlImport = d.unique.length > 0 ? `import { sql } from "drizzle-orm";\n` : "";
+  return `${sqlImport}import { ${[...cols].sort().join(", ")} } from "drizzle-orm/pg-core";
 import { createdBy, softDelete, timestamps } from "../../db/columns.js";
 ${relationImports.join("\n")}${relationImports.length ? "\n" : ""}
-/** Tabela ${d.plural} — wygenerowana przez scaffolder z encji \`@repo/schemas\`. */
-export const ${d.plural} = pgTable("${d.plural}", {
+/** Tabela ${d.table} — wygenerowana przez scaffolder z encji \`@repo/schemas\`. */
+export const ${d.plural} = pgTable("${d.table}", {
   id: uuid("id").defaultRandom().primaryKey(),
 ${columnLines}
   ...timestamps,
   ...softDelete,
   ...createdBy,
-});
+}${extraConfig});
 `;
 }
 
@@ -129,8 +142,8 @@ export function repository(d: EntityDescriptor): string {
   return `import { and, asc, count, desc, eq, isNull, type SQL } from "drizzle-orm";
 import type { Db } from "../../db/client.js";
 import { notDeleted } from "../../db/query.js";
-import type { ${d.Pascal}ListQuery } from "./${d.plural}.dto.js";
-import { ${d.plural} } from "./${d.plural}.schema.js";
+import type { ${d.Pascal}ListQuery } from "./${d.file}.dto.js";
+import { ${d.plural} } from "./${d.file}.schema.js";
 
 const SORT_COLUMNS = {
 ${sortCols}
@@ -202,8 +215,8 @@ export function service(d: EntityDescriptor): string {
         f.relation!.core
           ? ["auth", `import { authRepository } from "../auth/auth.repository.js";`]
           : [
-              f.relation!.targetPlural,
-              `import { ${f.relation!.targetPlural}Repository } from "../${f.relation!.targetPlural}/${f.relation!.targetPlural}.repository.js";`,
+              f.relation!.targetIdent,
+              `import { ${f.relation!.targetIdent}Repository } from "../${f.relation!.targetFile}/${f.relation!.targetFile}.repository.js";`,
             ],
       ),
     ).values(),
@@ -212,7 +225,7 @@ export function service(d: EntityDescriptor): string {
     .map((f) => {
       const repo = f.relation!.core
         ? `authRepository.findUserById`
-        : `${f.relation!.targetPlural}Repository.findById`;
+        : `${f.relation!.targetIdent}Repository.findById`;
       return `  if (input.${f.name}) {
     const related = await ${repo}(db, input.${f.name});
     if (!related) {
@@ -227,20 +240,49 @@ export function service(d: EntityDescriptor): string {
     ? `\nasync function assertRelations(db: Db, input: ${assertParam}) {\n${assertBody}\n}\n`
     : "";
   const badRequestImport = hasRelations ? "BadRequestError, " : "";
+  const hasUnique = d.unique.length > 0;
+  const conflictImport = hasUnique ? "ConflictError, " : "";
+  // Naruszenie unikalności łapiemy po nazwie indeksu (generowanej deterministycznie), żeby
+  // komunikat 409 wskazywał konkretne pola, a nie tylko „konflikt".
+  const uniqueFn = hasUnique
+    ? `
+const UNIQUE_FIELDS: Record<string, string> = {
+${d.unique.map((u) => `  "${u.indexName}": "${u.fields.join(", ")}",`).join("\n")}
+};
+
+/** Naruszenie unikalności → 409 z nazwami pól; każdy inny błąd przechodzi dalej. */
+function rethrowAsConflict(error: unknown): never {
+  const constraint = uniqueViolationConstraint(error);
+  const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
+  if (fields) {
+    throw new ConflictError(\`${d.label}: wartości (\${fields}) muszą być unikalne.\`);
+  }
+  throw error;
+}
+`
+    : "";
+  const uniqueImport = hasUnique
+    ? `import { uniqueViolationConstraint } from "../../db/unique-violation.js";\n`
+    : "";
+  // `.catch(rethrowAsConflict)` zamiast try/catch: helper zwraca `never`, więc typ wyniku zostaje
+  // nietknięty (wariant z `let` gubiłby go do `any`).
+  const conflictCatch = hasUnique ? ".catch(rethrowAsConflict)" : "";
+  const createBody = `    return ${d.plural}Repository.create(db, { ...input, createdBy: createdById })${conflictCatch};`;
+  const updateBody = `    const updated = await ${d.plural}Repository.update(db, id, input)${conflictCatch};`;
   return `import { z } from "zod";
 import type { Db } from "../../db/client.js";
-import { ${badRequestImport}NotFoundError } from "../../lib/http/problem.js";
+${uniqueImport}import { ${badRequestImport}${conflictImport}NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
 import {
   type Create${d.Pascal}Schema,
   type ${d.Pascal}ListQuery,
   type Update${d.Pascal}Schema,
-} from "./${d.plural}.dto.js";
-${relRepoImports.join("\n")}${relRepoImports.length ? "\n" : ""}import { ${d.plural}Repository } from "./${d.plural}.repository.js";
+} from "./${d.file}.dto.js";
+${relRepoImports.join("\n")}${relRepoImports.length ? "\n" : ""}import { ${d.plural}Repository } from "./${d.file}.repository.js";
 
 type CreateInput = z.infer<typeof Create${d.Pascal}Schema>;
 type UpdateInput = z.infer<typeof Update${d.Pascal}Schema>;
-${assertFn}
+${assertFn}${uniqueFn}
 /** Logika biznesowa ${d.plural}. Wygenerowane. */
 export const ${d.plural}Service = {
   async list(db: Db, query: ${d.Pascal}ListQuery) {
@@ -257,11 +299,11 @@ export const ${d.plural}Service = {
   },
 
   async create(db: Db, input: CreateInput, createdById: string) {
-${hasRelations ? "    await assertRelations(db, input);\n" : ""}    return ${d.plural}Repository.create(db, { ...input, createdBy: createdById });
+${hasRelations ? "    await assertRelations(db, input);\n" : ""}${createBody}
   },
 
   async update(db: Db, id: string, input: UpdateInput) {
-${hasRelations ? "    await assertRelations(db, input);\n" : ""}    const updated = await ${d.plural}Repository.update(db, id, input);
+${hasRelations ? "    await assertRelations(db, input);\n" : ""}${updateBody}
     if (!updated) {
       throw new NotFoundError("${d.label} nie istnieje.");
     }
@@ -306,12 +348,13 @@ export function beTest(d: EntityDescriptor): string {
   const manualRelations = requiredRelations.filter(
     (f) => f.relation!.entity !== "project" && f.relation!.entity !== "user",
   );
+  // TRUNCATE to SQL — potrzebne nazwy TABEL (snake_case), nie identyfikatory z kodu.
   const truncate = [
     ...new Set([
       "users",
       ...(needsProject ? ["projects"] : []),
-      ...requiredRelations.map((f) => f.relation!.targetPlural),
-      d.plural,
+      ...requiredRelations.map((f) => f.relation!.targetTable),
+      d.table,
     ]),
   ].join(", ");
 
@@ -404,7 +447,7 @@ describe.skipIf(${skipCond})("${d.plural} CRUD (wygenerowane)", () => {
   async function create() {
 ${prereq}    return app.inject({
       method: "POST",
-      url: "/api/v1/${d.plural}",
+      url: "/api/v1/${d.path}",
       cookies: auth(),
       payload: {
 ${bodyEntries}
@@ -413,7 +456,7 @@ ${bodyEntries}
   }
 
   it("wymaga uwierzytelnienia (401 bez cookie)", async () => {
-    const res = await app.inject({ method: "GET", url: "/api/v1/${d.plural}" });
+    const res = await app.inject({ method: "GET", url: "/api/v1/${d.path}" });
     expect(res.statusCode).toBe(401);
   });
 
@@ -425,14 +468,14 @@ ${bodyEntries}
 
   it("list zawiera utworzony rekord", async () => {
     await create();
-    const res = await app.inject({ method: "GET", url: "/api/v1/${d.plural}", cookies: auth() });
+    const res = await app.inject({ method: "GET", url: "/api/v1/${d.path}", cookies: auth() });
     expect(res.json().meta.total).toBe(1);
   });
 
   it("get 404 dla nieistniejącego id", async () => {
     const res = await app.inject({
       method: "GET",
-      url: "/api/v1/${d.plural}/00000000-0000-0000-0000-000000000000",
+      url: "/api/v1/${d.path}/00000000-0000-0000-0000-000000000000",
       cookies: auth(),
     });
     expect(res.statusCode).toBe(404);
@@ -440,8 +483,8 @@ ${bodyEntries}
 
   it("delete jest miękkie: po usunięciu get→404 i znika z listy", async () => {
     const created = (await create()).json();
-    expect((await app.inject({ method: "DELETE", url: \`/api/v1/${d.plural}/\${created.id}\`, cookies: auth() })).statusCode).toBe(200);
-    const get = await app.inject({ method: "GET", url: \`/api/v1/${d.plural}/\${created.id}\`, cookies: auth() });
+    expect((await app.inject({ method: "DELETE", url: \`/api/v1/${d.path}/\${created.id}\`, cookies: auth() })).statusCode).toBe(200);
+    const get = await app.inject({ method: "GET", url: \`/api/v1/${d.path}/\${created.id}\`, cookies: auth() });
     expect(get.statusCode).toBe(404);
   });
 });
@@ -461,10 +504,10 @@ import {
   ${d.Pascal}ListResponseSchema,
   ${d.Pascal}ResponseSchema,
   Update${d.Pascal}Schema,
-} from "./${d.plural}.dto.js";
-import { ${d.plural}Service } from "./${d.plural}.service.js";
+} from "./${d.file}.dto.js";
+import { ${d.plural}Service } from "./${d.file}.service.js";
 
-/** CRUD ${d.plural} pod /api/v1/${d.plural}. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD ${d.plural} pod /api/v1/${d.path}. Wygenerowane: trasy → service → repository; auth wymagany. */
 export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;
@@ -474,7 +517,7 @@ export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
       {
         preHandler: [app.authenticate],
         schema: {
-          tags: ["${d.plural}"],
+          tags: ["${d.path}"],
           querystring: ${d.Pascal}ListQuerySchema,
           response: { 200: ${d.Pascal}ListResponseSchema },
         },
@@ -486,7 +529,7 @@ export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
       "/:id",
       {
         preHandler: [app.authenticate],
-        schema: { tags: ["${d.plural}"], params: IdParamSchema, response: { 200: ${d.Pascal}ResponseSchema } },
+        schema: { tags: ["${d.path}"], params: IdParamSchema, response: { 200: ${d.Pascal}ResponseSchema } },
       },
       async (request) => ${d.plural}Service.getById(db, request.params.id),
     );
@@ -495,7 +538,7 @@ export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
       "/",
       {
         preHandler: [app.authenticate],
-        schema: { tags: ["${d.plural}"], body: Create${d.Pascal}Schema, response: { 201: ${d.Pascal}ResponseSchema } },
+        schema: { tags: ["${d.path}"], body: Create${d.Pascal}Schema, response: { 201: ${d.Pascal}ResponseSchema } },
       },
       async (request, reply) => {
         const row = await ${d.plural}Service.create(db, request.body, request.user.sub);
@@ -508,7 +551,7 @@ export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
       {
         preHandler: [app.authenticate],
         schema: {
-          tags: ["${d.plural}"],
+          tags: ["${d.path}"],
           params: IdParamSchema,
           body: Update${d.Pascal}Schema,
           response: { 200: ${d.Pascal}ResponseSchema },
@@ -521,7 +564,7 @@ export function ${d.plural}Routes(deps: { db: Db }): FastifyPluginAsyncZod {
       "/:id",
       {
         preHandler: [app.authenticate],
-        schema: { tags: ["${d.plural}"], params: IdParamSchema, response: { 200: MessageSchema } },
+        schema: { tags: ["${d.path}"], params: IdParamSchema, response: { 200: MessageSchema } },
       },
       async (request) => {
         await ${d.plural}Service.remove(db, request.params.id);

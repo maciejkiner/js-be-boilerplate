@@ -6,7 +6,8 @@
   "scripts": {
     "scaffold": "pnpm --filter @repo/schemas build && tsx src/scaffold.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "dependencies": {
     "@repo/schemas": "workspace:*",
@@ -17,6 +18,7 @@
     "@types/node": "^22.10.5",
     "eslint": "^9.18.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
   }
 }

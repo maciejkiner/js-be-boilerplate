@@ -1,17 +1,5 @@
-import { z } from "zod";
 import { defineEntity } from "../lib/define-entity.js";
-
-const taskShape = z.object({
-  title: z.string().min(1).max(200),
-  description: z.string().max(2000).nullish(),
-  status: z.enum(["todo", "in_progress", "done"]),
-  priority: z.enum(["low", "medium", "high"]),
-  dueDate: z.coerce.date().nullish(),
-  estimate: z.number().int().nonnegative().nullish(),
-  isBlocked: z.boolean(),
-  projectId: z.string().uuid(),
-  assigneeId: z.string().uuid().nullish(),
-});
+import { f } from "../lib/field-builder.js";
 
 export const taskEntity = defineEntity({
   name: "task",
@@ -19,45 +7,19 @@ export const taskEntity = defineEntity({
   label: "Task",
   labelPlural: "Tasks",
   displayField: "title",
-  schema: taskShape,
+  // Etykiety pominięte tam, gdzie wywiodą się z nazwy pola (`dueDate` → „Due date",
+  // `projectId` → „Project"); podane jawnie tylko tam, gdzie mają brzmieć inaczej.
   fields: {
-    title: { label: "Title", control: "text", list: { sortable: true, filterable: true } },
-    description: { label: "Description", control: "textarea", list: { visible: false } },
-    status: {
-      label: "Status",
-      control: "select",
-      options: [
-        { value: "todo", label: "To do" },
-        { value: "in_progress", label: "In progress" },
-        { value: "done", label: "Done" },
-      ],
-      list: { filterable: true },
-    },
-    priority: {
-      label: "Priority",
-      control: "select",
-      options: [
-        { value: "low", label: "Low" },
-        { value: "medium", label: "Medium" },
-        { value: "high", label: "High" },
-      ],
-      list: { filterable: true },
-    },
-    dueDate: { label: "Due date", control: "date", list: { sortable: true } },
-    estimate: { label: "Estimate", control: "number" },
-    isBlocked: { label: "Blocked", control: "switch", list: { filterable: true } },
+    title: f.text().min(1).max(200).sortable().filterable(),
+    description: f.textarea().max(2000).optional().hidden(),
+    status: f.select({ todo: "To do", in_progress: "In progress", done: "Done" }).filterable(),
+    priority: f.select({ low: "Low", medium: "Medium", high: "High" }).filterable(),
+    dueDate: f.date().optional().sortable(),
+    estimate: f.number().int().nonnegative().optional(),
+    isBlocked: f.switch().label("Blocked").filterable(),
     // Relacja do encji scaffoldowanej (generator → generator).
-    projectId: {
-      label: "Project",
-      control: "relation",
-      relation: { entity: "project", displayField: "name" },
-      list: { filterable: true },
-    },
+    projectId: f.relation("project", "name").filterable(),
     // Relacja do encji core (User) — async-combobox + przecięcie z auth.
-    assigneeId: {
-      label: "Assignee",
-      control: "relation",
-      relation: { entity: "user", displayField: "email" },
-    },
+    assigneeId: f.relation("user", "email").optional(),
   },
 });

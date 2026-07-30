@@ -3,7 +3,7 @@ import { type EntityDescriptor, type FieldDescriptor, pascal } from "./descripto
 // --- api-react (hooki + typy) ----------------------------------------------
 
 export function apiReactHooks(d: EntityDescriptor): string {
-  const base = `/api/v1/${d.plural}`;
+  const base = `/api/v1/${d.path}`;
   return `import type { ApiClient, paths } from "@repo/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "./context.js";
@@ -207,7 +207,7 @@ ${columns}
     <Page
       title="${d.labelPlural}"
       actions={
-        <Button variant="secondary" onClick={() => navigate({ to: "/${d.plural}/new" })}>
+        <Button variant="secondary" onClick={() => navigate({ to: "/${d.path}/new" })}>
           Nowy: ${d.label}
         </Button>
       }
@@ -225,7 +225,7 @@ ${columns}
         }}
         pagination={query.data?.meta}
         onPageChange={setPage}
-        onRowClick={(row) => navigate({ to: "/${d.plural}/$id", params: { id: row.id } })}
+        onRowClick={(row) => navigate({ to: "/${d.path}/$id", params: { id: row.id } })}
 ${
   toolbar
     ? `        toolbar={
@@ -263,7 +263,7 @@ export function ${d.Pascal}Detail() {
         <div className="flex gap-2">
           <Button
             variant="secondary"
-            onClick={() => navigate({ to: "/${d.plural}/$id/edit", params: { id: row.id } })}
+            onClick={() => navigate({ to: "/${d.path}/$id/edit", params: { id: row.id } })}
           >
             Edytuj
           </Button>
@@ -293,7 +293,7 @@ ${detailRows}
                 remove.mutate(row.id, {
                   onSuccess: () => {
                     toast("Usunięto.", "success");
-                    navigate({ to: "/${d.plural}" });
+                    navigate({ to: "/${d.path}" });
                   },
                   onError: () => toast("Nie udało się usunąć.", "error"),
                 })
@@ -327,7 +327,7 @@ export function ${d.Pascal}Create() {
           try {
             const created = await create.mutateAsync(values as Create${d.Pascal}Body);
             toast("Utworzono.", "success");
-            navigate({ to: "/${d.plural}/$id", params: { id: created.id } });
+            navigate({ to: "/${d.path}/$id", params: { id: created.id } });
           } catch {
             toast("Nie udało się utworzyć.", "error");
           }
@@ -364,7 +364,7 @@ export function ${d.Pascal}Edit() {
           try {
             await update.mutateAsync({ id: row.id, body: values as Update${d.Pascal}Body });
             toast("Zapisano.", "success");
-            navigate({ to: "/${d.plural}/$id", params: { id: row.id } });
+            navigate({ to: "/${d.path}/$id", params: { id: row.id } });
           } catch {
             toast("Nie udało się zapisać.", "error");
           }

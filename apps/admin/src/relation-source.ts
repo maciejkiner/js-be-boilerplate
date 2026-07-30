@@ -1,8 +1,12 @@
 import { useApiClient } from "@repo/api-react";
 import type { RelationSource } from "@repo/forms-ui";
 
-/** Konwencja API: encja pojedyncza → ścieżka w liczbie mnogiej (`user` to encja core → `users`). */
-const pluralize = (entity: string) => (entity === "user" ? "users" : `${entity}s`);
+/**
+ * Konwencja API: encja pojedyncza → ścieżka w liczbie mnogiej, kebab-case
+ * (`user` to encja core → `users`; `talkSpeaker` → `talk-speakers`).
+ */
+const pluralize = (entity: string) =>
+  (entity === "user" ? "users" : `${entity}s`).replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 
 /**
  * GENERYCZNE źródło pól relacji: jeden fetcher dla DOWOLNEJ encji-celu (bez per-encja gałęzi).
