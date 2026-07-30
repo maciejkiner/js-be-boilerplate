@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { defineEntity, f, labelFromKey } from "../src/index.js";
+import { defineEntity, defineEntityRaw, f, labelFromKey } from "../src/index.js";
 
 describe("buildery pól (f.*)", () => {
   it("każda fabryka paruje kontrolkę z właściwym typem Zod", () => {
@@ -157,7 +157,7 @@ describe("defineEntity na builderach", () => {
     projectId: z.string().uuid(),
   });
 
-  const manual = defineEntity({
+  const manual = defineEntityRaw({
     name: "ticket",
     plural: "tickets",
     label: "Ticket",

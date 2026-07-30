@@ -79,8 +79,8 @@ Eksportuj encję z `packages/schemas/src/index.ts`.
 - `defineEntity` zwraca też `entity.validation` — schemat z walidacją międzypolową (albo sam
   `schema`, gdy `refine` nieustawione). To go używa API jako body tworzenia.
 - Etykiety (`label`, etykiety opcji) są **po angielsku** (język admina). Reszta repo jest PL.
-- Kształt, którego buildery nie wyrażają: podaj własny `schema` + surowe metadane pól
-  (escape hatch — opis w `packages/schemas/README.md`).
+- Kształt, którego buildery nie wyrażają: użyj `defineEntityRaw` (własny `schema` + surowe metadane
+  pól) — escape hatch opisany w `packages/schemas/README.md`.
 
 ## 2. Tabela Drizzle
 

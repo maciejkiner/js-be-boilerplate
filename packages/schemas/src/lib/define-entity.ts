@@ -145,16 +145,16 @@ export interface BuilderEntityDefinition<M extends FieldBuilderMap> {
 }
 
 /**
- * Definiuje encję — **jedno źródło prawdy** dla bazy (typ Zod → kolumna Drizzle), walidacji BE/FE,
- * OpenAPI, kolumn admina i formularzy. Zwraca też `entity.validation` (schemat z `refine`, albo
- * `schema` gdy `refine` nieustawione), używany jako body tworzenia w API i przez silnik formularzy.
+ * Definiuje encję z pól zbudowanych fabrykami `f.*` — **jedno źródło prawdy** dla bazy
+ * (typ Zod → kolumna Drizzle), walidacji BE/FE, OpenAPI, kolumn admina i formularzy. Zwraca też
+ * `entity.validation` (schemat z `refine`, albo `schema` gdy `refine` nieustawione), używany jako
+ * body tworzenia w API i przez silnik formularzy.
  *
- * **Domyślnie deklaruj pola builderami `f.*`** — schemat Zod i metadane powstają wtedy z jednej
- * deklaracji, więc `control` nie może rozjechać się z typem Zod. Etykieta pominięta w `.label()`
- * wywodzi się z nazwy pola (`dueDate` → „Due date", `venueId` → „Venue").
+ * Schemat Zod i metadane powstają z jednej deklaracji, więc `control` nie może rozjechać się
+ * z typem Zod. Etykieta pominięta w `.label()` wywodzi się z nazwy pola (`dueDate` → „Due date",
+ * `venueId` → „Venue").
  *
- * Wariant surowy (własny `schema` + companion-map `fields`) zostaje jako **escape hatch** dla
- * kształtów, których buildery nie wyrażają; parytet kluczy `fields` ↔ schemat wymusza wtedy TS.
+ * Kształty, których buildery nie wyrażają: {@link defineEntityRaw} (escape hatch).
  *
  * Mapowanie `control` → komponent DS: `packages/forms-ui/README.md`. Pełny proces dodania encji
  * (scaffolder): `docs/recipes/jak-dodac-encje.md`.
@@ -174,20 +174,7 @@ export interface BuilderEntityDefinition<M extends FieldBuilderMap> {
  */
 export function defineEntity<M extends FieldBuilderMap>(
   definition: BuilderEntityDefinition<M>,
-): Entity<ShapeOfBuilders<M>>;
-export function defineEntity<Shape extends z.ZodRawShape>(
-  definition: EntityDefinition<Shape>,
-): Entity<Shape>;
-export function defineEntity(
-  definition: EntityDefinition<z.ZodRawShape> | BuilderEntityDefinition<FieldBuilderMap>,
-): Entity<z.ZodRawShape> {
-  if ("schema" in definition) {
-    return {
-      ...definition,
-      validation: definition.refine ? definition.refine(definition.schema) : definition.schema,
-    };
-  }
-
+): Entity<ShapeOfBuilders<M>> {
   const shape: z.ZodRawShape = {};
   const fields: Record<string, FieldMeta> = {};
   const singleFieldUnique: string[][] = [];
@@ -209,7 +196,9 @@ export function defineEntity(
     }
   }
 
-  const schema = z.object(shape);
+  // Schemat i metadane składamy dynamicznie z builderów, więc ich typ wynika z konstrukcji, a nie
+  // z inferencji — stąd asercje. Parytet kluczy gwarantuje pętla powyżej (jedno przejście po `fields`).
+  const schema = z.object(shape) as z.ZodObject<ShapeOfBuilders<M>>;
   const { name, plural, label, labelPlural, displayField, refine } = definition;
   // `.unique()` na polach + grupy złożone z encji; pusta lista zostaje `undefined`, żeby encje
   // bez ograniczeń miały dokładnie taki kształt jak przed wprowadzeniem `unique`.
@@ -221,9 +210,35 @@ export function defineEntity(
     labelPlural,
     displayField,
     schema,
-    fields,
+    fields: fields as { [K in keyof ShapeOfBuilders<M>]: FieldMeta },
     refine,
-    ...(unique.length > 0 ? { unique } : {}),
+    ...(unique.length > 0 ? { unique: unique as (keyof ShapeOfBuilders<M> & string)[][] } : {}),
     validation: refine ? refine(schema) : schema,
+  };
+}
+
+/**
+ * Definiuje encję z **własnego schematu Zod** + companion-mapy metadanych — escape hatch dla
+ * kształtów, których buildery `f.*` nie wyrażają. Parytet kluczy `fields` ↔ schemat wymusza
+ * TypeScript, ale parowanie `control` ↔ typ Zod pilnujesz sam (tabela w README pakietu).
+ *
+ * Domyślną drogą jest {@link defineEntity} — używaj tej funkcji tylko wtedy, gdy buildery nie
+ * wystarczają.
+ *
+ * @example
+ * const shape = z.object({ title: z.string().min(1) });
+ * export const ticketEntity = defineEntityRaw({
+ *   name: "ticket", plural: "tickets", label: "Ticket", labelPlural: "Tickets",
+ *   displayField: "title",
+ *   schema: shape,
+ *   fields: { title: { label: "Title", control: "text" } },
+ * });
+ */
+export function defineEntityRaw<Shape extends z.ZodRawShape>(
+  definition: EntityDefinition<Shape>,
+): Entity<Shape> {
+  return {
+    ...definition,
+    validation: definition.refine ? definition.refine(definition.schema) : definition.schema,
   };
 }

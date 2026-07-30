@@ -17,8 +17,9 @@ prezentacji per pole (`label`, `control`, `options`, `relation`, `list`).
   body tworzenia w API.
 - `entity.fields` — metadane prezentacji per pole. `control` mapuje się na komponent DS.
 
-Pola deklaruj **builderami `f.*`** (droga domyślna). Wariant surowy — własny `schema` + companion-map
-`fields` — zostaje jako escape hatch dla kształtów, których buildery nie wyrażają.
+Pola deklaruj **builderami `f.*`** przez `defineEntity` (droga domyślna). Dla kształtów, których
+buildery nie wyrażają, jest osobna funkcja `defineEntityRaw` — własny `schema` + companion-map
+`fields`.
 
 ## Buildery pól (`f.*`) — droga domyślna
 
@@ -108,9 +109,12 @@ Scaffolder przekłada każdą grupę na **częściowy** indeks unikalny (`where 
 soft delete zwalnia wartość — usunięty miękko rekord nie blokuje jej na zawsze. Naruszenie wraca
 z API jako **409** z nazwami pól, które się powtórzyły (nie jako 500).
 
-## Wariant surowy (escape hatch)
+## `defineEntityRaw` — escape hatch
 
 Gdy pole wymaga kształtu, którego buildery nie wyrażają, podaj własny `schema` i metadane wprost.
+To **osobna funkcja**, nie wariant `defineEntity` — dzięki temu obie mają po jednej sygnaturze,
+a błąd w definicji encji wskazuje konkretne pole zamiast całego wywołania.
+
 Wtedy **parytet kluczy `fields` ↔ schemat** wymusza TypeScript (brak metadanej = błąd kompilacji),
 ale parowanie `control` ↔ typ Zod pilnujesz **sam**:
 
@@ -129,11 +133,11 @@ buildery zdejmują z człowieka.
 
 ```ts
 import { z } from "zod";
-import { defineEntity } from "@repo/schemas";
+import { defineEntityRaw } from "@repo/schemas";
 
 const shape = z.object({ title: z.string().min(1) });
 
-export const ticketEntity = defineEntity({
+export const ticketEntity = defineEntityRaw({
   name: "ticket",
   plural: "tickets",
   label: "Ticket",
