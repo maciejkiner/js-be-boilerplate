@@ -74,6 +74,15 @@ export function pascal(value: string): string {
   return words(value).map(capitalize).join("");
 }
 
+/**
+ * Kontrolki listy zamkniętej. `select` i `radio` różnią się **wyłącznie** komponentem na FE —
+ * w bazie, DTO, filtrach i kolumnach admina zachowują się identycznie (enum + `options`).
+ * Szablony muszą pytać o to przez ten predykat, nie porównywać z `"select"`.
+ */
+export function isChoiceField(field: FieldDescriptor): boolean {
+  return field.control === "select" || field.control === "radio";
+}
+
 function camel(value: string): string {
   return words(value)
     .map((word, index) => (index === 0 ? word : capitalize(word)))

@@ -1,4 +1,9 @@
-import { type EntityDescriptor, type FieldDescriptor, pascal } from "./descriptor.js";
+import {
+  type EntityDescriptor,
+  type FieldDescriptor,
+  isChoiceField,
+  pascal,
+} from "./descriptor.js";
 
 // --- api-react (hooki + typy) ----------------------------------------------
 
@@ -91,6 +96,7 @@ export function useDelete${d.Pascal}() {
 function cellRender(f: FieldDescriptor): string {
   switch (f.control) {
     case "select":
+    case "radio":
       return `render: (row) => <Badge>{row.${f.name}}</Badge>`;
     case "date":
       return `render: (row) => formatDate(row.${f.name})`;
@@ -107,6 +113,7 @@ function cellRender(f: FieldDescriptor): string {
 function detailValue(f: FieldDescriptor): string {
   switch (f.control) {
     case "select":
+    case "radio":
       return `<Badge>{row.${f.name}}</Badge>`;
     case "date":
       return `{formatDate(row.${f.name})}`;
@@ -119,13 +126,22 @@ function detailValue(f: FieldDescriptor): string {
 }
 
 export function adminEntity(d: EntityDescriptor): string {
-  const filterSelects = d.fields.filter((f) => f.filterable && f.control === "select");
-  // `formatDate` używane tylko przy polach `date` (kolumna/detal) — importuj warunkowo,
-  // inaczej encja bez pola date daje nieużywany import (błąd typecheck/lint/build).
+  const filterSelects = d.fields.filter((f) => f.filterable && isChoiceField(f));
+  // Importy DS i `ui` budujemy WARUNKOWO — nieużywany import to błąd typecheck/lint/build
+  // (`noUnusedLocals`). Każdy z tych symboli pojawia się w kodzie tylko dla części encji:
+  // `formatDate` przy polach `date`, `Badge` przy listach zamkniętych, `Select` przy ich filtrach.
   const hasDate = d.fields.some((f) => f.control === "date");
   const uiImport = hasDate
     ? `import { formatDate, Page } from "../ui";`
     : `import { Page } from "../ui";`;
+  const hasChoice = d.fields.some(isChoiceField);
+  const dsImports = [
+    ...(hasChoice ? ["Badge"] : []),
+    "Button",
+    "Modal",
+    ...(filterSelects.length > 0 ? ["Select"] : []),
+    "useToast",
+  ].join(", ");
   const columns = d.fields
     .filter((f) => f.visible)
     .map((f) => {
@@ -176,7 +192,7 @@ export function adminEntity(d: EntityDescriptor): string {
   use${d.Pascal},
   use${d.PascalPlural},
 } from "@repo/api-react";
-import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";
+import { ${dsImports} } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { ${d.name}Entity } from "@repo/schemas";
 import { type Column, DataTable, type SortState } from "@repo/ui";

@@ -1,4 +1,4 @@
-import type { EntityDescriptor, FieldDescriptor } from "./descriptor.js";
+import { type EntityDescriptor, type FieldDescriptor, isChoiceField } from "./descriptor.js";
 
 const enumUnion = (field: FieldDescriptor): string =>
   (field.options ?? []).map((o) => `"${o.value}"`).join(" | ");
@@ -8,7 +8,7 @@ const enumValues = (field: FieldDescriptor): string =>
 
 /** Pola relacji filtrowalne po równości + enumy — filtry API (jak w module referencyjnym). */
 const apiFilterFields = (d: EntityDescriptor): FieldDescriptor[] =>
-  d.fields.filter((f) => f.filterable && (f.control === "select" || f.control === "relation"));
+  d.fields.filter((f) => f.filterable && (isChoiceField(f) || f.control === "relation"));
 
 const sortKeys = (d: EntityDescriptor): string[] => [
   ...d.fields.filter((f) => f.sortable).map((f) => f.name),
@@ -26,6 +26,7 @@ function drizzleColumn(f: FieldDescriptor): string {
     case "number":
       return `integer("${f.snake}")${notNull}`;
     case "select":
+    case "radio":
       return `text("${f.snake}").$type<${enumUnion(f)}>()${notNull}`;
     case "checkbox":
     case "switch":
@@ -42,8 +43,7 @@ function drizzleColumn(f: FieldDescriptor): string {
 export function drizzleSchema(d: EntityDescriptor): string {
   const cols = new Set<string>(["pgTable", "uuid"]);
   for (const f of d.fields) {
-    if (f.control === "text" || f.control === "textarea" || f.control === "select")
-      cols.add("text");
+    if (f.control === "text" || f.control === "textarea" || isChoiceField(f)) cols.add("text");
     if (f.control === "number") cols.add("integer");
     if (f.control === "checkbox" || f.control === "switch") cols.add("boolean");
     if (f.control === "date") cols.add("timestamp");
@@ -93,7 +93,7 @@ ${columnLines}
 export function dto(d: EntityDescriptor): string {
   const filters = apiFilterFields(d)
     .map((f) => {
-      const type = f.control === "select" ? `z.enum([${enumValues(f)}])` : `z.string().uuid()`;
+      const type = isChoiceField(f) ? `z.enum([${enumValues(f)}])` : `z.string().uuid()`;
       return `  ${f.name}: ${type}.optional(),`;
     })
     .join("\n");
@@ -327,6 +327,7 @@ function sampleValue(f: FieldDescriptor): string {
     case "number":
       return "1";
     case "select":
+    case "radio":
       return `"${(f.options ?? [])[0]?.value ?? ""}"`;
     case "checkbox":
     case "switch":

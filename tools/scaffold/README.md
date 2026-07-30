@@ -35,6 +35,15 @@ Mapowanie `control` → Drizzle/Zod/komponent robione z metadanych; `required` z
 sort/filtry z `fields[].list`; `unique` z `entity.unique`. Generowane pliki są od razu formatowane
 Prettierem.
 
+Dwie rzeczy, o których trzeba pamiętać przy dopisywaniu szablonów:
+
+- **`select` i `radio` to ta sama lista zamknięta** — różni je wyłącznie komponent na FE. W bazie,
+  DTO, filtrach i kolumnach admina zachowują się identycznie, więc szablon pyta o to predykatem
+  `isChoiceField()`, a nie porównaniem z `"select"`.
+- **Importy w generowanym kodzie muszą być warunkowe.** `noUnusedLocals` traktuje nieużywany import
+  jako błąd, a symbole takie jak `formatDate`, `Badge` czy `Select` pojawiają się tylko dla części
+  encji (odpowiednio: pole `date`, lista zamknięta, filtr listy zamkniętej).
+
 ## Formy nazwy encji
 
 `plural` encji jest używany w czterech różnych rolach, które **nie mają tej samej konwencji zapisu**.

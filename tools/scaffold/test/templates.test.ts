@@ -1,6 +1,6 @@
 import { defineEntity, f } from "@repo/schemas";
 import { describe, expect, it } from "vitest";
-import { beTest, drizzleSchema, repository, routes, service } from "../src/be-templates.js";
+import { beTest, drizzleSchema, dto, repository, routes, service } from "../src/be-templates.js";
 import { buildDescriptor } from "../src/descriptor.js";
 import { adminEntity, apiReactHooks } from "../src/fe-templates.js";
 
@@ -28,6 +28,23 @@ const project = buildDescriptor(
     labelPlural: "Projects",
     displayField: "name",
     fields: { name: f.text().min(1).sortable() },
+  }),
+);
+
+// `select` i `radio` to ta sama lista zamknięta — różni je wyłącznie komponent na FE.
+// Encja z OBIEMA kontrolkami pilnuje, żeby żaden szablon nie obsłużył tylko jednej z nich.
+const talk = buildDescriptor(
+  defineEntity({
+    name: "talk",
+    plural: "talks",
+    label: "Talk",
+    labelPlural: "Talks",
+    displayField: "title",
+    fields: {
+      title: f.text().min(1),
+      track: f.select({ product: "Product", design: "Design" }).filterable(),
+      level: f.radio({ intro: "Intro", advanced: "Advanced" }).filterable(),
+    },
   }),
 );
 
@@ -103,6 +120,64 @@ describe("moduł API", () => {
 
     expect(generated).toContain("TRUNCATE TABLE users, talks, speakers, talk_speakers CASCADE");
     expect(generated).toContain("/api/v1/talk-speakers");
+  });
+});
+
+describe("radio traktowane jak select (lista zamknięta)", () => {
+  it("kolumna Drizzle dostaje `$type` i `notNull` tak samo jak select", () => {
+    const generated = drizzleSchema(talk);
+
+    expect(generated).toContain(`track: text("track").$type<"product" | "design">().notNull()`);
+    expect(generated).toContain(`level: text("level").$type<"intro" | "advanced">().notNull()`);
+  });
+
+  it("filtr w DTO jest enumem, nie uuid-em", () => {
+    const generated = dto(talk);
+
+    expect(generated).toContain(`track: z.enum(["product", "design"]).optional()`);
+    expect(generated).toContain(`level: z.enum(["intro", "advanced"]).optional()`);
+  });
+
+  it("test CRUD wysyła prawidłową wartość enuma, nie stub tekstowy", () => {
+    const generated = beTest(talk);
+
+    expect(generated).toContain(`level: "intro"`);
+    expect(generated).not.toContain(`level: "test-level"`);
+  });
+
+  it("admin renderuje Badge i filtr dla obu kontrolek", () => {
+    const generated = adminEntity(talk);
+
+    expect(generated).toContain("<Badge>{row.track}</Badge>");
+    expect(generated).toContain("<Badge>{row.level}</Badge>");
+    expect(generated).toContain('aria-label="Filtr: Track"');
+    expect(generated).toContain('aria-label="Filtr: Level"');
+  });
+});
+
+describe("importy w widoku admina są warunkowe", () => {
+  // Nieużywany import to błąd `noUnusedLocals` — encja bez listy zamkniętej nie może dostać
+  // `Badge`, a encja bez filtrów nie może dostać `Select`.
+  it("encja bez listy zamkniętej nie importuje Badge ani Select", () => {
+    const generated = adminEntity(project);
+
+    expect(generated).toContain('import { Button, Modal, useToast } from "@repo/design-system";');
+  });
+
+  it("encja z listą zamkniętą bez filtra importuje Badge, ale nie Select", () => {
+    const generated = adminEntity(talkSpeaker);
+
+    expect(generated).toContain(
+      'import { Badge, Button, Modal, useToast } from "@repo/design-system";',
+    );
+  });
+
+  it("encja z filtrowalną listą zamkniętą importuje oba", () => {
+    const generated = adminEntity(talk);
+
+    expect(generated).toContain(
+      'import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";',
+    );
   });
 });
 
