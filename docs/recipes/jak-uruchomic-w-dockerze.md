@@ -38,7 +38,7 @@ zmianie to nie jest pętla, w której chcesz pracować.
   startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`.
 - Seed:
   ```bash
-  docker compose -f docker-compose.dev.yml exec api pnpm db:seed
+  docker compose -f docker-compose.dev.yml exec api pnpm --filter @repo/api db:seed
   ```
 - **Zmiana biblioteki** (`packages/*`, `design-system`) wymaga rebuildu:
   `docker compose -f docker-compose.dev.yml exec api pnpm turbo run build --filter=@repo/<pakiet>`
