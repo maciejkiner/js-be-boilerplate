@@ -6,16 +6,22 @@ import {
   useRooms,
 } from "@repo/api-react";
 import { Button, Input, Select, Textarea, useToast } from "@repo/design-system";
+import { WizardStepError } from "@repo/forms";
 import { deriveFields, emptyValues, FormFields, Wizard } from "@repo/forms-ui";
 import type { WizardStepConfig } from "@repo/forms-ui";
 import { eventEntity, talkEntity } from "@repo/schemas";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 import { useRelationSource } from "../relation-source";
 import { Page } from "../ui";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** `unwrap` rzuca `ApiError`, więc `message` niesie `detail` z problem+json (treść dla użytkownika). */
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : "Żądanie do API nie powiodło się.";
+}
 
 function parseEmails(text: string): string[] {
   return text
@@ -142,6 +148,10 @@ export function CreateEventWizard() {
   const relationSource = useRelationSource();
 
   const [rows, setRows] = useState<AgendaRow[]>([emptyRow()]);
+  // Wydarzenie powstaje w pierwszej fazie orkiestracji. Gdy padnie faza późniejsza, ponowne
+  // „Utwórz" NIE może tworzyć go drugi raz — `slug` jest unikalny, więc druga próba dostałaby 409
+  // zamiast powtórzyć krok, który faktycznie zawiódł.
+  const createdEventId = useRef<string | null>(null);
   const roomsQuery = useRooms({ pageSize: 50 });
   const rooms = (roomsQuery.data?.items ?? []).map((room) => ({
     value: room.id,
@@ -195,45 +205,54 @@ export function CreateEventWizard() {
           defaultValues={{ ...emptyValues(eventEntity), inviteEmailsText: "" }}
           labels={{ next: "Dalej", submit: "Utwórz" }}
           onComplete={async (values) => {
-            try {
-              // 1) wydarzenie → baza
-              const event = await createEvent.mutateAsync(values as unknown as CreateEventBody);
+            // 1) wydarzenie → baza (pomijane przy ponowieniu — patrz `createdEventId`)
+            if (!createdEventId.current) {
+              try {
+                const event = await createEvent.mutateAsync(values as unknown as CreateEventBody);
+                createdEventId.current = event.id;
+              } catch (error) {
+                throw new WizardStepError("event", messageOf(error));
+              }
+            }
+            const eventId = createdEventId.current;
 
-              // 2) agenda → JEDNO żądanie hurtowe („wszystko albo nic")
-              const talks = rows
-                .filter((row) => row.title && row.roomId && row.startsAt && row.endsAt)
-                .map((row) => ({
-                  title: row.title,
-                  roomId: row.roomId,
-                  track: row.track,
-                  level: row.level,
-                  startsAt: new Date(row.startsAt).toISOString(),
-                  endsAt: new Date(row.endsAt).toISOString(),
-                  isRecorded: false,
-                }));
-              if (talks.length > 0) {
+            // 2) agenda → JEDNO żądanie hurtowe („wszystko albo nic")
+            const talks = rows
+              .filter((row) => row.title && row.roomId && row.startsAt && row.endsAt)
+              .map((row) => ({
+                title: row.title,
+                roomId: row.roomId,
+                track: row.track,
+                level: row.level,
+                startsAt: new Date(row.startsAt).toISOString(),
+                endsAt: new Date(row.endsAt).toISOString(),
+                isRecorded: false,
+              }));
+            if (talks.length > 0) {
+              try {
                 await createTalks.mutateAsync({
-                  id: event.id,
+                  id: eventId,
                   talks: talks as Parameters<typeof createTalks.mutateAsync>[0]["talks"],
                 });
+              } catch (error) {
+                // Reguły domenowe (okno wydarzenia, kolizja sal) dotyczą danych z kroku „agenda",
+                // więc odsyłamy tam użytkownika razem z komunikatem serwera.
+                throw new WizardStepError("agenda", messageOf(error));
               }
-
-              // 3) zaproszenia → mailer (NIE do bazy)
-              const emails = parseEmails((values.inviteEmailsText as string) ?? "");
-              if (emails.length > 0) {
-                await invite.mutateAsync({ id: event.id, emails });
-              }
-
-              toast("Utworzono wydarzenie wraz z agendą i zaproszeniami.", "success");
-              navigate({ to: "/events/$id", params: { id: event.id } });
-            } catch (error) {
-              // Reguły domenowe (kolizja sal, okno wydarzenia) wracają z API jako 409/422 —
-              // pokazujemy komunikat serwera, bo wskazuje konkretną pozycję agendy.
-              toast(
-                error instanceof Error ? error.message : "Nie udało się ukończyć kreatora.",
-                "error",
-              );
             }
+
+            // 3) zaproszenia → mailer (NIE do bazy)
+            const emails = parseEmails((values.inviteEmailsText as string) ?? "");
+            if (emails.length > 0) {
+              try {
+                await invite.mutateAsync({ id: eventId, emails });
+              } catch (error) {
+                throw new WizardStepError("invite", messageOf(error));
+              }
+            }
+
+            toast("Utworzono wydarzenie wraz z agendą i zaproszeniami.", "success");
+            navigate({ to: "/events/$id", params: { id: eventId } });
           }}
         />
       </div>
