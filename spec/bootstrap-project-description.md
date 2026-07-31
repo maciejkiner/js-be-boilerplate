@@ -1,148 +1,238 @@
-# Bootstrap TypeScript (BE + FE) — opis projektu
+[Home](../README.md) › [Documentation](../docs/README.md) › Project specification
 
-## 1. Cel i filozofia
+# TypeScript bootstrap (backend + frontend) — project description
 
-Repozytorium startowe dla nowych projektów w stacku TypeScript, pokrywające funkcjonalność wspólną dla większości aplikacji: API z autoryzacją, panel administracyjny z CRUD-em generowanym ze schematów danych oraz silnik formularzy. Celem jest skrócenie pierwszych tygodni projektu do dni, przy zachowaniu pełnej własności kodu przez projekt.
+## 1. Goal and philosophy
 
-Zasady nadrzędne:
+A starter repository for new projects on a TypeScript stack, covering the functionality most
+applications share: an API with authorization, an admin panel with CRUD generated from the data
+schemas, and a form engine. The goal is to cut the first weeks of a project down to days while the
+project retains full ownership of the code.
 
-- **Bootstrap, nie framework.** Projekty startują przez skopiowanie repozytorium i od tego momentu są odcięte (fork & forget). Nie ma zależności technicznej między bootstrapem a projektami — jedynym kanałem zwrotnym jest changelog z przepisami migracyjnymi (sekcja 12).
-- **Generator, nie silnik runtime.** CRUD, widoki admina i formularze są scaffoldowane jako zwykły kod, który projekt przejmuje na własność i dowolnie modyfikuje. Świadomie odrzucamy podejście deklaratywnego silnika interpretowanego w locie (styl Django admin / Strapi / React-Admin), bo każdy projekt w końcu trafia na przypadek nieprzewidziany przez silnik.
-- **Jedno źródło prawdy dla kształtu danych.** Encja zdefiniowana raz (schemat Zod + metadane) napędza: schemat bazy i migracje, walidację BE i FE, typy, spec OpenAPI, klienta API, kolumny tabel w adminie oraz formularze.
-- **AI-first.** Struktura, konwencje i dokumentacja projektowane tak, aby agent AI mógł samodzielnie poruszać się po repozytorium, dodawać encje według przepisów i aplikować poprawki z changeloga. Wszystko, co pomaga generatorowi (przewidywalna struktura, rejestry, konwencje zamiast magii), pomaga też agentom — i odwrotnie.
-- **Konwencja nad konfiguracją.** Katalog = moduł, znane kształty plików, auto-discovery przez rejestry.
-- **Kryterium zakresu.** Funkcjonalność należy do core, jeśli: (a) potrzebuje jej zdecydowana większość projektów, (b) da się ją zaimplementować bez wiedzy domenowej, (c) nie wymusza decyzji biznesowych na przyszłym projekcie. Jeśli któryś warunek pada — jest to moduł opt-in albo pozostaje poza zakresem.
+Overriding principles:
 
-## 2. Zakres funkcjonalny
+- **A bootstrap, not a framework.** Projects start by copying the repository and are cut off from
+  that moment on (fork & forget). There is no technical dependency between the bootstrap and the
+  projects — the only feedback channel is a changelog of migration recipes (section 12).
+- **A generator, not a runtime engine.** CRUD, admin views and forms are scaffolded as ordinary code
+  that the project takes ownership of and modifies freely. We deliberately reject the declarative
+  engine interpreted on the fly (the Django admin / Strapi / React-Admin style), because every project
+  eventually hits a case the engine did not foresee.
+- **A single source of truth for the shape of the data.** An entity is defined once (a Zod schema plus
+  metadata) and drives the database schema and migrations, backend and frontend validation, types, the
+  OpenAPI specification, the API client, the admin table columns and the forms.
+- **AI-first.** The structure, the conventions and the documentation are designed so that an AI agent
+  can navigate the repository on its own, add entities by following the recipes and apply fixes from
+  the changelog. Everything that helps the generator (a predictable structure, registries, conventions
+  instead of magic) helps agents too — and vice versa.
+- **Convention over configuration.** A directory is a module, files have known shapes, discovery
+  happens through registries.
+- **The scope criterion.** A feature belongs in core if (a) the vast majority of projects need it,
+  (b) it can be implemented without domain knowledge, and (c) it does not force a business decision on
+  a future project. If any of those fails, it is an opt-in module or stays out of scope.
 
-### Core (zawsze w projekcie)
+## 2. Functional scope
 
-- Struktura API REST z konwencjami: format błędów, paginacja, wersjonowanie (sekcja 8).
-- Spec OpenAPI generowany ze schematów Zod + wygenerowany klient TS.
-- Auth: tabela userów, sesje/tokeny, middleware autoryzacji, proste RBAC (role na poziomie usera), reset hasła. Provider tożsamości email+hasło jako pierwsza implementacja interfejsu providera (sekcja 7).
-- Abstrakcja mailera (implikowana przez reset hasła) z adapterem dev (mailhog) i produkcyjnym.
-- CRUD scaffolder: generowanie modułu encji (schemat, migracja, endpointy, walidacje, widoki admina) na podstawie definicji Zod (sekcja 6).
-- Panel administracyjny: własna implementacja na naszym design systemie, deployowalna osobno (np. subdomena); lista z paginacją/sortowaniem/filtrowaniem po kolumnach, formularze create/edit, widok szczegółów, usuwanie.
-- Silnik formularzy headless + renderery na design systemie (sekcja 9).
-- Pola audytowe (createdAt, updatedAt, createdBy) i soft delete jako konwencja w scaffolderze.
-- Infrastruktura DX: walidowana konfiguracja env, structured logging (pino), globalna obsługa błędów z mapowaniem na odpowiedzi API, migracje i seedy, docker-compose (Postgres + mailhog), CI (GitHub Actions), testy unit (Vitest) i e2e (Playwright).
-- Error tracking przez abstrakcję z adapterem Sentry (vendor wymienny).
-- Dokumentacja AI: CLAUDE.md / AGENTS.md, przepisy, inwentarz komponentów DS (sekcja 11).
+### Core (always in the project)
 
-### Moduły opt-in (w repo lub dokumentowane jako przepis, włączane świadomie)
+- A REST API structure with conventions: the error format, pagination, versioning (section 8).
+- An OpenAPI specification generated from the Zod schemas plus a generated TypeScript client.
+- Auth: a users table, sessions and tokens, authorization middleware, simple RBAC (roles on the user),
+  password reset. Email + password is the first implementation of the identity provider interface
+  (section 7).
+- A mailer abstraction (implied by password reset) with a dev adapter (mailhog) and a production one.
+- A CRUD scaffolder: generating an entity module (schema, migration, endpoints, validation, admin
+  views) from a Zod definition (section 6).
+- An admin panel: our own implementation on our design system, deployable separately (for example on a
+  subdomain); a list with pagination, sorting and filtering by columns, create/edit forms, a detail
+  view, deletion.
+- A headless form engine plus renderers on the design system (section 9).
+- Audit columns (createdAt, updatedAt, createdBy) and soft delete as a scaffolder convention.
+- DX infrastructure: validated environment configuration, structured logging (pino), global error
+  handling mapped onto API responses, migrations and seeds, docker-compose (Postgres + mailhog), CI
+  (GitHub Actions), unit tests (Vitest) and e2e tests (Playwright).
+- Error tracking behind an abstraction with a Sentry adapter (the vendor is replaceable).
+- AI documentation: CLAUDE.md / AGENTS.md, the recipes, the DS component inventory (section 11).
 
-- Multi-tenancy (organizacje, zaproszenia, role per organizacja) — decyzja przy starcie projektu, bo dotyka schematu bazy i jest bolesna do doklejenia później.
-- Upload plików z abstrakcją storage.
-- Save & resume dla wizardów (persystencja częściowego stanu formularza).
+### Opt-in modules (in the repository or documented as a recipe, enabled deliberately)
+
+- Multi-tenancy (organizations, invitations, per-organization roles) — decided when a project starts,
+  because it touches the database schema and is painful to bolt on later.
+- File upload with a storage abstraction.
+- Save & resume for wizards (persisting partial form state).
 - OpenTelemetry (tracing).
-- Kolejki / background jobs.
+- Queues and background jobs.
 
-### Jawnie poza zakresem
+### Explicitly out of scope
 
-- Płatności, i18n, feature flagi, pełnotekstowe wyszukiwanie, social login (implementowane w projektach jako kolejne providery tożsamości), SSR w domyślnej skorupie FE.
+- Payments, i18n, feature flags, full-text search, social login (implemented in projects as further
+  identity providers), SSR in the default frontend shell.
 
-## 3. Struktura monorepo
+## 3. Monorepo structure
 
 ```
 apps/
-  api        — Fastify, moduły domenowe, montowanie z rejestru
-  web        — domyślna skorupa: Vite + React + TanStack Router
-  admin      — panel administracyjny, osobno deployowalny (subdomena)
+  api        — Fastify, domain modules, mounted from a registry
+  web        — the default shell: Vite + React + TanStack Router
+  admin      — the admin panel, separately deployable (subdomain)
 packages/
-  schemas    — schematy Zod encji i formularzy; czysty TS, zero zależności
-  api-client — klient generowany z OpenAPI; framework-agnostic (fetch)
-  api-react  — bindingi TanStack Query nad klientem (hooki per zasób)
-  forms      — headless silnik formularzy (stan, walidacja, kroki, zależności)
-  forms-ui   — renderery pól spięte z design systemem
-  ui         — kompozycje na DS: DataTable, layout admina, EmptyState itd.
-  config     — współdzielone ESLint / Prettier / tsconfig
-design-system/  — nasz DS jako git subtree (sekcja 10)
+  schemas    — Zod schemas for entities and forms; pure TS, zero dependencies
+  api-client — the client generated from OpenAPI; framework-agnostic (fetch)
+  api-react  — TanStack Query bindings over the client (hooks per resource)
+  forms      — the headless form engine (state, validation, steps, dependencies)
+  forms-ui   — field renderers wired to the design system
+  ui         — compositions on the DS: DataTable, the admin layout, EmptyState, …
+  config     — shared ESLint / Prettier / tsconfig
+design-system/  — our DS as a git subtree (section 10)
 ```
 
-Konsekwencje osobnego `apps/admin` na subdomenie, obsłużone od pierwszego dnia: cookies z domeną nadrzędną lub tokeny, CORS pod dwa originy, wspólne `packages/ui` i `packages/api-client`, żeby web i admin nie dywergowały w podstawach.
+The consequences of a separate `apps/admin` on a subdomain, handled from day one: cookies scoped to
+the parent domain (or tokens), CORS for two origins, and shared `packages/ui` and `packages/api-client`
+so that web and admin do not diverge in the basics.
 
-## 4. Wymienialność silnika FE
+## 4. Replaceability of the frontend engine
 
-Wartość bootstrapu na froncie żyje w `packages/`, a `apps/web` jest cienką skorupą (routing, layout, składanie klocków). Projekt potrzebujący SSR stawia własną skorupę (np. Next) i importuje te same pakiety — wymianie podlega skorupa, nie inwestycja.
+On the frontend the bootstrap's value lives in `packages/`, while `apps/web` is a thin shell (routing,
+layout, assembling the pieces). A project that needs SSR stands up its own shell (Next, say) and
+imports the same packages — what gets replaced is the shell, not the investment.
 
-Granica pilnowana w review: **React tak, router i bundler-specyfika nie.** W `packages/` zakazane są importy z routera (np. `@tanstack/react-router`) i bundlerowe API (np. `import.meta.env` — env przekazywany jawnie przez inicjalizację). TanStack Query jest dozwolony (działa identycznie w każdej skorupie). Nie dążymy do agnostyczności względem Reacta — React jest bezpiecznym założeniem, pełna agnostyczność podwoiłaby koszt bez realnego zysku.
+The boundary is enforced in review: **React yes, the router and bundler specifics no.** Inside
+`packages/` imports from a router (for example `@tanstack/react-router`) and bundler APIs (for example
+`import.meta.env` — the environment is passed explicitly at initialisation) are forbidden. TanStack
+Query is allowed (it behaves identically in every shell). We do not aim for React-agnosticism: React
+is a safe assumption, and full agnosticism would double the cost with no real gain.
 
-`apps/admin` jako druga skorupa na tych samych pakietach działa jak permanentny test tej granicy — przecieki specyfiki wychodzą natychmiast.
+`apps/admin`, as a second shell on the same packages, acts as a permanent test of that boundary —
+leaked specifics surface immediately.
 
 ## 5. Stack
 
-| Warstwa | Wybór | Uzasadnienie (jedno zdanie) |
-|---|---|---|
-| Runtime | Node 22 LTS, pnpm workspaces, Turborepo | Nudne i przewidywalne; ekosystem wygrywa z nowinkami. |
-| Język | TypeScript strict wszędzie | Wspólne configi w `packages/config`. |
-| Baza | PostgreSQL | Bez dyskusji. |
-| ORM | Drizzle | Schemat jako kod TS — łatwiejszy do generowania i transformowania przez scaffolder i agentów niż osobny DSL. |
-| BE | Fastify + Zod (`fastify-type-provider-zod`) | Zod domyka łańcuch jednego źródła prawdy: walidacja req/res, typy, OpenAPI, walidacja FE, definicje formularzy; struktura modułowa to nasza cienka konwencja zamiast ciężkiej maszynerii frameworka. |
-| API | REST + OpenAPI (`zod-openapi`) + generowany klient TS | Uniwersalność dla przyszłych konsumentów spoza TS; type-safety odzyskana przez generowanego klienta. |
-| FE (domyślna skorupa) | Vite + React + TanStack Router + TanStack Query | Jeden świat wykonania (bez SSR), szybki dev, czytelne dla agentów. |
-| UI | Nasz design system (git subtree) + `packages/ui` | Kompozycje budowane *na* DS, nie obok niego. |
-| Testy | Vitest (unit) + Playwright (e2e) | — |
-| Dev env | docker-compose: Postgres + mailhog | — |
-| Logging | pino (structured) | — |
-| Error tracking | abstrakcja + adapter Sentry | Vendor wymienny. |
-| CI | GitHub Actions | — |
+| Layer            | Choice                                              | Rationale (one sentence)                                                                                                                                                                                                    |
+| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime          | Node 22 LTS, pnpm workspaces, Turborepo             | Boring and predictable; the ecosystem beats novelty.                                                                                                                                                                        |
+| Language         | TypeScript strict everywhere                        | Shared configs in `packages/config`.                                                                                                                                                                                        |
+| Database         | PostgreSQL                                          | Not up for discussion.                                                                                                                                                                                                      |
+| ORM              | Drizzle                                             | The schema is TypeScript code — easier for the scaffolder and for agents to generate and transform than a separate DSL.                                                                                                     |
+| Backend          | Fastify + Zod (`fastify-type-provider-zod`)         | Zod closes the single-source-of-truth loop: request/response validation, types, OpenAPI, frontend validation, form definitions; the modular structure is our thin convention instead of heavy framework machinery.           |
+| API              | REST + OpenAPI (`zod-openapi`) + a generated client | Universal for future non-TypeScript consumers; type safety is recovered through the generated client.                                                                                                                       |
+| Frontend (shell) | Vite + React + TanStack Router + TanStack Query     | One execution world (no SSR), fast development, readable for agents.                                                                                                                                                        |
+| UI               | Our design system (git subtree) + `packages/ui`     | Compositions built _on_ the DS, not beside it.                                                                                                                                                                              |
+| Tests            | Vitest (unit) + Playwright (e2e)                    | —                                                                                                                                                                                                                           |
+| Dev environment  | docker-compose: Postgres + mailhog                  | —                                                                                                                                                                                                                           |
+| Logging          | pino (structured)                                   | —                                                                                                                                                                                                                           |
+| Error tracking   | an abstraction + a Sentry adapter                   | The vendor is replaceable.                                                                                                                                                                                                  |
+| CI               | GitHub Actions                                      | —                                                                                                                                                                                                                           |
 
-## 6. Scaffolder i jego kontrakt
+## 6. The scaffolder and its contract
 
-Zadanie „dodaj encję" generuje kompletny moduł: schemat Zod z metadanymi → schemat Drizzle + migracja → endpointy CRUD z walidacją → wpisy w spec OpenAPI → widoki admina (lista, formularz, detal).
+The "add an entity" task generates a complete module: a Zod schema with metadata → a Drizzle schema
+plus a migration → CRUD endpoints with validation → entries in the OpenAPI specification → admin views
+(list, form, detail).
 
-Wpływ na istniejące pliki jest zminimalizowany przez **registry pattern**: menu admina, routing i montowanie routerów BE renderują się z rejestrów encji/modułów, więc generator dopisuje jedną rejestrację (linię w pliku-indeksie lub plik w konwencjonalnym katalogu zbieranym automatycznie). Tam, gdzie naprawdę trzeba wstrzyknąć kod w środek pliku, używamy komentarzy-kotwic (`// scaffolder:entities — do not remove`). Świadomie rezygnujemy z parsowania AST i inteligentnego mergowania — konwencja + kotwice pokrywają zdecydowaną większość przypadków, reszta jest opisana w przepisach i wykonywalna przez agenta ręcznie.
+The impact on existing files is minimised by the **registry pattern**: the admin menu, the routing and
+the mounting of backend routers all render from entity and module registries, so the generator adds a
+single registration (a line in an index file, or a file in a conventional directory that is collected
+automatically). Where code really has to be injected into the middle of a file we use anchor comments
+(`// scaffolder:entities — do not remove`). We deliberately forgo AST parsing and clever merging —
+conventions plus anchors cover the vast majority of cases, and the rest is described in the recipes and
+can be carried out by an agent manually.
 
-Zakres CRUD: relacje 1:N — tak; M:N z atrybutami na tabeli pośredniej — poza generatorem (przepis ręczny); soft delete i pola audytowe — domyślnie; upload plików — moduł opt-in; pełnotekstowe wyszukiwanie — poza zakresem (filtrowanie po kolumnach wystarcza).
+CRUD scope: one-to-many relations — yes; many-to-many with attributes on a join table — outside the
+generator (a manual recipe); soft delete and audit columns — by default; file upload — an opt-in
+module; full-text search — out of scope (filtering by columns is enough).
 
-Wygenerowany kod jest jednocześnie **referencyjnym użyciem design systemu i konwencji** — uczy wzorców każdego, kto go czyta, człowieka i agenta. To podnosi wymaganą jakość szablonów.
+The generated code is at the same time **a reference usage of the design system and the conventions** —
+it teaches the patterns to everyone who reads it, human or agent. That raises the quality bar for the
+templates.
 
 ## 7. Auth
 
-Core zawiera: tabelę userów, sesje/tokeny (z refreshem), middleware autoryzacji, proste RBAC, reset hasła (→ mailer). Modularna jest **metoda logowania**: granica przebiega przez interfejs providera tożsamości, nie przez cały auth. Email+hasło to pierwsza implementacja tego interfejsu w core; social login i inni providerzy to kolejne implementacje dokładane w projektach. Auth nie może być opcjonalny w schemacie — CRUD admin i `createdBy` na nim wiszą.
+Core contains: a users table, sessions and tokens (with refresh), authorization middleware, simple
+RBAC and password reset (→ the mailer). What is modular is **the login method**: the boundary runs
+through the identity provider interface, not through auth as a whole. Email + password is the first
+implementation of that interface in core; social login and other providers are further implementations
+added in projects. Auth cannot be optional in the schema — the CRUD admin and `createdBy` hang off it.
 
-Auth od startu wspiera admin na subdomenie (cookies `.domena` lub tokeny, CORS na dwa originy).
+Auth supports an admin on a subdomain from the start (`.domain` cookies or tokens, CORS for two
+origins).
 
-## 8. Konwencje API
+## 8. API conventions
 
-- Format błędów oparty na RFC 7807 (problem+json), spójny z globalnym handlerem błędów.
-- Paginacja: offset-based w core (prostsza, wystarczająca dla admina); cursor-based jako przepis dla publicznych list.
-- Wersjonowanie: `/api/v1` jako konwencja ścieżki, bez dodatkowej maszynerii.
-- Spec OpenAPI generowany ze schematów Zod — nigdy pisany ręcznie; z niego dokumentacja i klient.
+- An error format based on RFC 7807 (problem+json), consistent with the global error handler.
+- Pagination: offset-based in core (simpler, sufficient for the admin panel); cursor-based as a recipe
+  for public lists.
+- Versioning: `/api/v1` as a path convention, without extra machinery.
+- The OpenAPI specification is generated from the Zod schemas — never written by hand; the
+  documentation and the client both come from it.
 
-## 9. Silnik formularzy
+## 9. The form engine
 
-Formularz = **definicja** (pola + walidacje per pole + walidacje międzypolowe + zależności/warunkowa widoczność + kroki wizarda) + **handler submitu** będący dowolną funkcją. Formularz CRUD to szczególny przypadek: definicja wywiedziona ze schematu encji, handler zapisujący do bazy. Wizard zbierający dane do zewnętrznego API używa tego samego silnika z innym handlerem — dane z formularza mogą, ale nie muszą trafiać do bazy.
+A form is a **definition** (fields, per-field validation, cross-field validation, dependencies and
+conditional visibility, wizard steps) plus a **submit handler** that is any function. A CRUD form is a
+special case: the definition is derived from the entity schema and the handler writes to the database.
+A wizard collecting data for an external API uses the same engine with a different handler — form data
+may, but need not, reach the database.
 
-Silnik (`packages/forms`) jest headless — logika i kontrakt bez komponentów. Renderery (`packages/forms-ui`) mapują typy pól na komponenty design systemu; mapping „typ pola → komponent DS" jest jawny i udokumentowany. Save & resume dla wizardów to moduł opt-in (ciągnie persystencję stanu częściowego).
+The engine (`packages/forms`) is headless: logic and contract without components. The renderers
+(`packages/forms-ui`) map field types onto design-system components; the "field type → DS component"
+mapping is explicit and documented. Save & resume for wizards is an opt-in module (it drags in
+persistence of partial state).
 
 ## 10. Design system
 
-Dystrybucja: **git subtree** w repo. Konsekwencje: kod DS jest fizycznie w repozytorium (agent czyta źródła zamiast zgadywać API; zero konfiguracji prywatnego registry w CI); aktualizacja przez `git subtree pull` opisana jako przepis.
+Distribution: a **git subtree** in the repository. Consequences: the DS code is physically present
+(an agent reads the sources instead of guessing the API; no private registry configuration in CI), and
+updates happen through `git subtree pull`, documented as a recipe.
 
-Reguła twarda, zapisana w plikach dla agentów: **katalog DS jest read-only w projekcie.** Zmiany idą upstream do repo DS albo przez warstwę `packages/ui`. Bez tej reguły lokalne „naprawianie" komponentów po cichu tworzy forka.
+A hard rule, written into the files agents read: **the DS directory is read-only in a project.**
+Changes go upstream into the DS repository, or through the `packages/ui` layer. Without that rule,
+locally "fixing" a component quietly creates a fork.
 
-Wymagane pokrycie komponentowe (słownik dla generatorów; braki dorabiane w DS przed pisaniem szablonów scaffoldera): input, textarea, select, combobox z async search (pola relacji), checkbox, radio, switch, date picker, tabela lub prymitywy tabeli, modal/dialog, toast, pagination, tabs/stepper (wizardy), skeleton/spinner.
+Required component coverage (the vocabulary for generators; gaps are filled in the DS before the
+scaffolder templates are written): input, textarea, select, combobox with async search (relation
+fields), checkbox, radio, switch, date picker, a table or table primitives, modal/dialog, toast,
+pagination, tabs/stepper (wizards), skeleton/spinner.
 
-## 11. AI-kompatybilność
+## 11. AI compatibility
 
-- `CLAUDE.md` / `AGENTS.md` w rootcie: architektura, komendy, konwencje, granice (np. „DS read-only", „w packages/ bez routera i import.meta.env").
-- Krótkie README per moduł tam, gdzie moduł ma nieoczywiste reguły.
-- **Przepisy** („jak dodać encję krok po kroku", „jak dodać providera tożsamości", „jak zaktualizować DS") — jeden dokument będący równocześnie dokumentacją dla człowieka, instrukcją dla agenta i specyfikacją scaffoldera; skoro opisują ten sam proces, nie rozjadą się. Część przepisów może być wydana jako komendy/skille dla agentów.
-- Inwentarz komponentów DS z przykładami użycia — żeby agenty nie halucynowały API i nie przemycały gołego HTML obok DS.
-- Dokumentacja traktowana jak kod: aktualizowana w tych samych PR-ach, które zmieniają konwencje; pozycja w szablonie PR (docelowo check w CI). Nieaktualny plik dla agenta jest gorszy niż żaden.
+- `CLAUDE.md` / `AGENTS.md` at the root: architecture, commands, conventions, boundaries (for example
+  "the DS is read-only", "no router and no import.meta.env inside packages/").
+- Short per-module READMEs wherever a module carries non-obvious rules.
+- **Recipes** ("how to add an entity step by step", "how to add an identity provider", "how to update
+  the DS") — one document that is simultaneously documentation for a human, an instruction for an
+  agent and the scaffolder's specification; since they describe the same process, they cannot drift
+  apart. Some recipes may be shipped as agent commands or skills.
+- A DS component inventory with usage examples — so that agents do not hallucinate APIs or smuggle raw
+  HTML in next to the DS.
+- Documentation treated as code: updated in the same pull requests that change the conventions, with
+  an item in the PR template (eventually a CI check). A stale file for an agent is worse than no file.
 
-## 12. Pętla aktualizacji: changelog jako przepisy
+## 12. The update loop: the changelog as recipes
 
-Projekty są odcięte po starcie — nie ma mergowania upstreamu, wersjonowanych pakietów frameworka ani narzędzi do synchronizacji. Zamiast tego **pętla przez instrukcje, nie przez kod**:
+Projects are cut off once they start — there is no upstream merging, no versioned framework packages
+and no synchronisation tooling. Instead there is **a loop through instructions, not through code**:
 
-- Bootstrap prowadzi `CHANGELOG.md`, w którym wpisy są przepisami migracyjnymi pisanymi pod agenta: co naprawiono, dlaczego, jak znaleźć odpowiedni fragment w projekcie i czym go zastąpić.
-- Projekt aplikuje poprawkę przez podanie wpisu agentowi (lub komendę „sprawdź changelog bootstrapu od daty startu i zaaplikuj co dotyczy"). Agent aplikuje zmianę na zdywergowany kod, bo rozumie intencję, nie diff — konflikty przestają istnieć jako problem.
-- Plik `BOOTSTRAP_VERSION` (data/hash) wstemplowany przy starcie projektu wyznacza, od którego wpisu czytać.
-- Koszt po stronie bootstrapu: sekcja „wpis changeloga" w szablonie PR. Główny zysk: kanał na poprawki bezpieczeństwa (dziura w auth bootstrapu jest dziurą we wszystkich projektach) oraz na błędy w kodzie generowanym przez scaffolder.
+- The bootstrap maintains `CHANGELOG.md`, where entries are migration recipes written for an agent:
+  what was fixed, why, how to find the relevant fragment in the project and what to replace it with.
+- A project applies a fix by handing the entry to an agent (or with a command such as "check the
+  bootstrap changelog since our start date and apply what is relevant"). The agent applies the change
+  to diverged code because it understands the intent, not a diff — conflicts stop being a problem.
+- The `BOOTSTRAP_VERSION` file (date/hash) stamped in when the project started decides which entry to
+  read from.
+- The cost on the bootstrap side: a "changelog entry" section in the PR template. The main gain: a
+  channel for security fixes (a hole in the bootstrap's auth is a hole in every project) and for bugs
+  in code produced by the scaffolder.
 
-## 13. Kwestie otwarte
+## 13. Open questions
 
-- Weryfikacja pokrycia komponentowego DS względem listy z sekcji 10 (w toku; DS zostanie doprowadzony do wymaganego stanu).
-- Format metadanych encji rozszerzających schemat Zod (etykiety, widoczność kolumn, typy pól formularza) — do zaprojektowania przy implementacji scaffoldera.
-- Docelowy mechanizm checku CI pilnującego aktualności dokumentacji AI.
+- Verifying the DS component coverage against the list in section 10 (in progress; the DS will be
+  brought up to the required state).
+- The format of entity metadata extending the Zod schema (labels, column visibility, form field
+  types) — to be designed while implementing the scaffolder.
+- The eventual CI check that keeps the AI documentation current.
+
+## Related
+
+- [`PLAN.md`](../PLAN.md) — how this specification was turned into phases, and where they stand
+- [`CLAUDE.md`](../CLAUDE.md) — the conventions that implement it
+- [Documentation map](../docs/README.md) — every document in the repository
