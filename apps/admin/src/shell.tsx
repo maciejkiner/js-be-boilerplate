@@ -1,3 +1,4 @@
+import { errorMessage } from "@repo/api-client";
 import { Button, Input } from "@repo/design-system";
 import { AdminLayout } from "@repo/ui";
 import { Link, Navigate, Outlet, useNavigate } from "@tanstack/react-router";
@@ -129,8 +130,10 @@ export function LoginPage() {
           required
         />
         {login.isError && (
+          // Treść z API (celowo jednakowa dla złego e-maila i hasła — nie zdradzamy, czy konto
+          // istnieje); własny tekst zastępczy tylko wtedy, gdy odpowiedzi nie było.
           <p role="alert" className="text-sm text-red-600">
-            Nieprawidłowy e-mail lub hasło.
+            {errorMessage(login.error, "Nieprawidłowy e-mail lub hasło.")}
           </p>
         )}
         <Button type="submit" disabled={login.isPending}>

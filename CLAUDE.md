@@ -45,7 +45,7 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - Baza: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Testy integracyjne DB wymagają `TEST_DATABASE_URL` (inaczej pomijane).
 - Klient API: `pnpm generate:client` (zrzut OpenAPI ze schematów → typy klienta). Po każdej zmianie API; CI pilnuje aktualności (`git diff`).
 - Skorupy FE: `pnpm --filter @repo/web dev` (5173) / `pnpm --filter @repo/admin dev` (5174). Build: `tsc --noEmit && vite build`. Wymagają działającego API (3000) do widoków. Port nadpisywalny przez `PORT`.
-- E2E: `pnpm --filter @repo/e2e test:e2e` (Playwright sam startuje API+web+admin; wymaga `DATABASE_URL`). Kolizje portów lokalnie: `E2E_API_PORT`/`E2E_WEB_PORT`/`E2E_ADMIN_PORT`. Pierwszy raz: `pnpm --filter @repo/e2e exec playwright install chromium`.
+- E2E: `pnpm --filter @repo/e2e test:e2e` (Playwright sam startuje API+web+admin; wymaga `DATABASE_URL` **i SMTP na 1025** — mailhog z `docker compose`, bo kreator wysyła zaproszenia; `global-setup.ts` seeduje admina dla widoków spod RBAC). Kolizje portów lokalnie: `E2E_API_PORT`/`E2E_WEB_PORT`/`E2E_ADMIN_PORT`. Pierwszy raz: `pnpm --filter @repo/e2e exec playwright install chromium`.
 - Scaffolder: `pnpm scaffold <encja>` — z encji `@repo/schemas` generuje Drizzle + moduł API + hooki + widoki admina + test CRUD. Buduje `@repo/schemas` automatycznie (czyta jej `dist`, jak `db:generate` dla drizzle-kit). Po: `db:generate` + `generate:client`.
 
 ## Stack (rozstrzygnięty — nie proponuj alternatyw)

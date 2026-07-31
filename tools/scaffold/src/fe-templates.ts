@@ -198,6 +198,7 @@ export function adminEntity(d: EntityDescriptor): string {
   use${d.Pascal},
   use${d.PascalPlural},
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { ${dsImports} } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { ${d.name}Entity } from "@repo/schemas";
@@ -317,7 +318,9 @@ ${detailRows}
                     toast("Usunięto.", "success");
                     navigate({ to: "/${d.path}" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  // Akcja bez formularza — jedynym miejscem na błąd jest toast, więc niesie treść
+                  // z API (np. „rekord jest w użyciu"), a nie własny domysł.
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

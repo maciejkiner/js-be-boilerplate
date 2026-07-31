@@ -43,6 +43,24 @@ walidacji domenowej mogą zrobić to samo: `new BadRequestError(detail, { errors
 Mapper jest publiczny (`serverErrorToFieldErrors` z `@repo/forms`) — rozpoznaje kształt strukturalnie,
 więc działa też dla błędu opakowanego (`cause`) i poza `EntityForm`.
 
+**Akcje bez formularza** (usuwanie, dezaktywacja, wysyłka maila) nie mają gdzie pokazać błędu przy
+polu — tam jedynym miejscem jest toast, więc niesie treść z API:
+
+```tsx
+remove.mutate(row.id, {
+  onSuccess: () => toast("Usunięto.", "success"),
+  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
+});
+```
+
+`errorMessage` z `@repo/api-client` (nie z `@repo/forms` — to nie jest formularz).
+
+**Formularz spoza CRUD-u** (własny schemat, własne kontrolki) też korzysta z `useForm` — patrz
+„Zaproś użytkownika" (`apps/admin/src/entities/users.tsx`): schemat Zod pisany wprost, `Input`
+i `RolesPicker` podpięte ręcznie, ale walidacja i błędy z API działają tak samo. Formularz z własnymi
+kontrolkami dostaje `noValidate` — walidację robi Zod, a natywny dymek przeglądarki
+(`type="email"`, `required`) tylko blokowałby submit przed pokazaniem naszego komunikatu.
+
 ## Pola relacji (async)
 
 Skorupa wstrzykuje **generyczny** `RelationSource` (`apps/admin/src/relation-source.ts`): jeden async

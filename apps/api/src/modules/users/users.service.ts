@@ -69,7 +69,10 @@ export function createUsersService({ db, env, mailer }: UsersServiceDeps) {
     async invite(input: InviteUserInput) {
       const existing = await authRepository.findUserByEmailAny(db, input.email);
       if (existing) {
-        throw new ConflictError("Użytkownik z tym adresem e-mail już istnieje.");
+        // `errors` wskazuje pole formularza — inaczej UI potrafi tylko zgadywać („e-mail zajęty?").
+        throw new ConflictError("Użytkownik z tym adresem e-mail już istnieje.", {
+          errors: [{ path: "email", message: "Ten adres jest już zajęty." }],
+        });
       }
       const user = await authRepository.createUser(db, { email: input.email, roles: input.roles });
       await sendSetPasswordEmail(user, "invite");

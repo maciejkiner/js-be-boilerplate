@@ -9,6 +9,7 @@ import {
   useProjects,
   useUpdateProject,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { projectEntity } from "@repo/schemas";
@@ -125,7 +126,7 @@ export function ProjectDetail() {
         toast("Projekt usunięty.", "success");
         navigate({ to: "/projects" });
       },
-      onError: () => toast("Nie udało się usunąć projektu.", "error"),
+      onError: (error) => toast(errorMessage(error, "Nie udało się usunąć projektu."), "error"),
     });
   }
 

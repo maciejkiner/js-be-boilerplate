@@ -43,7 +43,9 @@ export function createAuthService(deps: AuthServiceDeps) {
     async register(input: Credentials): Promise<PublicUser> {
       const existing = await authRepository.findActiveUserByEmail(db, input.email);
       if (existing) {
-        throw new ConflictError("Użytkownik z tym adresem e-mail już istnieje.");
+        throw new ConflictError("Użytkownik z tym adresem e-mail już istnieje.", {
+          errors: [{ path: "email", message: "Ten adres jest już zajęty." }],
+        });
       }
       const user = await authRepository.createUser(db, { email: input.email });
       await authRepository.setPasswordCredential(db, user.id, await hashPassword(input.password));

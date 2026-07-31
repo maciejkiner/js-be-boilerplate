@@ -2,6 +2,8 @@ import { type APIRequestContext, expect, type Page } from "@playwright/test";
 
 export const API = process.env.E2E_API_URL ?? "http://localhost:3000";
 export const TEST_USER = { email: "e2e@example.com", password: "e2e-password-123" };
+/** Konto z rolą `admin` — zakładane przez seeder w `global-setup.ts` (widoki spod RBAC). */
+export const ADMIN_USER = { email: "admin@example.com", password: "admin12345" };
 
 /** Zapewnia użytkownika testowego — rejestracja idempotentna (201 przy pierwszym, 409 potem). */
 export async function ensureUser(request: APIRequestContext): Promise<void> {
@@ -20,10 +22,10 @@ export async function seedProject(request: APIRequestContext): Promise<string> {
 }
 
 /** Logowanie przez UI admina; czeka na pulpit (dowód wejścia w strefę chronioną). */
-export async function loginViaUi(page: Page): Promise<void> {
+export async function loginViaUi(page: Page, user = TEST_USER): Promise<void> {
   await page.goto("/login");
-  await page.getByPlaceholder("E-mail").fill(TEST_USER.email);
-  await page.getByPlaceholder("Hasło").fill(TEST_USER.password);
+  await page.getByPlaceholder("E-mail").fill(user.email);
+  await page.getByPlaceholder("Hasło").fill(user.password);
   await page.getByRole("button", { name: "Zaloguj" }).click();
   await expect(page.getByRole("heading", { name: "Pulpit" })).toBeVisible();
 }

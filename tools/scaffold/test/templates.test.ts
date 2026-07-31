@@ -119,6 +119,16 @@ describe("moduł API", () => {
     expect(generated).toContain("const created = await create.mutateAsync(");
   });
 
+  it("toast przy usuwaniu niesie treść z API, a nie sam tekst zastępczy", () => {
+    const generated = adminEntity(talkSpeaker);
+
+    // Usuwanie nie ma formularza, więc toast jest JEDYNYM miejscem na powód odmowy.
+    expect(generated).toContain(
+      'onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error")',
+    );
+    expect(generated).toContain('import { errorMessage } from "@repo/api-client";');
+  });
+
   it("encja bez unikalności nie dostaje obsługi konfliktu", () => {
     const generated = service(project);
 

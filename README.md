@@ -122,6 +122,8 @@ Pełny opis trybów Dockera i pułapek: [`docs/recipes/jak-uruchomic-w-dockerze.
 | `pnpm scaffold <encja>`                         | generuje encję (BE+admin+hooki+test) z `@repo/schemas` |
 
 Testy integracyjne bazy/API i e2e wymagają Postgresa (`TEST_DATABASE_URL`/`DATABASE_URL`).
+E2E dodatkowo potrzebuje SMTP na `localhost:1025` (kreator wysyła zaproszenia przez mailer) —
+lokalnie daje go `pnpm docker:up` (mailhog). Konto admina zakłada `global-setup.ts` (seed, idempotentny).
 
 ## Struktura
 

@@ -34,6 +34,21 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Treść błędu dla użytkownika: `detail` z problem+json, a gdy go nie ma (np. zerwana sieć) —
+ * `fallback`. Do akcji BEZ formularza (usuwanie, akcje na detalu), gdzie jedynym miejscem na błąd
+ * jest toast: `toast(errorMessage(error, "Nie udało się usunąć."), "error")`.
+ *
+ * `@repo/forms` ma własną, identyczną funkcję — świadomie, bo silnik formularzy nie zależy od
+ * klienta HTTP (patrz `packages/forms/src/server-errors.ts`).
+ */
+export function errorMessage(
+  error: unknown,
+  fallback = "Żądanie do API nie powiodło się.",
+): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 /** Błąd pojedynczego pola z problem+json (`path` zgodne ze ścieżką pola w schemacie Zod). */
 export interface ApiFieldError {
   path: string;

@@ -11,10 +11,13 @@ import {
   useUser,
   useUsers,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Badge, Button, Checkbox, Input, Modal, Select, useToast } from "@repo/design-system";
+import { useForm } from "@repo/forms";
 import { type Column, DataTable } from "@repo/ui";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
 import { formatDate, Page } from "../ui";
 
 // Role przypisywalne w panelu. Źródło prawdy po stronie API: APP_ROLES (modules/auth/rbac.ts) —
@@ -151,7 +154,8 @@ export function UserDetail() {
             onClick={() =>
               passwordReset.mutate(user.id, {
                 onSuccess: () => toast("Wysłano e-mail resetujący hasło.", "success"),
-                onError: () => toast("Nie udało się wysłać e-maila.", "error"),
+                onError: (error) =>
+                  toast(errorMessage(error, "Nie udało się wysłać e-maila."), "error"),
               })
             }
           >
@@ -167,7 +171,8 @@ export function UserDetail() {
               onClick={() =>
                 reactivate.mutate(user.id, {
                   onSuccess: () => toast("Reaktywowano.", "success"),
-                  onError: () => toast("Nie udało się reaktywować.", "error"),
+                  onError: (error) =>
+                    toast(errorMessage(error, "Nie udało się reaktywować."), "error"),
                 })
               }
             >
@@ -200,7 +205,8 @@ export function UserDetail() {
                   toast("Zapisano role.", "success");
                   setRoles(null);
                 },
-                onError: () => toast("Nie udało się zapisać ról.", "error"),
+                onError: (error) =>
+                  toast(errorMessage(error, "Nie udało się zapisać ról."), "error"),
               },
             )
           }
@@ -227,7 +233,8 @@ export function UserDetail() {
                     toast("Dezaktywowano.", "success");
                     setConfirmOpen(false);
                   },
-                  onError: () => toast("Nie udało się dezaktywować.", "error"),
+                  onError: (error) =>
+                    toast(errorMessage(error, "Nie udało się dezaktywować."), "error"),
                 })
               }
             >
@@ -243,42 +250,69 @@ export function UserDetail() {
   );
 }
 
+/** Formularz zaproszenia nie wywodzi się z encji (to nie CRUD), więc schemat piszemy wprost. */
+const InviteSchema = z.object({
+  email: z.string().email("Podaj poprawny adres e-mail."),
+  roles: z.array(z.string()).min(1, "Wybierz co najmniej jedną rolę."),
+});
+
 export function UserInvite() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const invite = useInviteUser();
-  const [email, setEmail] = useState("");
-  const [roles, setRoles] = useState<string[]>(["user"]);
 
-  const onSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    try {
-      const created = await invite.mutateAsync({ email, roles } as InviteUserBody);
+  // `useForm` również poza `EntityForm`: bierzemy z niego walidację ORAZ obsługę błędu z API —
+  // 409 o zajętym e-mailu ląduje pod polem `email`, a nie w zgadywanym toaście.
+  const form = useForm({
+    schema: InviteSchema,
+    defaultValues: { email: "", roles: ["user"] as string[] },
+    onSubmit: async (values) => {
+      const created = await invite.mutateAsync(values as InviteUserBody);
       toast("Zaproszono — wysłano e-mail z linkiem do ustawienia hasła.", "success");
       navigate({ to: "/users/$id", params: { id: created.id } });
-    } catch {
-      toast("Nie udało się zaprosić (e-mail zajęty?).", "error");
-    }
-  };
+    },
+  });
 
   return (
     <Page title="Zaproś użytkownika">
-      <form onSubmit={onSubmit} className="flex max-w-lg flex-col gap-4">
+      {/* `noValidate`: walidację robi schemat Zod, nie przeglądarka — inaczej natywny dymek przy
+          `type="email"` blokuje submit i użytkownik nigdy nie zobaczy komunikatu z formularza. */}
+      <form noValidate onSubmit={form.handleSubmit} className="flex max-w-lg flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
           E-mail
           <Input
             type="email"
-            value={email}
-            required
-            onChange={(event) => setEmail(event.target.value)}
+            value={form.values.email}
+            onChange={(event) => form.setValue("email", event.target.value)}
           />
+          {form.errors.email && (
+            <span role="alert" className="text-sm font-normal text-red-600">
+              {form.errors.email}
+            </span>
+          )}
         </label>
         <div>
           <span className="mb-1 block text-sm font-medium text-slate-700">Role</span>
-          <RolesPicker value={roles} onChange={setRoles} />
+          <RolesPicker
+            value={form.values.roles}
+            onChange={(next) => form.setValue("roles", next)}
+          />
+          {form.errors.roles && (
+            <span role="alert" className="text-sm text-red-600">
+              {form.errors.roles}
+            </span>
+          )}
         </div>
+        {form.errors._form && (
+          <p
+            role="alert"
+            className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+          >
+            {form.errors._form}
+          </p>
+        )}
         <div>
-          <Button type="submit" disabled={invite.isPending || email === "" || roles.length === 0}>
+          <Button type="submit" disabled={form.isSubmitting}>
             Wyślij zaproszenie
           </Button>
         </div>

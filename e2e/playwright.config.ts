@@ -17,6 +17,7 @@ process.env.E2E_ADMIN_URL = ADMIN;
 
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./global-setup.ts",
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),

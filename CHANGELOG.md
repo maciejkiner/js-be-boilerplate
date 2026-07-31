@@ -42,6 +42,10 @@ agenta w sforkowanym projekcie** — jak przenieść poprawkę do kodu, który j
   błąd z `onSubmit` (pola → `errors`, treść → `_form`), `useWizard` dokłada błędy pól do
   `submitError`, a `WizardStepError.from(stepId, error)` zachowuje błąd źródłowy jako `cause`.
   (4) Szablony scaffoldera: widoki create/edit **bez** `try/catch` z komunikatem zastępczym.
+  (5) Akcje bez formularza (usuwanie, akcje na userach, logowanie) pokazują treść z API przez
+  `errorMessage` z `@repo/api-client`; konflikt e-maila (`register`/`invite`) wskazuje pole `email`.
+  (6) E2E: `global-setup.ts` seeduje admina, nowy `api-errors.spec.ts` pilnuje regresji, a CI dostaje
+  usługę mailhog (suite przechodzi przez mailer — bez SMTP kreator kończył się 500).
 - **Dlaczego:** 409 „wartości (slug) muszą być unikalne" docierał do UI jako toast „Nie udało się
   utworzyć" (widok połykał wyjątek), a nawet pokazany — nie wskazywał pola, bo nazwa siedziała
   wyłącznie w zdaniu `detail`. Użytkownik nie wiedział ani co jest nie tak, ani co poprawić.
@@ -53,7 +57,8 @@ agenta w sforkowanym projekcie** — jak przenieść poprawkę do kodu, który j
 - **Co zrobić:** w serwisach zamień `UNIQUE_FIELDS: Record<string, string>` (sklejone zdanie) na
   `Record<string, string[]>` i `new ConflictError(...)` na `uniqueConflictError(label, fields)`;
   w widokach usuń `try/catch` wokół mutacji (zostaw toast tylko na sukcesie); w wizardach zamień
-  `new WizardStepError(id, error.message)` na `WizardStepError.from(id, error)`.
+  `new WizardStepError(id, error.message)` na `WizardStepError.from(id, error)`; w akcjach
+  `onError: () => toast("…")` zamień na `onError: (error) => toast(errorMessage(error, "…"))`.
 - **Ryzyko/rollback:** addytywne po stronie kontraktu API (`errors` to rozszerzenie RFC 7807 —
   starzy konsumenci ignorują). Zmiana zachowania FE: błędy pokazują się w formularzu zamiast
   w toaście. Rollback = przywrócenie `try/catch` w widokach; API może zostać.
