@@ -97,11 +97,13 @@ pnpm install
 docker compose up -d                    # tylko infra: Postgres + mailhog
 pnpm --filter @repo/api db:migrate      # migracje
 pnpm --filter @repo/api db:seed         # konto admina
-# trzy terminale (albo w tle):
-pnpm --filter @repo/api dev             # API   :3000
-pnpm --filter @repo/web dev             # web   :5173
-pnpm --filter @repo/admin dev           # admin :5174
+pnpm dev                                # API :3000, web :5173, admin :5174 + watch pakietów
 ```
+
+`pnpm dev` podnosi też `tsc -w` dla pakietów bibliotecznych (`schemas`, `forms`, `forms-ui`, `ui`,
+`api-client`, `api-react`). Bez tego zmiana w `packages/*` nie dociera do skorup, bo konsumują one
+`dist` — HMR Vite widzi tylko kod aplikacji. Pojedynczą aplikację nadal odpalisz filtrem
+(`pnpm --filter @repo/admin dev`), ale wtedy pamiętaj o `pnpm build` po zmianach w pakietach.
 
 Pełny opis trybów Dockera i pułapek: [`docs/recipes/jak-uruchomic-w-dockerze.md`](./docs/recipes/jak-uruchomic-w-dockerze.md).
 
@@ -112,7 +114,8 @@ Pełny opis trybów Dockera i pułapek: [`docs/recipes/jak-uruchomic-w-dockerze.
 | `pnpm lint` / `typecheck` / `build` / `test`    | pipeline przez Turborepo (cały monorepo)               |
 | `pnpm format` / `pnpm format:check`             | Prettier                                               |
 | `pnpm turbo run test --filter=@repo/<pkg>`      | zawężenie do jednego workspace                         |
-| `pnpm --filter @repo/{api,web,admin} dev`       | dev pojedynczej aplikacji                              |
+| `pnpm dev`                                      | wszystko w trybie watch (aplikacje + `dist` pakietów)  |
+| `pnpm --filter @repo/{api,web,admin} dev`       | dev pojedynczej aplikacji (bez watcha pakietów)        |
 | `pnpm generate:client`                          | regeneracja klienta z OpenAPI (po zmianie API)         |
 | `pnpm --filter @repo/e2e test:e2e`              | testy e2e (Playwright startuje API + web + admin)      |
 | `pnpm docker:up` / `docker:full` / `docker:dev` | infra / cały stack prod-like / cały stack HMR          |

@@ -26,12 +26,21 @@ port 5432 nie powoduje kolizji. Kolizje pozostałych portów: ustaw `API_PORT`/`
    ```
 3. Otwórz: web `http://localhost:5173`, admin `http://localhost:5174/login`, API `http://localhost:3000/health`.
 
-Migracje robi API przy starcie. Edycja kodu wymaga przebudowy (`--build`).
+Migracje robi API przy starcie. **Edycja kodu wymaga przebudowy** (`--build`, zawarty w
+`pnpm docker:full`) — obrazy mają kod skompilowany w środku, a `VITE_API_URL` jest wstrzykiwany jako
+build arg, więc Vite zapieka go w bundlu. To celowe: ten tryb weryfikuje artefakt produkcyjny.
+**Do iterowania używaj `pnpm dev` (natywnie) albo `pnpm docker:dev`** — przebudowa obrazu przy każdej
+zmianie to nie jest pętla, w której chcesz pracować.
 
 ## Dev HMR (`pnpm docker:dev`)
 
 - Usługa `install` raz instaluje zależności (linux) i buduje pakiety-biblioteki, potem API/web/admin
-  startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`. Seed:
+  startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`.
+- **Ograniczenie:** watch obejmuje tylko `apps/*`. Zmiana w `packages/*` nie dotrze do przeglądarki,
+  bo skorupy konsumują `dist` pakietu — trzeba go przebudować w kontenerze
+  (`docker compose -f docker-compose.dev.yml exec admin pnpm --filter @repo/schemas build`).
+  Natywne `pnpm dev` tego problemu nie ma: podnosi `tsc -w` także dla pakietów.
+- Seed:
   ```bash
   docker compose -f docker-compose.dev.yml exec api pnpm db:seed
   ```

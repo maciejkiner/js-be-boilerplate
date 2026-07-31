@@ -37,6 +37,7 @@ docs/          — recipes (przepisy), adr/, ds-component-inventory.md
 - `pnpm install` — instalacja (workspace).
 - `pnpm lint` / `pnpm typecheck` / `pnpm build` / `pnpm test` — przez Turborepo, cały monorepo.
 - `pnpm format` / `pnpm format:check` — Prettier.
+- `pnpm dev` — wszystko w trybie watch: `apps/{api,web,admin}` + `tsc -w` dla pakietów bibliotecznych. **Skorupy konsumują `dist` pakietów**, więc bez tych watchy zmiana w `packages/*` nie dociera do przeglądarki (HMR Vite widzi tylko kod aplikacji) — po `pnpm --filter <app> dev` trzeba by ręcznie robić `pnpm build`. `design-system` watcha nie ma: jest read-only.
 - `docker compose up -d` (lub `pnpm docker:up`) — infra: Postgres (5432) + mailhog (SMTP 1025, UI 8025); apka natywnie `pnpm dev`.
 - Cały stack w kontenerach: `pnpm docker:full` (prod-like: obrazy API + web/admin przez nginx) lub `pnpm docker:dev` (HMR). Seed admina: `pnpm docker:full:seed`. Porty: `API_PORT`/`WEB_PORT`/`ADMIN_PORT`. Przepis: `docs/recipes/jak-uruchomic-w-dockerze.md` (ADR-0002).
 - Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
