@@ -36,17 +36,14 @@ zmianie to nie jest pętla, w której chcesz pracować.
 
 - Usługa `install` raz instaluje zależności (linux) i buduje pakiety-biblioteki, potem API/web/admin
   startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`.
-- **Ograniczenie:** watch obejmuje tylko `apps/*`. Zmiana w `packages/*` nie dotrze do przeglądarki,
-  bo skorupy konsumują `dist` pakietu — trzeba go przebudować w kontenerze
-  (`docker compose -f docker-compose.dev.yml exec admin pnpm --filter @repo/schemas build`).
-  Natywne `pnpm dev` tego problemu nie ma: podnosi `tsc -w` także dla pakietów.
 - Seed:
   ```bash
   docker compose -f docker-compose.dev.yml exec api pnpm db:seed
   ```
 - **Zmiana biblioteki** (`packages/*`, `design-system`) wymaga rebuildu:
   `docker compose -f docker-compose.dev.yml exec api pnpm turbo run build --filter=@repo/<pakiet>`
-  (HMR pokrywa src skorup i API, nie dist bibliotek).
+  (HMR pokrywa src skorup i API, nie dist bibliotek). **Natywne `pnpm dev` tego nie wymaga** —
+  podnosi `tsc -w` także dla pakietów, więc w tym trybie zmiana encji dociera do przeglądarki sama.
 
 ## Dostęp do bazy z hosta (opcjonalnie)
 
@@ -69,12 +66,23 @@ Jeśli potrzebujesz portu na host — dodaj `ports: ["5433:5432"]` do usługi `p
   w **named-volume** kontenera (nie bind-mount z hosta). Reset: `docker compose … down -v`.
 - **Watch na macOS/Windows** przez bind-mount używa pollingu (`VITE_USE_POLLING`, `CHOKIDAR_USEPOLLING`
   ustawione w `docker-compose.dev.yml`).
+- **Tryby mają ROZŁĄCZNE obrazy.** Compose domyślnie nazywa obraz `<projekt>-<usługa>`, więc oba pliki
+  budowałyby `js-be-boilerplate-api` — prod-like nadpisywałby dev i odwrotnie. Dev ma dlatego jawne
+  `image: js-be-boilerplate-dev` (jeden obraz dla `install`/`api`/`web`/`admin`).
+- **pnpm w kontenerze potrzebuje `CI=true`.** `node_modules` żyje w named-volume; gdy zmieni się
+  lockfile, pnpm chce odtworzyć katalog i pyta o zgodę — bez TTY przerywa
+  (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). Usługa `install` ustawia `CI`.
 
 ## Troubleshooting
 
 - **`Error: getaddrinfo ENOTFOUND postgres`** — API nie widzi bazy. Upewnij się, że używasz
   **samowystarczalnego** pliku (`pnpm docker:full` / `docker:dev`, pojedynczy `-f`), a nie samego
   overlaya. Postgres nie jest publikowany, więc lokalny 5432 nie przeszkadza.
+- **`pnpm: not found` albo `Cannot find module '/app/pnpm'` w `docker:dev`** — kontener wystartował
+  w obrazie prod-like (nie ma tam pnpm). Zdarzało się, gdy oba tryby dzieliły nazwy obrazów; jeśli
+  wróci, przebuduj: `pnpm docker:dev` ma `--build`.
+- **`service "install" didn't complete successfully: exit 1`** — sprawdź `docker logs <projekt>-install-1`.
+  Najczęstsza przyczyna to przerwana instalacja pnpm bez TTY (patrz „Pułapki").
 - **`Bind for 0.0.0.0:3000 failed: port is already allocated`** — port aplikacji zajęty (np. inny
   projekt na 3000). Ustaw `API_PORT` (oraz w razie potrzeby `WEB_PORT`/`ADMIN_PORT`/`MAILHOG_UI_PORT`)
   w `.env` i uruchom ponownie — `VITE_API_URL` i CORS dostosują się automatycznie.
