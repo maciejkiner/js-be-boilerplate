@@ -46,6 +46,16 @@ export function Wizard<V extends Record<string, unknown>>({
         current={wizard.stepIndex}
       />
       {steps[wizard.stepIndex]!.render(wizard)}
+      {wizard.submitError && (
+        // Błąd finalnej orkiestracji — dotyczy danych, nie pojedynczego pola, więc ma własne
+        // miejsce w chrome wizarda. `WizardStepError` dodatkowo cofa do kroku, którego dotyczy.
+        <p
+          role="alert"
+          className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+        >
+          {wizard.submitError}
+        </p>
+      )}
       <div className="flex gap-2">
         {!wizard.isFirst && (
           <Button variant="secondary" onClick={wizard.prev}>

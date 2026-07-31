@@ -20,6 +20,11 @@ export interface UseWizardOptions<Values extends Record<string, unknown>> {
 export interface WizardApi<Values extends Record<string, unknown>> {
   values: Values;
   errors: FormErrors;
+  /**
+   * Komunikat błędu z `onComplete` (orkiestracja finalna). Osobny od `errors`, bo NIE dotyczy
+   * pojedynczego pola — pochodzi z API i może dotyczyć danych z dowolnego kroku.
+   */
+  submitError?: string;
   stepIndex: number;
   step: WizardStep;
   isFirst: boolean;
@@ -31,6 +36,23 @@ export interface WizardApi<Values extends Record<string, unknown>> {
   prev: () => void;
   /** Waliduje ostatni krok; jeśli OK → `onComplete(values)`. */
   submit: () => Promise<void>;
+  /** Skok do kroku po `id` — używane, gdy błąd finalny wskazuje krok, którego dotyczy. */
+  goTo: (stepId: string) => void;
+}
+
+/**
+ * Błąd z `onComplete` przypisany do KONKRETNEGO kroku. Rzuć go, gdy wiadomo, których danych
+ * dotyczy — wizard wróci do tego kroku i pokaże komunikat obok jego treści, zamiast zostawiać
+ * użytkownika na ostatnim kroku z komunikatem o polach, których tam nie widzi.
+ */
+export class WizardStepError extends Error {
+  constructor(
+    readonly stepId: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "WizardStepError";
+  }
 }
 
 /**
@@ -46,6 +68,7 @@ export function useWizard<Values extends Record<string, unknown>>(
   const [errors, setErrors] = useState<FormErrors>({});
   const [stepIndex, setStepIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined);
 
   const step = steps[stepIndex]!;
 
@@ -77,21 +100,40 @@ export function useWizard<Values extends Record<string, unknown>>(
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
 
+  const goTo = useCallback(
+    (stepId: string) => {
+      const index = steps.findIndex((candidate) => candidate.id === stepId);
+      if (index >= 0) {
+        setStepIndex(index);
+      }
+    },
+    [steps],
+  );
+
   const submit = useCallback(async () => {
     if (!validateStep(stepIndex)) {
       return;
     }
     setIsSubmitting(true);
+    setSubmitError(undefined);
     try {
       await onComplete(values);
+    } catch (error) {
+      // Błąd finalny NIE może wylecieć poza wizard: użytkownik stoi wtedy na ostatnim kroku
+      // z nieobsłużonym odrzuceniem promise'a i bez żadnej informacji.
+      setSubmitError(error instanceof Error ? error.message : "Nie udało się ukończyć kreatora.");
+      if (error instanceof WizardStepError) {
+        goTo(error.stepId);
+      }
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateStep, stepIndex, onComplete, values]);
+  }, [validateStep, stepIndex, onComplete, values, goTo]);
 
   return {
     values,
     errors,
+    submitError,
     stepIndex,
     step,
     isFirst: stepIndex === 0,
@@ -101,5 +143,6 @@ export function useWizard<Values extends Record<string, unknown>>(
     next,
     prev,
     submit,
+    goTo,
   };
 }
