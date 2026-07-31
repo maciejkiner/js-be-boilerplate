@@ -1,3 +1,9 @@
+[Home](../../README.md) › [Documentation](../README.md) › DX pilot
+
+> **This document is intentionally in Polish.** It is the pilot's working specification, not part of
+> the bootstrap: it lives on the `dx-test` branch alongside the demo code and is reverted when the
+> pilot ends (see "Rozdział warstw w gicie" below). Only the engine fixes it forces reach `main`.
+
 # Pilot DX — „Conference" (system obsługi konferencji)
 
 Specyfikacja **przykładowego projektu**, budowanego ręcznie na bootstrapie w celu zmierzenia DX.

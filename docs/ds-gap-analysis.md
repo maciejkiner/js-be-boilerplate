@@ -1,278 +1,311 @@
-# Specyfikacja komponentów DS potrzebnych w bootstrapie (silk — analiza luk)
+[Home](../README.md) › [Documentation](./README.md) › Design-system gap analysis
 
-Dokument do przekazania **zespołowi DS** (osobny tor prac). Zestawia **wszystkie** komponenty,
-których wymaga bootstrap, z: statusem w silk, brakującymi funkcjami, wymaganym API i scenariuszami
-użycia. Źródła wymagań: inwentarz sekcji 10 (`docs/ds-component-inventory.md`), metadane encji
-(`packages/schemas` → `FieldControl`), `packages/ui` (DataTable/AdminLayout/EmptyState), widoki
-admina (Faza 6) i silnik formularzy + wizard (Faza 7).
+# Design-system components the bootstrap needs (silk — gap analysis)
 
-- **Analizowany DS:** `netguru/silk-storybook` (`@silk/components`), `main` @ `1d45f45` (2026-07-24).
-- **Stack silk:** React 19 · Tailwind v4 · Radix UI · shadcn/ui · style-dictionary (tokeny) ·
-  Phosphor icons · Storybook 10. Struktura atomic. Eksport **źródeł TS** (`main → src/index.ts`).
-  Zbieżny z bootstrapem (React 19 + Tailwind v4) — brak konfliktu technologicznego.
+A document to hand to the **design-system team** (a separate track of work). It lists **every**
+component the bootstrap requires, together with its status in silk, the missing capabilities, the
+required API and the usage scenarios. Sources of the requirements: the section 10 inventory
+([`docs/ds-component-inventory.md`](./ds-component-inventory.md)), the entity metadata
+(`packages/schemas` → `FieldControl`), `packages/ui` (DataTable/AdminLayout/EmptyState), the admin
+views (phase 6) and the form engine plus the wizard (phase 7).
 
-**Legenda statusu:** ✅ gotowe (ew. mapowanie nazw) · ⚠️ jest, ale brak funkcji · ❌ brak.
+- **Design system analysed:** `netguru/silk-storybook` (`@silk/components`), `main` @ `1d45f45`
+  (2026-07-24).
+- **silk stack:** React 19 · Tailwind v4 · Radix UI · shadcn/ui · style-dictionary (tokens) ·
+  Phosphor icons · Storybook 10. Atomic structure. It exports **TypeScript sources**
+  (`main → src/index.ts`). Aligned with the bootstrap (React 19 + Tailwind v4) — no technological
+  conflict.
 
-**Podsumowanie luk:** ❌ Table/DataTable, Toast, Skeleton, Spinner, Stepper · ⚠️ Combobox
-(brak async-search). Reszta pól i prymitywów pokryta. Szczegóły niżej.
+**Status legend:** ✅ ready (possibly with a name mapping) · ⚠️ present but missing capabilities ·
+❌ absent.
+
+**Gap summary:** ❌ Table/DataTable, Toast, Skeleton, Spinner, Stepper · ⚠️ Combobox (no async
+search). Everything else among the fields and primitives is covered. Details below.
 
 ---
 
-## A. Pola formularza (metadane encji `FieldControl` + `forms-ui`, Faza 7)
+## A. Form fields (the `FieldControl` entity metadata + `forms-ui`, phase 7)
 
-Każde pole musi działać w trybie **kontrolowanym** (`value`/`onChange`), obsłużyć `disabled` i stan
-**błędu walidacji** (spięcie z `FormItem`), oraz mieć dostępną etykietę (`id`/`aria`).
+Every field must work in **controlled** mode (`value`/`onChange`), support `disabled` and the
+**validation error** state (wired into `FormItem`), and have an accessible label (`id`/`aria`).
 
-### A1. Input tekstowy — `control: "text"` → **`TextField`** ✅
+### A1. Text input — `control: "text"` → **`TextField`** ✅
 
-- **Scenariusze:** pola `name`/`title` encji (create/edit), login (email/hasło), pole wyszukiwania w
-  toolbarze listy.
-- **Wymagane funkcje:** passthrough `<input>` (typy text/email/password/number), `disabled`,
-  `placeholder`, kontrolowane `value`, rozmiary. silk: `TextField` = `Omit<ComponentProps<"input">>`
-  - `size` + slot ikony/czyszczenia. **Spełnia.**
-- **Braki:** brak — stan błędu obsługiwany przez `FormItem` (A10).
+- **Scenarios:** the `name`/`title` fields of an entity (create/edit), login (e-mail and password),
+  the search field in a list toolbar.
+- **Required capabilities:** an `<input>` passthrough (types text/email/password/number), `disabled`,
+  `placeholder`, a controlled `value`, sizes. silk: `TextField` is
+  `Omit<ComponentProps<"input">>` + `size` plus an icon/clear slot. **Satisfied.**
+- **Gaps:** none — the error state is handled by `FormItem` (A10).
 
-### A2. Liczba — `control: "number"` → **`TextField type="number"`** ✅ (⚠️ brak dedykowanego)
+### A2. Number — `control: "number"` → **`TextField type="number"`** ✅ (⚠️ no dedicated component)
 
-- **Scenariusze:** pole `estimate` (Task), dowolne pola liczbowe encji.
-- **Wymagane funkcje:** wprowadzanie liczb, min/max/step, kontrolowane. Pokrywa `TextField`
-  z `type="number"`. Istnieje też `quantity-selector` (stepper +/−) — to **inny** przypadek
-  (ilości), nie ogólne pole liczbowe.
-- **Braki:** brak twardego (opcjonalnie: dedykowany `NumberField` z formatowaniem — nice-to-have).
+- **Scenarios:** the `estimate` field (Task), any numeric entity field.
+- **Required capabilities:** entering numbers, min/max/step, controlled. `TextField` with
+  `type="number"` covers it. There is also a `quantity-selector` (a +/− stepper), but that is a
+  **different** case (quantities), not a general numeric field.
+- **Gaps:** none blocking (optionally a dedicated `NumberField` with formatting — nice to have).
 
 ### A3. Textarea — `control: "textarea"` → **`Textarea`** ✅
 
-- **Scenariusze:** pola `description` encji.
-- **Wymagane funkcje:** passthrough `<textarea>`, `rows`, `disabled`, kontrolowane, błąd przez
-  `FormItem`. **Spełnia.**
+- **Scenarios:** the `description` fields of entities.
+- **Required capabilities:** a `<textarea>` passthrough, `rows`, `disabled`, controlled, errors
+  through `FormItem`. **Satisfied.**
 
 ### A4. Select / enum — `control: "select"` → **`Select`** ✅ (single)
 
-- **Scenariusze:** pola enum (`status`, `priority`), filtry kolumn w toolbarze listy.
-- **Wymagane funkcje:** wybór jednej wartości z listy, `placeholder`, `defaultValue`/kontrolowane,
-  `disabled`. silk: Radix Select (kompozycja `Select`/`SelectTrigger`/`SelectValue`/`SelectContent`/
-  `SelectItem`). **Spełnia dla single.**
-- **Braki:** brak multi-select (Radix Select jest single). Multi realizujemy przez Combobox (A9) —
-  akceptowalne, ale warto potwierdzić z zespołem, czy multi-select ma być wariantem Selecta.
+- **Scenarios:** enum fields (`status`, `priority`), column filters in the list toolbar.
+- **Required capabilities:** choosing one value from a list, `placeholder`,
+  `defaultValue`/controlled, `disabled`. silk: a Radix Select composition
+  (`Select`/`SelectTrigger`/`SelectValue`/`SelectContent`/`SelectItem`). **Satisfied for single
+  select.**
+- **Gaps:** no multi-select (Radix Select is single). We implement multi through the Combobox (A9) —
+  acceptable, but worth confirming with the team whether multi-select should be a Select variant.
 
 ### A5. Checkbox — `control: "checkbox"` → **`Checkbox`** ✅
 
-- **Scenariusze:** pola boolean prezentowane jako checkbox, wielokrotny wybór, **zaznaczanie wierszy
-  w tabeli** (patrz B1).
-- **Wymagane funkcje:** `checked`/kontrolowane, `disabled`, **`indeterminate`** (nagłówek „zaznacz
-  wszystkie"). silk: obsługuje `checked="indeterminate"`. **Spełnia.**
+- **Scenarios:** boolean fields presented as a checkbox, multiple choice, and **row selection in a
+  table** (see B1).
+- **Required capabilities:** `checked`/controlled, `disabled`, **`indeterminate`** (the "select all"
+  header). silk supports `checked="indeterminate"`. **Satisfied.**
 
 ### A6. Radio — `control: "radio"` → **`RadioButton` / `RadioGroup`** ✅
 
-- **Scenariusze:** wybór jednej z kilku opcji (enum jako radio), `radio-card` dla bogatszych opcji.
-- **Wymagane funkcje:** grupa, kontrolowana wartość, `disabled`, etykiety + tekst pomocniczy.
-  **Spełnia** (`radio-button` + `radio-card`).
+- **Scenarios:** choosing one of several options (an enum as radio buttons), `radio-card` for richer
+  options.
+- **Required capabilities:** a group, a controlled value, `disabled`, labels plus helper text.
+  **Satisfied** (`radio-button` + `radio-card`).
 
 ### A7. Switch — `control: "switch"` → **`Switch`** ✅
 
-- **Scenariusze:** pola boolean (`isBlocked`, `isActive`) jako przełącznik.
-- **Wymagane funkcje:** `checked`/`defaultChecked`/kontrolowane, `disabled`. **Spełnia.**
+- **Scenarios:** boolean fields (`isBlocked`, `isActive`) as a toggle.
+- **Required capabilities:** `checked`/`defaultChecked`/controlled, `disabled`. **Satisfied.**
 
 ### A8. Date picker — `control: "date"` → **`DatePicker`** ✅
 
-- **Scenariusze:** pola dat (`startDate`/`endDate`, `dueDate`); zakres dla filtrów.
-- **Wymagane funkcje:** wybór pojedynczej daty **oraz zakresu**, `disabled`, lokalizacja/format,
-  kontrolowane. silk: react-day-picker (`PropsSingle | PropsRange`). **Spełnia (single + range).**
-- **Uwaga:** potwierdzić format wyjścia (ISO string vs `Date`) pod spięcie z Zod (`z.coerce.date`).
+- **Scenarios:** date fields (`startDate`/`endDate`, `dueDate`); ranges for filters.
+- **Required capabilities:** picking a single date **and a range**, `disabled`, localisation and
+  format, controlled. silk: react-day-picker (`PropsSingle | PropsRange`). **Satisfied (single +
+  range).**
+- **Note:** confirm the output format (an ISO string versus a `Date`) for wiring into Zod
+  (`z.coerce.date`).
 
-### A9. Combobox pola relacji — `control: "relation"` → **`Combobox`** ⚠️ **brak async-search**
+### A9. Relation-field combobox — `control: "relation"` → **`Combobox`** ⚠️ **no async search**
 
-- **Scenariusze:** pola relacji dociągające opcje z API — `Task.projectId → projects`,
-  `Task.assigneeId → users`. Listy potencjalnie duże (setki/tysiące) → wyszukiwanie po stronie
-  serwera.
-- **Wymagane funkcje:** kontrolowana wartość (single **i** multi — `value: string[]`),
-  **`onSearch(query)` z dociąganiem async**, stan `loading`, **debounce**, komunikaty „ładowanie"/
-  „brak wyników", **utrzymanie etykiety wybranej wartości** gdy nie ma jej w bieżącej stronie
-  wyników, `disabled`.
-- **Stan silk:** Combobox istnieje, ale jest **synchroniczny** — filtruje statyczną listę dzieci
-  (`searchValue` w stanie, `itemLabels` w mapie), `value: string[]` (multi OK). Brak `onSearch`,
-  `loading`, debounce.
-- **DO ZROBIENIA:** wariant/rozszerzenie **async** (`onSearch` → `Promise`, `loading`, debounce,
-  puste/loading state, zachowanie etykiety wybranego). Bazą może być obecny Combobox + `search`.
+- **Scenarios:** relation fields pulling options from the API — `Task.projectId → projects`,
+  `Task.assigneeId → users`. The lists can be large (hundreds or thousands), so the search belongs on
+  the server.
+- **Required capabilities:** a controlled value (single **and** multi — `value: string[]`),
+  **`onSearch(query)` with async fetching**, a `loading` state, **debouncing**, "loading" and "no
+  results" messages, **keeping the label of the selected value** when it is not on the current page of
+  results, `disabled`.
+- **State in silk:** the Combobox exists but is **synchronous** — it filters a static list of children
+  (`searchValue` in state, `itemLabels` in a map), `value: string[]` (multi is fine). There is no
+  `onSearch`, no `loading`, no debouncing.
+- **TO DO:** an **async** variant or extension (`onSearch` → `Promise`, `loading`, debouncing,
+  empty/loading states, preserving the selected label). The current Combobox plus `search` can be the
+  base.
 
-### A10. Wrapper pola (label + hint + błąd + required) → **`FormItem`** ✅ (kluczowe dla `forms-ui`)
+### A10. Field wrapper (label + hint + error + required) → **`FormItem`** ✅ (crucial for `forms-ui`)
 
-- **Scenariusze:** każdy renderer pola w `forms-ui` opakowuje kontrolkę: etykieta, tekst pomocniczy,
-  **komunikat błędu walidacji**, znacznik `required`.
-- **Wymagane funkcje:** `FormItem` + `FormItemLabel(required)` + `FormItemInput` + `FormItemHint` +
-  `FormItemError`. silk **spełnia** — to fundament mapowania „typ pola → komponent" w `forms-ui`.
-
----
-
-## B. Listy i prezentacja danych (`packages/ui` DataTable, Faza 6)
-
-### B1. Table / prymitywy DataTable → ❌ **BRAK — priorytet #1**
-
-- **Scenariusze:** listy encji w adminie (Project, Task i każda encja generowana przez scaffolder).
-  Nasz `packages/ui` `DataTable` komponuje **na** prymitywach tabeli DS — bez nich cała lista admina
-  nie ma podstawy.
-- **Wymagane funkcje (prymitywy):** `Table`/`THead`/`TBody`/`Tr`/`Th`/`Td` (lub równoważne),
-  z obsługą: **nagłówka sortowalnego** (wskaźnik kierunku, klik), **wyrównania kolumn** (lewo/prawo),
-  **klikalnego/hoverowalnego wiersza** (nawigacja do detalu), opcjonalnie **kolumny zaznaczania**
-  (checkbox + „zaznacz wszystkie", patrz A5), overflow/scroll poziomy, sticky header (opcjonalnie),
-  spójność z DS (nie gołe `<table>`).
-- **Zależności UI:** integruje się ze stanami **loading** (B-skeleton/spinner) i **empty** (EmptyState).
-- **DO ZROBIENIA:** komplet prymitywów tabeli. (Opcjonalnie gotowy `DataTable` w silk, ale nasz
-  `packages/ui` i tak dostarcza logikę sort/paginacja/stany — wystarczą prymitywy.)
-
-### B2. Pagination → **`Pagination` / `Page`** ✅ (prymitywy)
-
-- **Scenariusze:** stopka listy (paginacja offset-based: „Strona X z Y", poprzednia/następna).
-- **Wymagane funkcje:** prymitywy `Pagination` (nav) + `Page` (button, stan aktywny/disabled) — nasz
-  `DataTable` komponuje z nich kontrolki i steruje `page`/`onPageChange`. silk **dostarcza prymitywy.**
-- **Braki:** brak — logika stronicowania jest po naszej stronie.
-
-### B3. Badge statusu → **`Badge`** ✅ (mapowanie wariantów)
-
-- **Scenariusze:** kolumna/detal statusu encji (`status`, `priority`) jako kolorowa etykieta.
-- **Wymagane funkcje:** warianty semantyczne. silk `Badge`: `default/accent/positive/attention/
-critical/fuchsia` + rozmiary. **Spełnia** — wymaga mapowania naszych tonów
-  (`neutral/success/warning/danger/info` → `default/positive/attention/critical/accent`).
-- **Uwaga:** `Status` w silk to **kropka obecności** (przy avatarze), NIE etykieta statusu — używamy `Badge`.
-
-### B4. EmptyState → (w `packages/ui`, nie DS)
-
-- Kompozycja po naszej stronie na prymitywach DS. **Nie jest luką DS** — wspomniane dla kompletności.
+- **Scenarios:** every field renderer in `forms-ui` wraps its control: the label, helper text, the
+  **validation error message** and the `required` marker.
+- **Required capabilities:** `FormItem` + `FormItemLabel(required)` + `FormItemInput` +
+  `FormItemHint` + `FormItemError`. silk **satisfies** this — it is the foundation of the "field type
+  → component" mapping in `forms-ui`.
 
 ---
 
-## C. Feedback i stany ładowania
+## B. Lists and data presentation (`packages/ui` DataTable, phase 6)
 
-### C1. Toast / powiadomienia → ❌ **BRAK — priorytet #2**
+### B1. Table / DataTable primitives → ❌ **MISSING — priority #1**
 
-- **Scenariusze:** potwierdzenia akcji CRUD w adminie („Projekt usunięty", „Zapisano"), błędy
-  operacji („Nie udało się usunąć"). Już używane w widokach admina i będą w submitach formularzy.
-- **Wymagane funkcje:** **imperatywne API** (`toast(message, tone)` przez provider/hook),
-  warianty `success/error/info` (+ ew. warning), **auto-dismiss** z konfigurowalnym czasem,
-  **stacking** wielu powiadomień, akcja/close, dostępność (`role="status"`/aria-live).
-- **DO ZROBIENIA:** komponent + provider/hook (np. na bazie sonner/radix-toast).
+- **Scenarios:** entity lists in the admin panel (Project, Task and every entity the scaffolder
+  generates). Our `packages/ui` `DataTable` composes **on** the design system's table primitives —
+  without them the entire admin list has no foundation.
+- **Required capabilities (primitives):** `Table`/`THead`/`TBody`/`Tr`/`Th`/`Td` (or equivalents)
+  supporting a **sortable header** (direction indicator, click), **column alignment** (left/right), a
+  **clickable and hoverable row** (navigating to the detail page), optionally a **selection column**
+  (a checkbox plus "select all", see A5), horizontal overflow/scrolling, optionally a sticky header,
+  and consistency with the design system (not a bare `<table>`).
+- **UI dependencies:** it integrates with the **loading** (skeleton/spinner) and **empty**
+  (EmptyState) states.
+- **TO DO:** the full set of table primitives. (Optionally a ready-made `DataTable` in silk, but our
+  `packages/ui` provides the sorting, pagination and state logic anyway — the primitives are enough.)
 
-### C2. Skeleton → ❌ **BRAK — priorytet #3**
+### B2. Pagination → **`Pagination` / `Page`** ✅ (primitives)
 
-- **Scenariusze:** placeholdery treści podczas ładowania listy/detalu (wiersze tabeli, pola detalu).
-- **Wymagane funkcje:** warianty kształtu (tekst/blok/koło), konfigurowalny rozmiar, animacja
-  „pulse/shimmer”, komponowalny (np. skeleton wiersza tabeli).
-- **DO ZROBIENIA:** komponent `Skeleton`.
+- **Scenarios:** the list footer (offset-based pagination: "Page X of Y", previous/next).
+- **Required capabilities:** the `Pagination` (nav) and `Page` (button, active/disabled state)
+  primitives — our `DataTable` composes the controls from them and drives `page`/`onPageChange`. silk
+  **provides the primitives.**
+- **Gaps:** none — the paging logic is on our side.
 
-### C3. Spinner / Loader → ❌ **BRAK — priorytet #3**
+### B3. Status badge → **`Badge`** ✅ (variant mapping)
 
-- **Scenariusze:** wskaźnik ładowania inline (przyciski w trakcie akcji, drobne obszary) oraz
-  overlay/na środku (ładowanie widoku).
-- **Wymagane funkcje:** indeterminate spinner, rozmiary, `aria-label`/`role="status"`, wariant
-  inline i overlay. **Uwaga:** silk ma `progress-bar` (determinate) — to **nie** zastępuje spinnera.
-- **DO ZROBIENIA:** komponent `Spinner`/`Loader`.
+- **Scenarios:** the status column or detail field of an entity (`status`, `priority`) as a coloured
+  label.
+- **Required capabilities:** semantic variants. silk's `Badge`:
+  `default/accent/positive/attention/critical/fuchsia` plus sizes. **Satisfied** — it needs a mapping
+  of our tones (`neutral/success/warning/danger/info` → `default/positive/attention/critical/accent`).
+- **Note:** `Status` in silk is a **presence dot** (next to an avatar), NOT a status label — we use
+  `Badge`.
 
-### C4. Alert (inline) → **`Alert`** ✅ (bonus, przydatny)
+### B4. EmptyState → (in `packages/ui`, not the design system)
 
-- **Scenariusze:** komunikaty inline w formularzach/stronach (błąd operacji, informacja). silk ma
-  `Alert` — do wykorzystania zamiast doraźnych `<div role="alert">`.
+- A composition on our side over design-system primitives. **Not a DS gap** — mentioned for
+  completeness.
 
 ---
 
-## D. Overlay, nawigacja, wizard
+## C. Feedback and loading states
 
-### D1. Modal / Dialog → **`Modal`** ✅ (kompozycja Radix)
+### C1. Toast / notifications → ❌ **MISSING — priority #2**
 
-- **Scenariusze:** potwierdzenie usunięcia (admin), formularze w modalu (opcjonalnie).
-- **Wymagane funkcje:** kontrolowany `open`/`onOpenChange`, tytuł, treść, stopka z akcjami, overlay,
-  zamknięcie Escape/klik w tło, focus-trap, a11y. silk: pełna kompozycja Radix Dialog
-  (`Modal`/`ModalTrigger`/`ModalContent`/`ModalTitle`/`ModalBody`/`ModalClose`…). **Spełnia.**
-- **Uwaga integracyjna:** API kompozycyjne (inne niż nasz mock `open/onClose/title/footer`) →
-  `packages/ui`/widoki wymagają adaptera przy podmianie.
+- **Scenarios:** confirmations of CRUD actions in the admin panel ("Projekt usunięty", "Zapisano") and
+  operation errors ("Nie udało się usunąć"). Already used in the admin views, and they will appear in
+  form submissions.
+- **Required capabilities:** an **imperative API** (`toast(message, tone)` through a provider or
+  hook), `success/error/info` variants (plus possibly warning), **auto-dismiss** with a configurable
+  delay, **stacking** of several notifications, an action and a close button, accessibility
+  (`role="status"`/aria-live).
+- **TO DO:** the component plus a provider/hook (for example on top of sonner or radix-toast).
+
+### C2. Skeleton → ❌ **MISSING — priority #3**
+
+- **Scenarios:** content placeholders while a list or detail view loads (table rows, detail fields).
+- **Required capabilities:** shape variants (text/block/circle), a configurable size, a
+  pulse/shimmer animation, composability (a table-row skeleton, for instance).
+- **TO DO:** a `Skeleton` component.
+
+### C3. Spinner / Loader → ❌ **MISSING — priority #3**
+
+- **Scenarios:** an inline loading indicator (buttons during an action, small areas) and an
+  overlay/centred one (a view loading).
+- **Required capabilities:** an indeterminate spinner, sizes, `aria-label`/`role="status"`, inline and
+  overlay variants. **Note:** silk has a `progress-bar` (determinate) — that does **not** replace a
+  spinner.
+- **TO DO:** a `Spinner`/`Loader` component.
+
+### C4. Alert (inline) → **`Alert`** ✅ (a bonus, and useful)
+
+- **Scenarios:** inline messages in forms and pages (an operation error, a piece of information). silk
+  has `Alert` — to be used instead of ad-hoc `<div role="alert">` elements.
+
+---
+
+## D. Overlays, navigation, wizards
+
+### D1. Modal / Dialog → **`Modal`** ✅ (a Radix composition)
+
+- **Scenarios:** delete confirmation (admin), optionally forms inside a modal.
+- **Required capabilities:** controlled `open`/`onOpenChange`, a title, content, a footer with
+  actions, an overlay, closing on Escape and on a background click, focus trapping, accessibility.
+  silk: the full Radix Dialog composition
+  (`Modal`/`ModalTrigger`/`ModalContent`/`ModalTitle`/`ModalBody`/`ModalClose`…). **Satisfied.**
+- **Integration note:** the API is compositional (unlike our mock's `open/onClose/title/footer`), so
+  `packages/ui` and the views will need an adapter at swap time.
 
 ### D2. Tabs → **`Tabs`** ✅
 
-- **Scenariusze:** zakładki w detalu/ustawieniach. silk: Radix Tabs. **Spełnia.**
+- **Scenarios:** tabs on a detail or settings page. silk: Radix Tabs. **Satisfied.**
 
-### D3. Stepper (kroki wizarda) → ❌ **BRAK — priorytet #4 (Faza 7)**
+### D3. Stepper (wizard steps) → ❌ **MISSING — priority #4 (phase 7)**
 
-- **Scenariusze:** wizard „utwórz projekt" (3 kroki: dane → zaproszenia → zadania). Ogólny wizard
-  wieloetapowy w `forms-ui`.
-- **Wymagane funkcje:** lista kroków ze stanem (**done/active/upcoming**), wskaźnik postępu,
-  nawigacja (dalej/wstecz, klik w krok jeśli dozwolony), **walidacja per krok** (blokada „dalej"),
-  orientacja pozioma/pionowa, a11y.
-- **Stan silk:** `tabs` i `segmented-control` **nie** pełnią tej roli. Można wywieść ze steppera na
-  bazie tabs, ale wymaga dedykowanego komponentu.
-- **DO ZROBIENIA:** komponent `Stepper`.
+- **Scenarios:** the "create a project" wizard (three steps: data → invitations → tasks). The general
+  multi-step wizard in `forms-ui`.
+- **Required capabilities:** a list of steps with state (**done/active/upcoming**), a progress
+  indicator, navigation (next/back, clicking a step when allowed), **per-step validation** (blocking
+  "next"), horizontal and vertical orientation, accessibility.
+- **State in silk:** `tabs` and `segmented-control` do **not** play this role. A stepper could be
+  derived from tabs, but it needs a dedicated component.
+- **TO DO:** a `Stepper` component.
 
-### D4. Dropdown menu (akcje) → **`DropdownMenu`** ✅ (bonus)
+### D4. Dropdown menu (actions) → **`DropdownMenu`** ✅ (bonus)
 
-- **Scenariusze:** menu akcji wiersza (edytuj/usuń), menu użytkownika w headerze admina. silk ma
-  `dropdown-menu`. **Spełnia** — warto wykorzystać.
+- **Scenarios:** a row action menu (edit/delete), the user menu in the admin header. silk has
+  `dropdown-menu`. **Satisfied** — worth using.
 
-### D5. Tooltip → **`Tooltip`** ✅ (bonus). Podpowiedzi przy ikonach/akcjach.
-
----
-
-## E. Akcje i prymitywy
-
-### E1. Button → **`Button`** ✅ (mapowanie wariantów)
-
-- **Scenariusze:** akcje wszędzie (submit, anuluj, usuń, paginacja). silk `Button`: warianty
-  `fill/outline/text` (+ tony) i rozmiary `s/m/l/xl`. **Spełnia** — mapowanie naszych
-  `primary/secondary/danger/ghost` → warianty/tony silk. Wymagane: stan `disabled`, ikona,
-  (nice-to-have) stan `loading` spięty ze Spinnerem (C3).
-
-### E2. IconButton → **`IconButton`** ✅. Akcje ikonowe (zamknij, akcje wiersza).
-
-### E3. Link → **`Link`** ✅ (prezentacyjny). Nawigację zapewnia router w skorupie (nie DS).
+### D5. Tooltip → **`Tooltip`** ✅ (bonus). Hints on icons and actions.
 
 ---
 
-## F. Layout admina
+## E. Actions and primitives
 
-### F1. Sidebar + Navigation → **`Sidebar` / `Navigation`** ✅ (bonus — może zastąpić nasz `AdminLayout`)
+### E1. Button → **`Button`** ✅ (variant mapping)
 
-- **Scenariusze:** szkielet panelu admina (menu z rejestru encji + header). Obecnie mamy własny
-  `AdminLayout` (router-agnostyczny, sloty `nav`/`actions`). silk `sidebar`+`navigation` mogą go
-  zastąpić — wymaga sprawdzenia, czy pozostają **router-agnostyczne** (linki wstrzykiwane jako sloty),
-  by nie naruszyć granicy „router tylko w `apps/*`".
+- **Scenarios:** actions everywhere (submit, cancel, delete, pagination). silk's `Button`:
+  `fill/outline/text` variants (plus tones) and `s/m/l/xl` sizes. **Satisfied** — our
+  `primary/secondary/danger/ghost` map onto silk's variants and tones. Required: a `disabled` state
+  and an icon; nice to have: a `loading` state wired to the Spinner (C3).
 
----
+### E2. IconButton → **`IconButton`** ✅. Icon-only actions (close, row actions).
 
-## G. Luki integracyjne (nie komponenty — sposób konsumpcji)
+### E3. Link → **`Link`** ✅ (presentational). Navigation comes from the router in the shell, not the
 
-Model bootstrapa: DS jako **git subtree** w `design-system/`, `packages/ui`/`forms-ui` komponują
-**na** DS; env/router tylko w skorupach.
-
-1. **Dystrybucja jako źródła TS** (`main → src/index.ts`, brak konsumowanego `dist`). Zgodne z naszym
-   modelem (Tailwind kompiluje klasy przez `@source`), ale skorupa musi: zaimportować globalny CSS
-   silk (`src/styles/global.css` + `shadcn-tokens.css`), **zbudować tokeny** (style-dictionary:
-   `design.tokens.json` → CSS variables), owinąć drzewo w **`IconProvider`** (Phosphor), dodać
-   `@source` na źródła silk (`baseColor: zinc`).
-2. **Scope/nazwa:** silk = `@silk/components`; bootstrap odwołuje się do `@repo/design-system` →
-   alias/re-export przy podmianie subtree.
-3. **API ≠ nasz mock:** obecny `design-system/` (mock) ma propsy „pod inwentarz", realne API silk
-   różni się (Combobox/Select/Modal kompozycyjne). **Podmiana mock → silk wymaga adaptacji
-   `packages/ui` i mapowań `forms-ui`** — praca po stronie bootstrapa (ująć w wycenie), nie DS.
-4. **Prośba do zespołu DS:** krótki **integration guide** (globalny CSS, tokeny, `IconProvider`,
-   `@source`, mapowanie wariantów Button/Badge) + potwierdzenie router-agnostyczności Sidebar/Nav.
+design system.
 
 ---
 
-## H. Kolejność prac (rekomendacja)
+## F. Admin layout
 
-**Fala 1 — MVP podmiany (odblokowuje refactor Fazy 6):**
+### F1. Sidebar + Navigation → **`Sidebar` / `Navigation`** ✅ (bonus — it may replace our `AdminLayout`)
 
-1. **Table / prymitywy DataTable** (B1) — priorytet #1.
+- **Scenarios:** the skeleton of the admin panel (a menu from the entity registry plus a header). Right
+  now we have our own `AdminLayout` (router-agnostic, with `nav`/`actions` slots). silk's `sidebar` and
+  `navigation` could replace it — we need to check that they stay **router-agnostic** (links injected
+  as slots) so the "router only in `apps/*`" boundary holds.
+
+---
+
+## G. Integration gaps (not components — how it is consumed)
+
+The bootstrap's model: the design system as a **git subtree** in `design-system/`, with `packages/ui`
+and `forms-ui` composing **on** it; the environment and the router only in the shells.
+
+1. **Distribution as TypeScript sources** (`main → src/index.ts`, no consumed `dist`). Compatible with
+   our model (Tailwind compiles the classes through `@source`), but the shell has to import silk's
+   global CSS (`src/styles/global.css` + `shadcn-tokens.css`), **build the tokens** (style-dictionary:
+   `design.tokens.json` → CSS variables), wrap the tree in **`IconProvider`** (Phosphor) and point
+   `@source` at silk's sources (`baseColor: zinc`).
+2. **Scope and name:** silk is `@silk/components` while the bootstrap refers to `@repo/design-system`
+   → an alias or re-export when the subtree is swapped in.
+3. **The API differs from our mock:** the current `design-system/` mock has props shaped "to the
+   inventory", while silk's real API differs (Combobox, Select and Modal are compositional).
+   **Swapping the mock for silk requires adapting `packages/ui` and the `forms-ui` mappings** — work on
+   the bootstrap side (include it in the estimate), not on the design system's.
+4. **A request to the design-system team:** a short **integration guide** (global CSS, tokens,
+   `IconProvider`, `@source`, the Button/Badge variant mapping) plus confirmation that Sidebar and
+   Navigation are router-agnostic.
+
+---
+
+## H. Recommended order of work
+
+**Wave 1 — the swap MVP (unblocks the phase 6 refactor):**
+
+1. **Table / DataTable primitives** (B1) — priority #1.
 2. **Toast** (C1).
 3. **Skeleton** (C2) + **Spinner** (C3).
-4. Integration guide (G4).
+4. The integration guide (G4).
 
-Po Fali 1: podmiana placeholdera `design-system/` na subtree silk + adaptacja `packages/ui`.
+After wave 1: replace the `design-system/` placeholder with the silk subtree and adapt `packages/ui`.
 
-**Fala 2 — pod formularze/relacje (Faza 7):**
+**Wave 2 — for forms and relations (phase 7):**
 
-5. **Combobox async-search** (A9).
+5. **Async-search Combobox** (A9).
 6. **Stepper** (D3).
 
-**Do potwierdzenia z zespołem:** multi-select jako wariant Selecta (A4), format daty w DatePicker
-(A8), stan `loading` w Button spięty ze Spinnerem (E1), router-agnostyczność Sidebar/Navigation (F1).
+**To confirm with the team:** multi-select as a Select variant (A4), the date format in DatePicker
+(A8), a `loading` state in Button wired to the Spinner (E1), and whether Sidebar/Navigation are
+router-agnostic (F1).
 
-> Reguła „DS read-only” (`design-system/README.md`): braki dorabiamy **w silk (upstream)**, nie
-> lokalnie. Inwentarz referencyjny: `docs/ds-component-inventory.md`.
+> The "DS read-only" rule (`design-system/README.md`): gaps are filled **in silk (upstream)**, never
+> locally. The reference inventory: [`docs/ds-component-inventory.md`](./ds-component-inventory.md).
+
+## Related
+
+- [`ds-component-inventory.md`](./ds-component-inventory.md) — the component vocabulary the bootstrap uses
+- [How to update the design system](./recipes/how-to-update-the-design-system.md) — the swap procedure
+- [`packages/forms-ui`](../packages/forms-ui/README.md) — the mapping that will need adapting
+- [`packages/ui`](../packages/ui/README.md) — the compositions that absorb the DS API differences
