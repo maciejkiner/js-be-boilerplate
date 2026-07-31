@@ -59,9 +59,13 @@ export function EventsList() {
     <Page
       title="Events"
       actions={
-        <Button variant="secondary" onClick={() => navigate({ to: "/events/new" })}>
-          Nowy: Event
-        </Button>
+        // Dopisane ręcznie do wygenerowanego widoku: scaffolder nie wie o kreatorach.
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => navigate({ to: "/events/new" })}>
+            Nowy: Event
+          </Button>
+          <Button onClick={() => navigate({ to: "/events/wizard" })}>Kreator</Button>
+        </div>
       }
     >
       <DataTable
