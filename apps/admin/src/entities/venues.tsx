@@ -155,13 +155,9 @@ export function VenueCreate() {
         submitLabel="Utwórz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateVenueBody);
-            toast("Utworzono.", "success");
-            navigate({ to: "/venues/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateVenueBody);
+          toast("Utworzono.", "success");
+          navigate({ to: "/venues/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -192,13 +188,9 @@ export function VenueEdit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: row.id, body: values as UpdateVenueBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/venues/$id", params: { id: row.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: row.id, body: values as UpdateVenueBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/venues/$id", params: { id: row.id } });
         }}
       />
     </Page>

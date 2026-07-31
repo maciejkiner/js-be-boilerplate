@@ -210,13 +210,9 @@ export function RegistrationCreate() {
         submitLabel="Utwórz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateRegistrationBody);
-            toast("Utworzono.", "success");
-            navigate({ to: "/registrations/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateRegistrationBody);
+          toast("Utworzono.", "success");
+          navigate({ to: "/registrations/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -247,13 +243,9 @@ export function RegistrationEdit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: row.id, body: values as UpdateRegistrationBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/registrations/$id", params: { id: row.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: row.id, body: values as UpdateRegistrationBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/registrations/$id", params: { id: row.id } });
         }}
       />
     </Page>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { Db } from "../../db/client.js";
-import { uniqueViolationConstraint } from "../../db/unique-violation.js";
-import { BadRequestError, ConflictError, NotFoundError } from "../../lib/http/problem.js";
+import { uniqueConflictError, uniqueViolationConstraint } from "../../db/unique-violation.js";
+import { BadRequestError, NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
 import {
   type CreateTalkSpeakerSchema,
@@ -33,16 +33,16 @@ async function assertRelations(
   }
 }
 
-const UNIQUE_FIELDS: Record<string, string> = {
-  talk_speakers_talk_id_speaker_id_key: "talkId, speakerId",
+const UNIQUE_FIELDS: Record<string, string[]> = {
+  talk_speakers_talk_id_speaker_id_key: ["talkId", "speakerId"],
 };
 
-/** Naruszenie unikalności → 409 z nazwami pól; każdy inny błąd przechodzi dalej. */
+/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
   if (fields) {
-    throw new ConflictError(`Talk speaker: wartości (${fields}) muszą być unikalne.`);
+    throw uniqueConflictError("Talk speaker", fields);
   }
   throw error;
 }

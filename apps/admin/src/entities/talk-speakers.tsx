@@ -160,13 +160,9 @@ export function TalkSpeakerCreate() {
         submitLabel="Utwórz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateTalkSpeakerBody);
-            toast("Utworzono.", "success");
-            navigate({ to: "/talk-speakers/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateTalkSpeakerBody);
+          toast("Utworzono.", "success");
+          navigate({ to: "/talk-speakers/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -197,13 +193,9 @@ export function TalkSpeakerEdit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: row.id, body: values as UpdateTalkSpeakerBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/talk-speakers/$id", params: { id: row.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: row.id, body: values as UpdateTalkSpeakerBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/talk-speakers/$id", params: { id: row.id } });
         }}
       />
     </Page>

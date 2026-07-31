@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { Db } from "../../db/client.js";
 import type { Mailer } from "../../lib/mailer/index.js";
-import { uniqueViolationConstraint } from "../../db/unique-violation.js";
-import { BadRequestError, ConflictError, NotFoundError } from "../../lib/http/problem.js";
+import { uniqueConflictError, uniqueViolationConstraint } from "../../db/unique-violation.js";
+import { BadRequestError, NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
 import {
   type CreateEventSchema,
@@ -24,16 +24,16 @@ async function assertRelations(db: Db, input: { venueId?: string | null }) {
   }
 }
 
-const UNIQUE_FIELDS: Record<string, string> = {
-  events_slug_key: "slug",
+const UNIQUE_FIELDS: Record<string, string[]> = {
+  events_slug_key: ["slug"],
 };
 
-/** Naruszenie unikalności → 409 z nazwami pól; każdy inny błąd przechodzi dalej. */
+/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
   if (fields) {
-    throw new ConflictError(`Event: wartości (${fields}) muszą być unikalne.`);
+    throw uniqueConflictError("Event", fields);
   }
   throw error;
 }
