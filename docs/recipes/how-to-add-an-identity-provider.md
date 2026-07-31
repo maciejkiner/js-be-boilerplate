@@ -1,50 +1,62 @@
-# Przepis: jak dodać providera tożsamości
+[Home](../../README.md) › [Documentation](../README.md) › [Recipes](./README.md) › How to add an identity provider
 
-Granica modularności auth przebiega przez **interfejs providera tożsamości**, nie przez cały auth.
-Email+hasło (`providers/password-provider.ts`) to pierwsza implementacja. Social login i inni
-providerzy to kolejne implementacje dokładane w projektach — bez ruszania sesji, RBAC i middleware.
+# Recipe: how to add an identity provider
 
-## Interfejs
+The modularity boundary in auth runs through the **identity provider interface**, not through auth as
+a whole. Email + password (`providers/password-provider.ts`) is the first implementation. Social
+login and other providers are further implementations added inside projects — without touching
+sessions, RBAC or the middleware.
+
+## The interface
 
 ```ts
 // modules/auth/providers/identity-provider.ts
 export interface IdentityProvider {
-  readonly id: string; // np. "google"
+  readonly id: string; // e.g. "google"
   verify(credentials: unknown): Promise<{ userId: string } | null>;
 }
 ```
 
-`verify` sprawdza poświadczenia i zwraca `userId` istniejącego usera albo `null`
-(bez ujawniania powodu). Sesje/tokeny i cookies są wspólne — provider odpowiada wyłącznie za
-ustalenie tożsamości.
+`verify` checks the credentials and returns the `userId` of an existing user, or `null` without
+revealing why. Sessions, tokens and cookies are shared — the provider is responsible for establishing
+identity and nothing else.
 
-## Kroki
+## Steps
 
-1. **Tabela poświadczeń providera** (jeśli potrzebna) w `auth.schema.ts` — osobna od `users`,
-   np. `oauth_identities (user_id, provider, provider_account_id)`. Zarejestruj w `db/schema.ts`
-   przy kotwicy, `pnpm --filter @repo/api db:generate`, przejrzyj SQL, `db:migrate`.
+1. **A credentials table for the provider** (if it needs one) in `auth.schema.ts`, separate from
+   `users` — for example `oauth_identities (user_id, provider, provider_account_id)`. Register it in
+   `db/schema.ts` at the anchor, run `pnpm --filter @repo/api db:generate`, review the SQL, then
+   `db:migrate`.
 
-2. **Implementacja providera** w `modules/auth/providers/<nazwa>-provider.ts`:
+2. **The provider implementation** in `modules/auth/providers/<name>-provider.ts`:
 
    ```ts
    export function createGoogleProvider(db: Db): IdentityProvider {
      return {
        id: "google",
        async verify(credentials) {
-         // zweryfikuj token OAuth, znajdź/utwórz usera, zwróć { userId } albo null
+         // verify the OAuth token, find or create the user, return { userId } or null
        },
      };
    }
    ```
 
-3. **Podłącz w service/trasach**: dodaj provider do logowania (np. osobna trasa
-   `POST /auth/login/google` albo parametr providera) i wywołaj `provider.verify(...)`.
-   Wydawanie tokenów (`issueTokens`) i cookies pozostają bez zmian.
+3. **Wire it into the service and the routes**: add the provider to the login path (a separate
+   `POST /auth/login/google` route, or a provider parameter) and call `provider.verify(...)`. Token
+   issuing (`issueTokens`) and cookie handling stay exactly as they are.
 
-4. **Testy**: happy-path (verify → sesja + cookies), odrzucenie błędnych poświadczeń (401).
+4. **Tests**: the happy path (verify → session + cookies) and rejected credentials (401).
 
-## Zasady
+## Rules
 
-- Nie duplikuj logiki sesji/RBAC w providerze — provider ustala tylko tożsamość.
-- Hasła: argon2 (`password.ts`). Tokeny/sekrety trzymamy wyłącznie jako hash (`tokens.ts`).
-- Social login jest **poza core** (spec sekcja 2) — implementowany w projekcie jako kolejny provider.
+- Do not duplicate session or RBAC logic inside a provider — a provider only establishes identity.
+- Passwords use argon2 (`password.ts`). Tokens and secrets are stored **as hashes only**
+  (`tokens.ts`).
+- Social login is **outside core** (specification, section 2) — implement it in your project as
+  another provider.
+
+## Related
+
+- [`apps/api/README.md`](../../apps/api/README.md) — where the auth module sits
+- [API module structure](./api-module-structure.md) — the layering every module follows
+- [`CLAUDE.md`](../../CLAUDE.md) — the auth conventions (sessions, RBAC, cookies across subdomains)

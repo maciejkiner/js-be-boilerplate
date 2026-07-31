@@ -1,9 +1,11 @@
-# Opt-in: upload plików (abstrakcja storage)
+[Home](../../../README.md) › [Documentation](../../README.md) › [Recipes](../README.md) › [Opt-in](./README.md) › File upload
 
-**Nie zaimplementowane w bootstrapie.** Włącz, gdy potrzebujesz plików. Wzorzec jak `lib/mailer`:
-interfejs + wymienny adapter (dev vs prod).
+# Opt-in: file upload (a storage abstraction)
 
-## Interfejs
+**Not implemented in the bootstrap.** Turn it on when you need files. The pattern mirrors
+`lib/mailer`: an interface plus a swappable adapter (dev versus production).
+
+## Interface
 
 ```ts
 export interface Storage {
@@ -13,20 +15,28 @@ export interface Storage {
 }
 ```
 
-- Adapter dev: dysk lokalny / MinIO (docker-compose). Adapter prod: S3/GCS.
-- Wybór przez env (jak `createMailer(env)`): `createStorage(env)`.
+- Dev adapter: the local disk or MinIO (docker-compose). Production adapter: S3 or GCS.
+- Selected through the environment, exactly like `createMailer(env)`: `createStorage(env)`.
 
-## Przepis (skrót)
+## The recipe in short
 
-1. `lib/storage/{index,local,s3}.ts` — interfejs + adaptery; `createStorage(env)`.
-2. Pole pliku na encji: kolumna `*_key` (uuid/string) trzymająca klucz w storage (NIE bajty w DB).
-3. **Upload:** endpoint zwracający **presigned URL** (klient wysyła bezpośrednio do storage) albo
-   multipart do API → `storage.put`. Waliduj typ/rozmiar na granicy (Zod + limit).
-4. **Odczyt:** serwuj przez `getSignedUrl` (krótkie TTL), nie publiczne bucket-y.
-5. **compose (dev):** dodaj usługę MinIO, gdy używasz S3-kompatybilnego adaptera lokalnie.
-6. **FE:** DS `file-uploader` (istnieje w silk) + hook uploadu.
+1. `lib/storage/{index,local,s3}.ts` — the interface plus adapters, and `createStorage(env)`.
+2. A file field on an entity is a `*_key` column (uuid or string) holding the storage key —
+   **never the bytes** in the database.
+3. **Upload:** either an endpoint returning a **presigned URL** (the client uploads straight to
+   storage), or multipart to the API followed by `storage.put`. Validate the content type and size at
+   the boundary (Zod plus a limit).
+4. **Download:** serve through `getSignedUrl` with a short TTL, not from public buckets.
+5. **compose (dev):** add a MinIO service when you use the S3-compatible adapter locally.
+6. **Frontend:** the design system's `file-uploader` (it exists in silk) plus an upload hook.
 
-## Uwagi
+## Notes
 
-Sekrety storage tylko w env. Nie trzymaj plików w Postgresie. Sprzątanie osieroconych kluczy —
-job w tle (patrz `job-queues.md`).
+Storage secrets live in the environment only. Do not keep files in Postgres. Cleaning up orphaned
+keys belongs in a background job (see [job queues](./job-queues.md)).
+
+## Related
+
+- [Opt-in modules](./README.md) — the rules that apply to all of these
+- [Job queues](./job-queues.md) — where the cleanup job would live
+- [How to define a form](../how-to-define-a-form.md) — adding the upload control to a form

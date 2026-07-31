@@ -12,46 +12,46 @@ of truth_ (Zod schema + metadata), _AI-first_, _convention over configuration_.
 
 Every document links back to its index, so you can click your way through the whole set on GitHub.
 
-| Where                                                     | What you will find                                                    |
-| --------------------------------------------------------- | --------------------------------------------------------------------- |
-| [Documentation map](./docs/README.md)                     | The full index — every document in the repository, grouped by purpose |
-| [Recipes](./docs/recipes/README.md)                       | Step-by-step procedures: add an entity, a migration, a form, …        |
-| [Architecture decisions](./docs/adr/README.md)            | ADRs — why things are the way they are                                |
-| [Conventions for the team and AI agents](./CLAUDE.md)     | The canonical rules: commands, boundaries, Definition of Done          |
-| [Project specification](./spec/bootstrap-project-description.md) | The binding spec this repository implements                     |
-| [Build plan and status](./PLAN.md)                        | Phases, checkboxes, what is intentionally out of scope                 |
-| [Changelog](./CHANGELOG.md)                               | Backport recipes for forks that have already drifted                   |
+| Where                                                            | What you will find                                                    |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [Documentation map](./docs/README.md)                            | The full index — every document in the repository, grouped by purpose |
+| [Recipes](./docs/recipes/README.md)                              | Step-by-step procedures: add an entity, a migration, a form, …        |
+| [Architecture decisions](./docs/adr/README.md)                   | ADRs — why things are the way they are                                |
+| [Conventions for the team and AI agents](./CLAUDE.md)            | The canonical rules: commands, boundaries, Definition of Done         |
+| [Project specification](./spec/bootstrap-project-description.md) | The binding spec this repository implements                           |
+| [Build plan and status](./PLAN.md)                               | Phases, checkboxes, what is intentionally out of scope                |
+| [Changelog](./CHANGELOG.md)                                      | Backport recipes for forks that have already drifted                  |
 
 Per-workspace documentation lives next to the code:
 
-| Workspace                                                | Purpose                                                        |
-| -------------------------------------------------------- | -------------------------------------------------------------- |
-| [`apps/api`](./apps/api/README.md)                       | Fastify + Zod API, domain modules, OpenAPI                     |
-| [`apps/web`](./apps/web/README.md)                       | Public shell (Vite + React + TanStack Router)                  |
-| [`apps/admin`](./apps/admin/README.md)                   | Admin panel — the second shell on the same packages            |
-| [`packages/schemas`](./packages/schemas/README.md)       | Entities: Zod schema + metadata (the single source of truth)   |
-| [`packages/api-client`](./packages/api-client/README.md) | Type-safe client generated from OpenAPI                        |
-| [`packages/api-react`](./packages/api-react/README.md)   | TanStack Query bindings over the client                        |
-| [`packages/forms`](./packages/forms/README.md)           | Headless form engine (`useForm`, `useWizard`)                  |
-| [`packages/forms-ui`](./packages/forms-ui/README.md)     | Field renderers wired to the design system                     |
-| [`packages/ui`](./packages/ui/README.md)                 | Compositions on the design system: `DataTable`, `AdminLayout`  |
-| [`tools/scaffold`](./tools/scaffold/README.md)           | Entity generator (`pnpm scaffold <entity>`)                    |
-| [`e2e`](./e2e/README.md)                                 | End-to-end tests (Playwright)                                  |
+| Workspace                                                | Purpose                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------- |
+| [`apps/api`](./apps/api/README.md)                       | Fastify + Zod API, domain modules, OpenAPI                    |
+| [`apps/web`](./apps/web/README.md)                       | Public shell (Vite + React + TanStack Router)                 |
+| [`apps/admin`](./apps/admin/README.md)                   | Admin panel — the second shell on the same packages           |
+| [`packages/schemas`](./packages/schemas/README.md)       | Entities: Zod schema + metadata (the single source of truth)  |
+| [`packages/api-client`](./packages/api-client/README.md) | Type-safe client generated from OpenAPI                       |
+| [`packages/api-react`](./packages/api-react/README.md)   | TanStack Query bindings over the client                       |
+| [`packages/forms`](./packages/forms/README.md)           | Headless form engine (`useForm`, `useWizard`)                 |
+| [`packages/forms-ui`](./packages/forms-ui/README.md)     | Field renderers wired to the design system                    |
+| [`packages/ui`](./packages/ui/README.md)                 | Compositions on the design system: `DataTable`, `AdminLayout` |
+| [`tools/scaffold`](./tools/scaffold/README.md)           | Entity generator (`pnpm scaffold <entity>`)                   |
+| [`e2e`](./e2e/README.md)                                 | End-to-end tests (Playwright)                                 |
 
 ## Build status
 
-| Phase | Scope                                                     | Status      |
-| ----- | --------------------------------------------------------- | ----------- |
-| 0     | Foundation: monorepo, config, DX, AI docs                 | ✅ complete |
-| 1     | API skeleton (Fastify + Zod, env, logging, RFC 7807)      | ✅ complete |
+| Phase | Scope                                                      | Status      |
+| ----- | ---------------------------------------------------------- | ----------- |
+| 0     | Foundation: monorepo, config, DX, AI docs                  | ✅ complete |
+| 1     | API skeleton (Fastify + Zod, env, logging, RFC 7807)       | ✅ complete |
 | 2     | Database (Drizzle, migrations, audit columns, soft delete) | ✅ complete |
-| 3     | Auth (users, sessions, RBAC, password reset)              | ✅ complete |
-| 4     | Reference entity (Project + Task, CRUD)                   | ✅ complete |
-| 5     | API client from OpenAPI + TanStack Query hooks            | ✅ complete |
-| 6     | Web + admin shells, DataTable, e2e (Playwright)           | ✅ complete |
-| 7     | Form engine (`forms` + `forms-ui`) + wizard               | ✅ complete |
-| 8     | Scaffolder (`pnpm scaffold` — entity generation)          | ✅ complete |
-| 9     | Wrap-up (changelog, versioning, opt-in modules)           | ✅ complete |
+| 3     | Auth (users, sessions, RBAC, password reset)               | ✅ complete |
+| 4     | Reference entity (Project + Task, CRUD)                    | ✅ complete |
+| 5     | API client from OpenAPI + TanStack Query hooks             | ✅ complete |
+| 6     | Web + admin shells, DataTable, e2e (Playwright)            | ✅ complete |
+| 7     | Form engine (`forms` + `forms-ui`) + wizard                | ✅ complete |
+| 8     | Scaffolder (`pnpm scaffold` — entity generation)           | ✅ complete |
+| 9     | Wrap-up (changelog, versioning, opt-in modules)            | ✅ complete |
 
 **The bootstrap is complete** (phases 0–9). Updates reach forks through `CHANGELOG.md` (recipe
 entries) + `BOOTSTRAP_VERSION`. Opt-in modules ship as recipes only:
@@ -63,7 +63,7 @@ Details and checkboxes: [`PLAN.md`](./PLAN.md).
 
 ## Getting started
 
-**Fork & forget**: your project *owns* its code; updates from the boilerplate arrive as recipe
+**Fork & forget**: your project _owns_ its code; updates from the boilerplate arrive as recipe
 entries in [`CHANGELOG.md`](./CHANGELOG.md) + `BOOTSTRAP_VERSION`, **not** through `git merge`.
 
 1. **Create the repository** from this one (not a classic fork): GitHub → **"Use this template" →
@@ -146,17 +146,17 @@ Full description of the Docker modes and their pitfalls:
 
 ## Commands
 
-| Command                                         | Description                                             |
-| ----------------------------------------------- | ------------------------------------------------------- |
-| `pnpm lint` / `typecheck` / `build` / `test`     | The pipeline through Turborepo (whole monorepo)         |
-| `pnpm format` / `pnpm format:check`             | Prettier                                                |
-| `pnpm turbo run test --filter=@repo/<pkg>`      | Narrow any task to a single workspace                   |
-| `pnpm dev`                                      | Everything in watch mode (apps + package `dist`)        |
-| `pnpm --filter @repo/{api,web,admin} dev`       | A single application (without package watchers)         |
-| `pnpm generate:client`                          | Regenerate the client from OpenAPI (after API changes)  |
-| `pnpm --filter @repo/e2e test:e2e`              | End-to-end tests (Playwright starts API + web + admin)  |
-| `pnpm docker:up` / `docker:full` / `docker:dev` | Infrastructure / prod-like stack / HMR stack            |
-| `pnpm scaffold <entity>`                        | Generates an entity (API + admin + hooks + test)        |
+| Command                                         | Description                                            |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| `pnpm lint` / `typecheck` / `build` / `test`    | The pipeline through Turborepo (whole monorepo)        |
+| `pnpm format` / `pnpm format:check`             | Prettier                                               |
+| `pnpm turbo run test --filter=@repo/<pkg>`      | Narrow any task to a single workspace                  |
+| `pnpm dev`                                      | Everything in watch mode (apps + package `dist`)       |
+| `pnpm --filter @repo/{api,web,admin} dev`       | A single application (without package watchers)        |
+| `pnpm generate:client`                          | Regenerate the client from OpenAPI (after API changes) |
+| `pnpm --filter @repo/e2e test:e2e`              | End-to-end tests (Playwright starts API + web + admin) |
+| `pnpm docker:up` / `docker:full` / `docker:dev` | Infrastructure / prod-like stack / HMR stack           |
+| `pnpm scaffold <entity>`                        | Generates an entity (API + admin + hooks + test)       |
 
 Database and API integration tests, as well as e2e, require Postgres
 (`TEST_DATABASE_URL`/`DATABASE_URL`). E2E additionally needs SMTP on `localhost:1025` (the wizard

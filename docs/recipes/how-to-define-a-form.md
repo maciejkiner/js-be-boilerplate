@@ -1,12 +1,16 @@
-# Przepis: jak zdefiniować formularz / dodać typ pola
+[Home](../../README.md) › [Documentation](../README.md) › [Recipes](./README.md) › How to define a form
 
-Formularze stoją na trzech warstwach (jedno źródło prawdy = encja Zod + metadane):
+# Recipe: how to define a form and how to add a field type
 
-- **`@repo/forms`** — headless silnik (`useForm`, `useWizard`), walidacja przez Zod, bez komponentów.
-- **`@repo/forms-ui`** — renderery: `deriveFields(entity)`, `FormFields`, jawne mapowanie typ→komponent DS.
-- **skorupa** (`apps/admin`) — spina formularz z `@repo/api-react` (mutacje) i routerem.
+Forms stand on three layers, all fed by the same source of truth (the Zod entity plus its metadata):
 
-## Formularz create/edit encji
+- **`@repo/forms`** — the headless engine (`useForm`, `useWizard`), validation through Zod, no
+  components.
+- **`@repo/forms-ui`** — renderers: `deriveFields(entity)`, `FormFields`, and an explicit
+  control → design-system component mapping.
+- **the shell** (`apps/admin`) — wires the form to `@repo/api-react` (mutations) and the router.
+
+## A create/edit form for an entity
 
 ```tsx
 const create = useCreateProject();
@@ -18,33 +22,35 @@ const create = useCreateProject();
 />;
 ```
 
-`EntityForm` (`apps/admin/src/entities/entity-form.tsx`) w środku: `useForm({ schema: entity.validation,
-defaultValues, onSubmit })` + `deriveFields(entity)` + `FormFields`. Walidacja (per-pole **i
-międzypolowa** — np. `endDate ≥ startDate`) pochodzi z `entity.validation`; błędy renderują się przy
-polach. Wzorzec pokrywa Project i Task — nic nie piszemy per encja poza podpięciem mutacji.
+Inside, `EntityForm` (`apps/admin/src/entities/entity-form.tsx`) is
+`useForm({ schema: entity.validation, defaultValues, onSubmit })` + `deriveFields(entity)` +
+`FormFields`. Validation — per field **and cross-field**, for example `endDate ≥ startDate` — comes
+from `entity.validation`, and errors render next to the fields. The pattern covers Project and Task:
+nothing is written per entity beyond wiring up the mutation.
 
-## Błędy z API (nie owijaj submitu w `try/catch`)
+## Errors from the API (do not wrap the submit in `try/catch`)
 
-`onSubmit` **może rzucać** — `useForm` łapie błąd i zamienia go na błędy formularza:
+`onSubmit` **is allowed to throw** — `useForm` catches the error and turns it into form errors:
 
-- pola wskazane w rozszerzeniu `errors` z problem+json (`[{ path, message }]`) → błąd przy **tej**
-  kontrolce (np. 409 o unikalności podświetla `slug`),
-- `detail` odpowiedzi → błąd globalny pod kluczem `_form` (`EntityForm` renderuje go jako alert nad
-  przyciskiem).
+- fields named in the `errors` extension of problem+json (`[{ path, message }]`) → an error on
+  **that** control (a uniqueness 409, for instance, highlights `slug`);
+- the response `detail` → a global error under the `_form` key, which `EntityForm` renders as an
+  alert above the button.
 
-Dlatego wygenerowane widoki create/edit **nie mają własnego `catch`**: własny `catch` z komunikatem
-zastępczym („Nie udało się zapisać") kasuje to, co API właśnie wytłumaczyło, i gubi informację, które
-pole poprawić. Toast zostaje wyłącznie dla ścieżki sukcesu.
+That is why the generated create/edit views have **no `catch` of their own**: a local `catch` with a
+stand-in message ("Nie udało się zapisać") throws away what the API just explained and loses the
+information about which field to fix. The toast is left for the success path only.
 
-Po stronie API: 409 z konfliktu unikalności buduje `uniqueConflictError(label, fields)`
-(`apps/api/src/db/unique-violation.ts`) — dokłada `errors` obok `detail`. Ręcznie rzucane błędy
-walidacji domenowej mogą zrobić to samo: `new BadRequestError(detail, { errors: [{ path, message }] })`.
+On the API side a uniqueness 409 is built by `uniqueConflictError(label, fields)`
+(`apps/api/src/db/unique-violation.ts`), which adds `errors` next to `detail`. Hand-thrown domain
+validation errors can do the same:
+`new BadRequestError(detail, { errors: [{ path, message }] })`.
 
-Mapper jest publiczny (`serverErrorToFieldErrors` z `@repo/forms`) — rozpoznaje kształt strukturalnie,
-więc działa też dla błędu opakowanego (`cause`) i poza `EntityForm`.
+The mapper is public (`serverErrorToFieldErrors` from `@repo/forms`). It recognises the shape
+structurally, so it also works for a wrapped error (`cause`) and outside `EntityForm`.
 
-**Akcje bez formularza** (usuwanie, dezaktywacja, wysyłka maila) nie mają gdzie pokazać błędu przy
-polu — tam jedynym miejscem jest toast, więc niesie treść z API:
+**Actions without a form** (delete, deactivate, send an e-mail) have no field to point at — the toast
+is the only place left, so it carries the message from the API:
 
 ```tsx
 remove.mutate(row.id, {
@@ -53,44 +59,47 @@ remove.mutate(row.id, {
 });
 ```
 
-`errorMessage` z `@repo/api-client` (nie z `@repo/forms` — to nie jest formularz).
+`errorMessage` comes from `@repo/api-client` (not from `@repo/forms` — this is not a form).
 
-**Formularz spoza CRUD-u** (własny schemat, własne kontrolki) też korzysta z `useForm` — patrz
-„Zaproś użytkownika" (`apps/admin/src/entities/users.tsx`): schemat Zod pisany wprost, `Input`
-i `RolesPicker` podpięte ręcznie, ale walidacja i błędy z API działają tak samo. Formularz z własnymi
-kontrolkami dostaje `noValidate` — walidację robi Zod, a natywny dymek przeglądarki
-(`type="email"`, `required`) tylko blokowałby submit przed pokazaniem naszego komunikatu.
+**A form outside CRUD** (its own schema, its own controls) uses `useForm` too — see "Zaproś
+użytkownika" (`apps/admin/src/entities/users.tsx`): the Zod schema is written inline and `Input` and
+`RolesPicker` are wired by hand, yet validation and API errors behave identically. A form with custom
+controls gets `noValidate`: Zod owns validation, and the browser's native bubble (`type="email"`,
+`required`) would only block the submit before our own message could appear.
 
-## Pola relacji (async)
+## Relation fields (async)
 
-Skorupa wstrzykuje **generyczny** `RelationSource` (`apps/admin/src/relation-source.ts`): jeden async
-fetcher `(relation, query) => Promise<wiersze>` uderzający w `GET /api/v1/<plural>`. Działa dla
-**dowolnej** encji-celu bez rejestracji — nowa encja od razu jest dostępna jako cel relacji (żadnych
-per-encja gałęzi). Label liczy `forms-ui` (`RelationControl`, `useQuery` per pole) z
-`relation.displayField`, więc **ta sama encja-cel może być pokazywana różnymi polami** (np.
-`comment`→`task` po `title`, a `subtask`→`task` po `priority`).
+The shell injects a **generic** `RelationSource` (`apps/admin/src/relation-source.ts`): a single
+async fetcher `(relation, query) => Promise<rows>` that hits `GET /api/v1/<plural>`. It works for
+**any** target entity without registration — a new entity is immediately available as a relation
+target, with no per-entity branches. The label is resolved by `forms-ui` (`RelationControl`, one
+`useQuery` per field) from `relation.displayField`, so **the same target entity can be displayed
+through different fields** (`comment` → `task` by `title`, while `subtask` → `task` by `priority`).
 
-Filtrowanie: wpisywana fraza idzie do endpointu (`?q=` tam, gdzie moduł to wspiera, np. `users`) i
-dodatkowo filtruje lokalnie po etykiecie. Limit: pobierane top 50 — dla dużych tabel dodaj obsługę
-`?q=` w danym module API. Endpoint listy musi być dostępny dla roli używającej panelu (np.
-`GET /api/v1/users` jest `admin`-only).
+Filtering: what the user types is sent to the endpoint (`?q=` where the module supports it, for
+example `users`) and additionally filtered locally by label. The limit is the top 50 rows — for large
+tables add `?q=` support in that API module. The list endpoint must be reachable for the role using
+the panel (`GET /api/v1/users`, for instance, is `admin`-only).
 
-## Dodanie nowego typu pola
+## Adding a new field type
 
-1. **Schemat**: dodaj wartość do `FieldControl` w `packages/schemas/src/lib/define-entity.ts`.
-2. **Renderer**: dodaj `case` w `Control` (`packages/forms-ui/src/field-renderer.tsx`) mapujący typ na
-   komponent DS + adapter wartości.
-3. **DS**: dorób komponent w `design-system` (mock) — docelowo w silk (patrz `docs/ds-gap-analysis.md`).
-4. **Dokumentacja**: uzupełnij tabelę mapowania w `packages/forms-ui/README.md` i inwentarz
-   `docs/ds-component-inventory.md`.
+1. **Schema**: add the value to `FieldControl` in `packages/schemas/src/lib/define-entity.ts`.
+2. **Renderer**: add a `case` to `Control` (`packages/forms-ui/src/field-renderer.tsx`) mapping the
+   type to a design-system component plus a value adapter.
+3. **Design system**: add the component in `design-system` (the mock) — eventually in silk, see
+   [`docs/ds-gap-analysis.md`](../ds-gap-analysis.md).
+4. **Documentation**: extend the mapping table in
+   [`packages/forms-ui/README.md`](../../packages/forms-ui/README.md) and the inventory in
+   [`docs/ds-component-inventory.md`](../ds-component-inventory.md).
 
-Tabela mapowania `FieldControl → komponent DS`: `packages/forms-ui/README.md`.
+The `FieldControl → design-system component` mapping table lives in
+[`packages/forms-ui/README.md`](../../packages/forms-ui/README.md).
 
-## Wizard
+## Wizards
 
-**Domyślnie:** komponent `<Wizard>` z `@repo/forms-ui` — NARZUCA strukturę (Stepper + treść kroku +
-pasek Wstecz/Dalej/Zakończ) oraz stan i walidację-gating. Wstrzykujesz tylko kroki i logikę; nie
-wymyślasz mechaniki na nowo.
+**By default:** the `<Wizard>` component from `@repo/forms-ui`. It _imposes_ the structure (stepper +
+step content + a back/next/finish bar) along with state and validation gating. You inject the steps
+and the logic; you do not reinvent the mechanics.
 
 ```tsx
 <Wizard<Record<string, unknown>>
@@ -111,37 +120,49 @@ wymyślasz mechaniki na nowo.
     },
   ]}
   defaultValues={{ ...emptyValues(projectEntity), taskTitlesText: "" }}
-  labels={{ next: "Dalej", submit: "Utwórz" }} // domyślnie Wstecz/Dalej/Zakończ
+  labels={{ next: "Dalej", submit: "Utwórz" }} // defaults: Wstecz / Dalej / Zakończ
   onComplete={async (values) => {
-    /* orkiestracja handlerów */
+    /* orchestrate the handlers */
   }}
 />
 ```
 
-- Każdy krok = `{ id, label, schema, render(wizard) }`. `WizardApi` spełnia `FormLike`, więc krok wprost
-  renderuje `<FormFields form={wizard} … />`. Walidacja per krok (schemat Zod) blokuje „Dalej".
-- **Helper** `entityStep(entity, { relationSource? })` — krok = formularz encji bez boilerplate'u
-  (`schema`/pola z encji).
-- **`onComplete` orkiestruje dowolne handlery** — kluczowe: część danych → baza, część → inne cele.
-  Referencyjny „utwórz projekt" (`apps/admin/src/entities/project-wizard.tsx`): dane → `createProject`
-  (baza), zaproszenia → `inviteProjectMembers` (**mailer, bez zapisu**), zadania → `createTask` hurtem.
-  Dowód, że silnik formularzy jest niezależny od CRUD.
-- **Błąd w `onComplete`** też nie wymaga `try/catch` w widoku: `<Wizard>` pokazuje komunikat w swoim
-  chrome (`submitError`) i zaznacza pola wskazane przez API. Fazę, której dotyczy, wskaż rzucając
-  `WizardStepError.from(stepId, error)` — wizard cofnie do tego kroku, **zachowując błąd źródłowy**,
-  więc podświetli konkretną kontrolkę:
+- A step is `{ id, label, schema, render(wizard) }`. `WizardApi` satisfies `FormLike`, so a step can
+  render `<FormFields form={wizard} … />` directly. Per-step validation (the Zod schema) gates
+  "next".
+- **The helper** `entityStep(entity, { relationSource? })` turns an entity into a step with no
+  boilerplate (schema and fields both come from the entity).
+- **`onComplete` orchestrates arbitrary handlers** — that is the point: some data goes to the
+  database, some elsewhere. The reference "create a project" wizard
+  (`apps/admin/src/entities/project-wizard.tsx`) sends data → `createProject` (database), invitations
+  → `inviteProjectMembers` (**the mailer, nothing persisted**) and tasks → `createTask` in bulk.
+  Proof that the form engine is independent of CRUD.
+- **An error in `onComplete`** needs no `try/catch` in the view either: `<Wizard>` shows the message
+  in its own chrome (`submitError`) and marks the fields the API pointed at. Say which step it
+  belongs to by throwing `WizardStepError.from(stepId, error)` — the wizard goes back to that step
+  **keeping the original error**, so it can highlight the specific control:
 
   ```tsx
   const project = await createProject.mutateAsync(body).catch((error: unknown) => {
-    throw WizardStepError.from("project", error); // NIE: new WizardStepError(id, error.message)
+    throw WizardStepError.from("project", error); // NOT: new WizardStepError(id, error.message)
   });
   ```
 
-  Ręczne przepisanie `error.message` do konstruktora gubi listę pól — zostaje sam komunikat.
+  Copying `error.message` into the constructor by hand loses the field list; only the sentence
+  survives.
 
-**Escape hatch:** `useWizard({ steps, defaultValues, onComplete })` z `@repo/forms` — sam silnik (stan,
-kroki, `next/prev/submit`) bez narzuconego chrome, gdy potrzebujesz nietypowego layoutu.
+**Escape hatch:** `useWizard({ steps, defaultValues, onComplete })` from `@repo/forms` — the engine
+alone (state, steps, `next`/`prev`/`submit`) without the imposed chrome, for an unusual layout.
 
-## Świadomie POMINIĘTE
+## Deliberately omitted
 
-**Save & resume** wizardów (persystencja częściowego stanu) — moduł opt-in; przepis w Fazie 9.
+**Save & resume** for wizards (persisting partial state) is an opt-in module — see
+[the recipe](./opt-in/save-and-resume.md).
+
+## Related
+
+- [`packages/forms/README.md`](../../packages/forms/README.md) — the engine API, including error mapping
+- [`packages/forms-ui/README.md`](../../packages/forms-ui/README.md) — the control → component table
+- [How to add an entity](./how-to-add-an-entity.md) — where the fields and validation come from
+- [Frontend shell structure](./frontend-shell-structure.md) — how the shell wires forms to routes and data
+- [API module structure](./api-module-structure.md) — the other half of the error contract

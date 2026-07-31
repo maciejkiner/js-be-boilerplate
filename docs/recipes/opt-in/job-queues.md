@@ -1,9 +1,11 @@
-# Opt-in: kolejki / zadania w tle
+[Home](../../../README.md) › [Documentation](../../README.md) › [Recipes](../README.md) › [Opt-in](./README.md) › Job queues
 
-**Nie zaimplementowane w bootstrapie.** Włącz, gdy potrzebujesz pracy asynchronicznej (maile hurtem,
-przetwarzanie plików, sprzątanie, retry). Wzorzec: interfejs `Queue` + wymienny adapter.
+# Opt-in: queues and background jobs
 
-## Interfejs
+**Not implemented in the bootstrap.** Turn it on when you need asynchronous work: bulk e-mails, file
+processing, cleanup, retries. The pattern is a `Queue` interface plus a swappable adapter.
+
+## Interface
 
 ```ts
 export interface Queue {
@@ -12,21 +14,31 @@ export interface Queue {
 export type JobHandler<T> = (payload: T) => Promise<void>;
 ```
 
-- Adapter: **pg-boss** (kolejka w Postgresie — bez nowej infrastruktury, spójne z Drizzle) albo
-  **BullMQ** (Redis — dokładasz usługę Redis do compose).
-- `createQueue(env)` (jak `createMailer`/`createStorage`).
+- Adapter: **pg-boss** (a queue inside Postgres — no new infrastructure, consistent with Drizzle) or
+  **BullMQ** (Redis — you add a Redis service to compose).
+- `createQueue(env)`, following `createMailer` and `createStorage`.
 
-## Przepis (skrót)
+## The recipe in short
 
-1. `lib/queue/{index,pg-boss}.ts` — interfejs + adapter; `createQueue(env)`.
-2. **Producent:** w service wołasz `queue.enqueue("send-invites", { projectId, emails })` zamiast
-   pracy inline (np. wizard mógłby kolejkować zaproszenia zamiast wysyłać synchronicznie).
-3. **Worker:** osobny proces `apps/api/src/worker.ts` (`node dist/worker.js`) rejestrujący handlery;
-   w compose/deploy osobna usługa `worker` (ten sam obraz, inna komenda — patrz `docker-compose.app.yml`).
-4. **Env:** `REDIS_URL` (BullMQ) lub reużyj `DATABASE_URL` (pg-boss). Dodaj do `EnvSchema`.
-5. **Obserwowalność:** loguj z `correlation_id` przekazanym w payloadzie; retry/backoff z adaptera.
+1. `lib/queue/{index,pg-boss}.ts` — the interface plus an adapter, and `createQueue(env)`.
+2. **Producer:** in a service, call `queue.enqueue("send-invites", { projectId, emails })` instead of
+   doing the work inline — the project wizard, for example, could queue its invitations rather than
+   sending them synchronously.
+3. **Worker:** a separate process, `apps/api/src/worker.ts` (`node dist/worker.js`), registering the
+   handlers; in compose and in deployment it is a separate `worker` service using the same image with
+   a different command (see `docker-compose.app.yml`).
+4. **Environment:** `REDIS_URL` (BullMQ) or reuse `DATABASE_URL` (pg-boss). Add it to `EnvSchema`.
+5. **Observability:** log with the `correlation_id` passed inside the payload; retries and backoff
+   come from the adapter.
 
-## Uwagi
+## Notes
 
-Handlery idempotentne (job może się powtórzyć). Bez włączenia modułu praca zostaje synchroniczna.
-pg-boss = zero dodatkowej infry (rekomendacja na start); BullMQ, gdy potrzebujesz throughputu/Redisa.
+Handlers must be idempotent — a job can run more than once. Until the module is enabled, the work
+stays synchronous. pg-boss means zero extra infrastructure (the recommended starting point); reach
+for BullMQ when you need Redis-level throughput.
+
+## Related
+
+- [Opt-in modules](./README.md) — the rules that apply to all of these
+- [File upload](./file-upload.md) — the orphaned-key cleanup that belongs in a job
+- [How to run in Docker](../how-to-run-in-docker.md) — where the worker service would be added

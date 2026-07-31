@@ -1,9 +1,12 @@
-# Opt-in: save & resume (persystencja częściowego stanu wizarda)
+[Home](../../../README.md) › [Documentation](../../README.md) › [Recipes](../README.md) › [Opt-in](./README.md) › Save & resume
 
-**Nie zaimplementowane w bootstrapie.** Silnik formularzy (`packages/forms` `useWizard`) celowo NIE
-persystuje stanu — to opt-in. Włącz, gdy wizardy są długie i użytkownik ma wracać do nich później.
+# Opt-in: save & resume (persisting partial wizard state)
 
-## Interfejs
+**Not implemented in the bootstrap.** The form engine (`useWizard` in `packages/forms`) deliberately
+does **not** persist state — that is opt-in. Turn it on when wizards are long and users are expected
+to come back to them later.
+
+## Interface
 
 ```ts
 export interface DraftStore {
@@ -13,19 +16,27 @@ export interface DraftStore {
 }
 ```
 
-- `key` = np. `${userId}:${wizardId}`.
-- Backend: tabela `wizard_drafts` (key, user_id, payload jsonb, updated_at) **albo** KV (Redis).
+- `key` is something like `${userId}:${wizardId}`.
+- Backend: a `wizard_drafts` table (key, user_id, payload jsonb, updated_at) **or** a key-value store
+  such as Redis.
 
-## Przepis (skrót)
+## The recipe in short
 
-1. `DraftStore` + adapter (DB jsonb lub Redis). Endpoint `PUT/GET/DELETE /drafts/:key` (auth,
-   scoped do usera).
-2. **Wpięcie w `useWizard`:** przy zmianie wartości/kroku → debounced `save(key, wizard.values)`;
-   przy montażu → `load(key)` i użyj jako `defaultValues`; po `onComplete` → `clear(key)`.
-   (Rozszerz `useWizard` o opcjonalne `persist?: DraftStore` — bez zmiany domyślnego zachowania.)
-3. **FE:** wskaźnik „zapisano roboczo" + wznów przy wejściu.
+1. `DraftStore` plus an adapter (jsonb in the database, or Redis), and a
+   `PUT/GET/DELETE /drafts/:key` endpoint (authenticated, scoped to the user).
+2. **Hooking into `useWizard`:** on a value or step change → a debounced `save(key, wizard.values)`;
+   on mount → `load(key)` used as `defaultValues`; after `onComplete` → `clear(key)`. Extend
+   `useWizard` with an optional `persist?: DraftStore` so the default behaviour does not change.
+3. **Frontend:** a "draft saved" indicator plus a resume prompt on entry.
 
-## Uwagi
+## Notes
 
-Payload draftu może zawierać dane wrażliwe — szyfrowanie/retencja wg polityki. Waliduj załadowany
-draft schematem kroku przed użyciem (mógł się zmienić kontrakt).
+A draft payload may contain sensitive data — encryption and retention follow your policy. Validate a
+loaded draft against the step schema before using it: the contract may have changed since it was
+saved.
+
+## Related
+
+- [Opt-in modules](./README.md) — the rules that apply to all of these
+- [How to define a form](../how-to-define-a-form.md) — the wizard this would extend
+- [`packages/forms/README.md`](../../../packages/forms/README.md) — the engine API

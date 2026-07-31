@@ -1,93 +1,110 @@
-# Przepis: uruchomienie całego stacku w Dockerze
+[Home](../../README.md) › [Documentation](../README.md) › [Recipes](./README.md) › How to run in Docker
 
-Trzy tryby. Domyślny dev-native jest niezmieniony; pełny stack to **samowystarczalne** pliki
-(`docker-compose.app.yml` / `docker-compose.dev.yml` — każdy zawiera Postgres + mailhog + API + web +
-admin), uruchamiane jednym `-f` (patrz [ADR-0003](../adr/ADR-0003-self-contained-full-stack-compose.md)
-i [ADR-0002](../adr/ADR-0002-full-stack-containerization.md)).
+# Recipe: running the whole stack in Docker
 
-| Tryb                | Komenda            | Co uruchamia                                              |
-| ------------------- | ------------------ | --------------------------------------------------------- |
-| Infra (dev-native)  | `pnpm docker:up`   | tylko Postgres + mailhog (apka natywnie `pnpm dev`)       |
-| Pełny **prod-like** | `pnpm docker:full` | Postgres + mailhog + API + web + admin (zbudowane obrazy) |
-| Pełny **dev (HMR)** | `pnpm docker:dev`  | jw., ale API/web/admin w watch, źródło bind-mount         |
+Three modes. The default native development flow is unchanged; the full stack lives in
+**self-contained** files (`docker-compose.app.yml` / `docker-compose.dev.yml` — each one contains
+Postgres + mailhog + API + web + admin) started with a single `-f` (see
+[ADR-0003](../adr/ADR-0003-self-contained-full-stack-compose.md) and
+[ADR-0002](../adr/ADR-0002-full-stack-containerization.md)).
 
-Porty hosta domyślnie: API **3000**, web **5173**, admin **5174**, mailhog UI **8025**. **Postgres w
-trybie pełnym NIE jest publikowany na host** (API łączy się wewnętrznie `postgres:5432`) — więc lokalny
-port 5432 nie powoduje kolizji. Kolizje pozostałych portów: ustaw `API_PORT`/`WEB_PORT`/`ADMIN_PORT`
-(ew. `MAILHOG_UI_PORT`) w `.env`.
+| Mode                    | Command            | What it starts                                                 |
+| ----------------------- | ------------------ | -------------------------------------------------------------- |
+| Infrastructure (native) | `pnpm docker:up`   | Postgres + mailhog only (the app runs natively, `pnpm dev`)    |
+| Full **prod-like**      | `pnpm docker:full` | Postgres + mailhog + API + web + admin (built images)          |
+| Full **dev (HMR)**      | `pnpm docker:dev`  | The same, but API/web/admin in watch mode, source bind-mounted |
+
+Default host ports: API **3000**, web **5173**, admin **5174**, mailhog UI **8025**. **In the full
+modes Postgres is NOT published to the host** (the API connects internally to `postgres:5432`), so a
+local port 5432 cannot collide. For the other ports set `API_PORT`/`WEB_PORT`/`ADMIN_PORT` (and
+possibly `MAILHOG_UI_PORT`) in `.env`.
 
 ## Prod-like (`pnpm docker:full`)
 
-1. `pnpm docker:full` — buduje obrazy (API: `pnpm deploy`; web/admin: Vite → nginx z SPA-fallback) i wstaje.
-2. Zaseeduj konto admina (`admin@example.com` / `admin12345`):
+1. `pnpm docker:full` — builds the images (API: `pnpm deploy`; web/admin: Vite → nginx with an SPA
+   fallback) and brings them up.
+2. Seed the admin account (`admin@example.com` / `admin12345`):
    ```bash
    pnpm docker:full:seed
-   # albo: docker compose -f docker-compose.app.yml exec api node dist/db/cli/seed.cli.js
+   # or: docker compose -f docker-compose.app.yml exec api node dist/db/cli/seed.cli.js
    ```
-3. Otwórz: web `http://localhost:5173`, admin `http://localhost:5174/login`, API `http://localhost:3000/health`.
+3. Open: web `http://localhost:5173`, admin `http://localhost:5174/login`, API
+   `http://localhost:3000/health`.
 
-Migracje robi API przy starcie. **Edycja kodu wymaga przebudowy** (`--build`, zawarty w
-`pnpm docker:full`) — obrazy mają kod skompilowany w środku, a `VITE_API_URL` jest wstrzykiwany jako
-build arg, więc Vite zapieka go w bundlu. To celowe: ten tryb weryfikuje artefakt produkcyjny.
-**Do iterowania używaj `pnpm dev` (natywnie) albo `pnpm docker:dev`** — przebudowa obrazu przy każdej
-zmianie to nie jest pętla, w której chcesz pracować.
+Migrations run when the API starts. **Editing code requires a rebuild** (`--build`, already part of
+`pnpm docker:full`): the images carry compiled code, and `VITE_API_URL` is passed as a build argument,
+so Vite bakes it into the bundle. That is deliberate — this mode verifies the production artefact.
+**For iterating use `pnpm dev` (native) or `pnpm docker:dev`**; rebuilding an image on every change is
+not a loop you want to work in.
 
 ## Dev HMR (`pnpm docker:dev`)
 
-- Usługa `install` raz instaluje zależności (linux) i buduje pakiety-biblioteki, potem API/web/admin
-  startują w watch. Edycja `apps/*/src` → HMR / `tsx watch`.
+- The `install` service installs dependencies once (for Linux) and builds the library packages; then
+  API, web and admin start in watch mode. Editing `apps/*/src` triggers HMR or `tsx watch`.
 - Seed:
   ```bash
   docker compose -f docker-compose.dev.yml exec api pnpm --filter @repo/api db:seed
   ```
-- **Zmiana biblioteki** (`packages/*`, `design-system`) wymaga rebuildu:
-  `docker compose -f docker-compose.dev.yml exec api pnpm turbo run build --filter=@repo/<pakiet>`
-  (HMR pokrywa src skorup i API, nie dist bibliotek). **Natywne `pnpm dev` tego nie wymaga** —
-  podnosi `tsc -w` także dla pakietów, więc w tym trybie zmiana encji dociera do przeglądarki sama.
+- **Changing a library** (`packages/*`, `design-system`) requires a rebuild:
+  `docker compose -f docker-compose.dev.yml exec api pnpm turbo run build --filter=@repo/<package>`
+  (HMR covers the shells' and the API's `src`, not the libraries' `dist`). **Native `pnpm dev` does
+  not need this** — it also starts `tsc -w` for the packages, so an entity change reaches the browser
+  on its own.
 
-## Dostęp do bazy z hosta (opcjonalnie)
+## Reaching the database from the host (optional)
 
-Postgres nie jest publikowany, więc łącz się przez kontener:
+Postgres is not published, so connect through the container:
 
 ```bash
 docker compose -f docker-compose.app.yml exec postgres psql -U app -d app
 ```
 
-Jeśli potrzebujesz portu na host — dodaj `ports: ["5433:5432"]` do usługi `postgres` w danym pliku.
+If you do need a host port, add `ports: ["5433:5432"]` to the `postgres` service in that file.
 
-## Pułapki (dlaczego tak)
+## Pitfalls (and why it is built this way)
 
-- **`VITE_API_URL` jest build-time** (Vite inlinuje). W obrazach prod to **build ARG** = URL widziany
-  z **przeglądarki** (`http://localhost:${API_PORT}`), nie z sieci compose. Zmiana URL = rebuild web/admin.
-- **Sieć**: w kontenerze API łączy się z `postgres:5432` / `mailhog:1025` (nazwy usług); przeglądarka
-  z API po `localhost:${API_PORT}`. CORS (`WEB_ORIGIN`/`ADMIN_ORIGIN`) ustawiony na porty hosta.
-- **SPA-fallback** (`docker/nginx.spa.conf`): deep-linki (`/projects/<id>`) nie dają 404.
-- **Natywne binaria** (`@node-rs/argon2`, esbuild) są per-platforma → w dev `node_modules` trzymamy
-  w **named-volume** kontenera (nie bind-mount z hosta). Reset: `docker compose … down -v`.
-- **Watch na macOS/Windows** przez bind-mount używa pollingu (`VITE_USE_POLLING`, `CHOKIDAR_USEPOLLING`
-  ustawione w `docker-compose.dev.yml`).
-- **Tryby mają ROZŁĄCZNE obrazy.** Compose domyślnie nazywa obraz `<projekt>-<usługa>`, więc oba pliki
-  budowałyby `js-be-boilerplate-api` — prod-like nadpisywałby dev i odwrotnie. Dev ma dlatego jawne
-  `image: js-be-boilerplate-dev` (jeden obraz dla `install`/`api`/`web`/`admin`).
-- **pnpm w kontenerze potrzebuje `CI=true`.** `node_modules` żyje w named-volume; gdy zmieni się
-  lockfile, pnpm chce odtworzyć katalog i pyta o zgodę — bez TTY przerywa
-  (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). Usługa `install` ustawia `CI`.
+- **`VITE_API_URL` is build-time** (Vite inlines it). In the production images it is a **build ARG**
+  holding the URL as seen from the **browser** (`http://localhost:${API_PORT}`), not from inside the
+  compose network. Changing the URL means rebuilding web and admin.
+- **Networking**: inside the containers the API talks to `postgres:5432` and `mailhog:1025` (service
+  names); the browser talks to the API over `localhost:${API_PORT}`. CORS
+  (`WEB_ORIGIN`/`ADMIN_ORIGIN`) is set to the host ports.
+- **SPA fallback** (`docker/nginx.spa.conf`): deep links such as `/projects/<id>` do not 404.
+- **Native binaries** (`@node-rs/argon2`, esbuild) are platform-specific, so in dev mode
+  `node_modules` lives in a container **named volume**, not in a bind mount from the host. Reset it
+  with `docker compose … down -v`.
+- **Watching on macOS and Windows** through a bind mount uses polling (`VITE_USE_POLLING`,
+  `CHOKIDAR_USEPOLLING`, both set in `docker-compose.dev.yml`).
+- **The modes use SEPARATE images.** Compose names an image `<project>-<service>` by default, so both
+  files would build `js-be-boilerplate-api` and the prod-like image would overwrite the dev one (and
+  the other way round). That is why dev sets an explicit `image: js-be-boilerplate-dev`, shared by
+  `install`, `api`, `web` and `admin`.
+- **pnpm inside a container needs `CI=true`.** `node_modules` lives in a named volume; when the
+  lockfile changes, pnpm wants to recreate the directory and asks for confirmation — without a TTY it
+  aborts (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`). The `install` service sets `CI`.
 
 ## Troubleshooting
 
-- **`Error: getaddrinfo ENOTFOUND postgres`** — API nie widzi bazy. Upewnij się, że używasz
-  **samowystarczalnego** pliku (`pnpm docker:full` / `docker:dev`, pojedynczy `-f`), a nie samego
-  overlaya. Postgres nie jest publikowany, więc lokalny 5432 nie przeszkadza.
-- **`pnpm: not found` albo `Cannot find module '/app/pnpm'` w `docker:dev`** — kontener wystartował
-  w obrazie prod-like (nie ma tam pnpm). Zdarzało się, gdy oba tryby dzieliły nazwy obrazów; jeśli
-  wróci, przebuduj: `pnpm docker:dev` ma `--build`.
-- **`service "install" didn't complete successfully: exit 1`** — sprawdź `docker logs <projekt>-install-1`.
-  Najczęstsza przyczyna to przerwana instalacja pnpm bez TTY (patrz „Pułapki").
-- **`Bind for 0.0.0.0:3000 failed: port is already allocated`** — port aplikacji zajęty (np. inny
-  projekt na 3000). Ustaw `API_PORT` (oraz w razie potrzeby `WEB_PORT`/`ADMIN_PORT`/`MAILHOG_UI_PORT`)
-  w `.env` i uruchom ponownie — `VITE_API_URL` i CORS dostosują się automatycznie.
+- **`Error: getaddrinfo ENOTFOUND postgres`** — the API cannot see the database. Make sure you are
+  using a **self-contained** file (`pnpm docker:full` / `docker:dev`, a single `-f`) and not just the
+  overlay. Postgres is not published, so a local 5432 is irrelevant.
+- **`pnpm: not found` or `Cannot find module '/app/pnpm'` in `docker:dev`** — the container started
+  from the prod-like image, which has no pnpm. This used to happen when both modes shared image
+  names; if it comes back, rebuild: `pnpm docker:dev` already passes `--build`.
+- **`service "install" didn't complete successfully: exit 1`** — check
+  `docker logs <project>-install-1`. The usual cause is a pnpm install aborted without a TTY (see
+  "Pitfalls").
+- **`Bind for 0.0.0.0:3000 failed: port is already allocated`** — the application port is taken (say,
+  by another project on 3000). Set `API_PORT` (and `WEB_PORT`/`ADMIN_PORT`/`MAILHOG_UI_PORT` if
+  needed) in `.env` and start again — `VITE_API_URL` and CORS follow automatically.
 
-## Poza zakresem bootstrapa
+## Outside the bootstrap's scope
 
-Deploy do rejestru, HTTPS/reverse-proxy, compose produkcyjny — dobiera projekt (obrazy prod-like są
-punktem wyjścia).
+Pushing to a registry, HTTPS and reverse proxies, a production compose file — each project picks its
+own; the prod-like images are the starting point.
+
+## Related
+
+- [ADR-0002](../adr/ADR-0002-full-stack-containerization.md) — why the full stack is containerized
+- [ADR-0003](../adr/ADR-0003-self-contained-full-stack-compose.md) — why the compose files are self-contained
+- [Repository root](../../README.md#running-the-stack) — the short version of these three modes

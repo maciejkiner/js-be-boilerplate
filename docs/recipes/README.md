@@ -8,28 +8,28 @@ documentation from drifting apart.
 
 ## Backend
 
-| Recipe                                                                  | What it covers                                                    |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [How to add an entity](./how-to-add-an-entity.md)                       | The whole path: Zod entity → scaffolder → migration → API client  |
-| [How to add a migration](./how-to-add-a-migration.md)                   | Drizzle migrations, expand → migrate → contract, seeders          |
-| [API module structure](./api-module-structure.md)                       | routes → service → repository, error handling, pagination         |
-| [How to add an identity provider](./how-to-add-an-identity-provider.md) | The provider interface that email + password implements           |
-| [Cursor-based pagination](./cursor-based-pagination.md)                 | The alternative to the offset pagination used in core             |
+| Recipe                                                                  | What it covers                                                   |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [How to add an entity](./how-to-add-an-entity.md)                       | The whole path: Zod entity → scaffolder → migration → API client |
+| [How to add a migration](./how-to-add-a-migration.md)                   | Drizzle migrations, expand → migrate → contract, seeders         |
+| [API module structure](./api-module-structure.md)                       | routes → service → repository, error handling, pagination        |
+| [How to add an identity provider](./how-to-add-an-identity-provider.md) | The provider interface that email + password implements          |
+| [Cursor-based pagination](./cursor-based-pagination.md)                 | The alternative to the offset pagination used in core            |
 
 ## Frontend
 
-| Recipe                                                                    | What it covers                                                |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [Frontend shell structure](./frontend-shell-structure.md)                 | Vite, router, entity registry, the `packages/` boundary       |
-| [How to define a form](./how-to-define-a-form.md)                         | `useForm`, wizards, adding a field type, errors from the API  |
-| [How to regenerate the API client](./how-to-regenerate-the-api-client.md) | OpenAPI dump → generated types → TanStack Query hooks         |
-| [How to update the design system](./how-to-update-the-design-system.md)   | The read-only subtree and how changes flow upstream           |
+| Recipe                                                                    | What it covers                                               |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [Frontend shell structure](./frontend-shell-structure.md)                 | Vite, router, entity registry, the `packages/` boundary      |
+| [How to define a form](./how-to-define-a-form.md)                         | `useForm`, wizards, adding a field type, errors from the API |
+| [How to regenerate the API client](./how-to-regenerate-the-api-client.md) | OpenAPI dump → generated types → TanStack Query hooks        |
+| [How to update the design system](./how-to-update-the-design-system.md)   | The read-only subtree and how changes flow upstream          |
 
 ## Operations
 
-| Recipe                                            | What it covers                                          |
-| --------------------------------------------------- | ------------------------------------------------------- |
-| [How to run in Docker](./how-to-run-in-docker.md) | Three modes (infra / prod-like / HMR), ports, pitfalls  |
+| Recipe                                            | What it covers                                         |
+| ------------------------------------------------- | ------------------------------------------------------ |
+| [How to run in Docker](./how-to-run-in-docker.md) | Three modes (infra / prod-like / HMR), ports, pitfalls |
 
 ## Opt-in modules
 

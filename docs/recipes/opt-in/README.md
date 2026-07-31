@@ -6,13 +6,13 @@ These modules are **deliberately NOT implemented** in the bootstrap (specificati
 What you get is a recipe plus an interface sketch — you turn the module on **in your project**, once
 you actually need it. The bootstrap stays light ("nothing on spec").
 
-| Module                                          | What it adds                                        |
-| ------------------------------------------------- | --------------------------------------------------- |
-| [`multi-tenancy.md`](./multi-tenancy.md)        | Organizations, invitations, per-organization roles  |
-| [`file-upload.md`](./file-upload.md)            | Storage abstraction and upload handling             |
-| [`save-and-resume.md`](./save-and-resume.md)    | Persisting partial wizard state                     |
-| [`opentelemetry.md`](./opentelemetry.md)        | Tracing (OTel)                                      |
-| [`job-queues.md`](./job-queues.md)              | Queues and background jobs                          |
+| Module                                       | What it adds                                       |
+| -------------------------------------------- | -------------------------------------------------- |
+| [`multi-tenancy.md`](./multi-tenancy.md)     | Organizations, invitations, per-organization roles |
+| [`file-upload.md`](./file-upload.md)         | Storage abstraction and upload handling            |
+| [`save-and-resume.md`](./save-and-resume.md) | Persisting partial wizard state                    |
+| [`opentelemetry.md`](./opentelemetry.md)     | Tracing (OTel)                                     |
+| [`job-queues.md`](./job-queues.md)           | Queues and background jobs                         |
 
 The rule: until you turn a module on, its services, tables and dependencies do not exist. Turning it
 on adds them **in your project** (schema, adapter, endpoint, and possibly a compose service),

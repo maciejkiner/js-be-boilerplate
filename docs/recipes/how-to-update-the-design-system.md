@@ -1,42 +1,56 @@
-# Przepis: jak zaktualizować / podmienić Design System
+[Home](../../README.md) › [Documentation](../README.md) › [Recipes](./README.md) › How to update the design system
 
-`design-system/` jest **READ-ONLY** i docelowo montowany jako **git subtree** prawdziwego DS
-(`netguru/silk-storybook`). Obecnie to mock na Tailwind (placeholder). Ten przepis: podmiana
-placeholdera na subtree oraz późniejsze aktualizacje.
+# Recipe: how to update or replace the design system
 
-## Zasada twarda
+`design-system/` is **READ-ONLY** and is meant to be mounted as a **git subtree** of the real design
+system (`netguru/silk-storybook`). Right now it is a Tailwind mock standing in for it. This recipe
+covers both the one-off replacement and the recurring updates.
 
-Nie edytuj plików w `design-system/` w ramach pracy nad funkcją. Braki/zmiany komponentów idą:
+## The hard rule
 
-1. **upstream** do repo DS (`git subtree pull`), albo
-2. przez warstwę **`packages/ui`** (kompozycje/nadpisania NA DS, nie w DS).
+Never edit files in `design-system/` while working on a feature. Missing or changed components go
+either:
 
-Lokalne „naprawianie" tworzy cichego forka i psuje ścieżkę aktualizacji.
+1. **upstream** into the design-system repository (`git subtree pull`), or
+2. through the **`packages/ui`** layer (compositions and overrides _on top of_ the DS, not inside it).
 
-## Podmiana mocka na subtree (jednorazowo)
+Fixing it locally creates a silent fork and breaks the update path.
 
-1. Sprawdź gotowość DS: `docs/ds-gap-analysis.md` (co musi być gotowe zanim podmienisz — Table,
-   Toast, Skeleton/Spinner, itd.). Braki dorabia zespół DS **upstream**.
-2. Usuń placeholder i zamontuj subtree w tej samej ścieżce:
+## Replacing the mock with the subtree (once)
+
+1. Check that the design system is ready: [`docs/ds-gap-analysis.md`](../ds-gap-analysis.md) lists
+   what has to exist before the swap (Table, Toast, Skeleton/Spinner, …). Gaps are filled by the
+   design-system team **upstream**.
+2. Remove the placeholder and mount the subtree at the same path:
    ```bash
    rm -rf design-system
-   git subtree add --prefix design-system <repo-DS> <branch> --squash
+   git subtree add --prefix design-system <ds-repo> <branch> --squash
    ```
-3. Pogódź nazwę pakietu: DS eksportuje `@silk/components`; bootstrap konsumuje `@repo/design-system`.
-   Dodaj alias/re-export (np. `@repo/design-system` → re-export z `@silk/components`) albo zmień
-   importy w `packages/ui`/`forms-ui`.
-4. Integracja w skorupach (`apps/{web,admin}`): zaimportuj globalny CSS DS + zbuduj tokeny
-   (style-dictionary), owiń drzewo w `IconProvider` (Phosphor), dodaj `@source` Tailwinda na źródła
-   DS. Szczegóły: sekcja „luki integracyjne" w `docs/ds-gap-analysis.md`.
-5. Zaadaptuj `packages/ui` i `packages/forms-ui` do realnych API silk (Combobox/Modal/Select są
-   kompozycyjne — inne niż mock). Zaktualizuj mapowanie typ→komponent (`packages/forms-ui/README.md`)
-   i inwentarz (`docs/ds-component-inventory.md`).
+3. Reconcile the package name: the design system exports `@silk/components`, while the bootstrap
+   consumes `@repo/design-system`. Add an alias or a re-export (`@repo/design-system` re-exporting
+   `@silk/components`), or change the imports in `packages/ui` and `forms-ui`.
+4. Integrate it in the shells (`apps/{web,admin}`): import the design system's global CSS, build the
+   tokens (style-dictionary), wrap the tree in `IconProvider` (Phosphor) and point Tailwind's
+   `@source` at the design-system sources. Details: the "integration gaps" section of
+   [`docs/ds-gap-analysis.md`](../ds-gap-analysis.md).
+5. Adapt `packages/ui` and `packages/forms-ui` to the real silk APIs (Combobox, Modal and Select are
+   compositional there, unlike in the mock). Update the control → component mapping
+   ([`packages/forms-ui/README.md`](../../packages/forms-ui/README.md)) and the inventory
+   ([`docs/ds-component-inventory.md`](../ds-component-inventory.md)).
 
-## Aktualizacje DS (cyklicznie)
+## Recurring updates
 
 ```bash
-git subtree pull --prefix design-system <repo-DS> <branch> --squash
+git subtree pull --prefix design-system <ds-repo> <branch> --squash
 ```
 
-Po aktualizacji: `pnpm build` + `pnpm test` (unit `packages/ui`/`forms-ui`) + e2e; sprawdź, czy
-mapowania i inwentarz są aktualne. Zmiany łamiące API DS → adaptacja w `packages/ui`, nie w DS.
+Afterwards run `pnpm build`, `pnpm test` (the unit tests of `packages/ui` and `forms-ui`) and the e2e
+suite, then check that the mapping and the inventory are still accurate. Breaking changes in the
+design-system API are absorbed in `packages/ui`, never in the design system itself.
+
+## Related
+
+- [`docs/ds-component-inventory.md`](../ds-component-inventory.md) — the component vocabulary
+- [`docs/ds-gap-analysis.md`](../ds-gap-analysis.md) — what the mock is missing
+- [`packages/ui/README.md`](../../packages/ui/README.md) — the composition layer that absorbs DS changes
+- [How to define a form](./how-to-define-a-form.md) — where the control → component mapping is used
