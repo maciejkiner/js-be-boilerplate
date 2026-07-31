@@ -4,6 +4,24 @@ import { deriveFields, FormFields, type RelationSource } from "@repo/forms-ui";
 import type { Entity } from "@repo/schemas";
 import type { z } from "zod";
 
+const pad = (value: number): string => String(value).padStart(2, "0");
+
+/**
+ * ISO → wartość `input[type=datetime-local]`, czyli `YYYY-MM-DDTHH:mm` w czasie **lokalnym**.
+ * Surowe ISO (z sekundami i strefą) jest dla tej kontrolki nieprawidłowe — przeglądarka pokazuje
+ * wtedy puste pole, a zapis formularza wyczyściłby wartość.
+ */
+function toDateTimeLocal(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+}
+
 /** Rekord z API → wartości formularza (daty ISO→yyyy-mm-dd, null→"", bool dla checkbox/switch). */
 export function recordToFormValues<Shape extends z.ZodRawShape>(
   entity: Entity<Shape>,
@@ -14,6 +32,8 @@ export function recordToFormValues<Shape extends z.ZodRawShape>(
     const value = record[name];
     if (meta.control === "date") {
       out[name] = value ? String(value).slice(0, 10) : "";
+    } else if (meta.control === "datetime") {
+      out[name] = value ? toDateTimeLocal(String(value)) : "";
     } else if (meta.control === "checkbox" || meta.control === "switch") {
       out[name] = Boolean(value);
     } else if (value == null) {
