@@ -2,135 +2,148 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Instrukcje dla agenta AI i zespołu. Stosuj je do każdej zmiany. To jest **kanoniczne** źródło
-konwencji (dawny `RULES.md` został tu zwinięty).
+Instructions for AI agents and for the team. Apply them to every change. This is the **canonical**
+source of conventions (the former `RULES.md` was folded in here). Looking for a specific document?
+The [documentation map](./docs/README.md) indexes everything.
 
-## Co to za repo
+## What this repository is
 
-Bootstrap (repozytorium startowe) dla projektów TypeScript BE+FE. Wiążąca specyfikacja:
-`spec/bootstrap-project-description.md`. Plan budowy i stan prac: `PLAN.md` — **przeczytaj go i kontynuuj
-od pierwszego nieodhaczonego zadania**; nie wyprzedzaj faz, przy `[DECYZJA]` zatrzymaj się po akceptację.
-Filozofia: bootstrap nie framework (fork & forget), generator nie silnik runtime, jedno źródło prawdy
-(schemat Zod + metadane), AI-first, konwencja nad konfiguracją.
+A bootstrap (starter repository) for TypeScript backend + frontend projects. The binding
+specification: [`spec/bootstrap-project-description.md`](./spec/bootstrap-project-description.md).
+The build plan and its status: [`PLAN.md`](./PLAN.md) — **read it and continue from the first
+unchecked task**; do not run ahead of the phases, and stop for approval at every `[DECISION]` point.
+Philosophy: a bootstrap not a framework (fork & forget), a generator not a runtime engine, a single
+source of truth (Zod schema + metadata), AI-first, convention over configuration.
 
-## Struktura monorepo (pnpm + Turborepo)
+## Monorepo structure (pnpm + Turborepo)
 
 ```
 apps/
-  api      — Fastify + Zod, moduły domenowe montowane z rejestru        (Faza 1+)
-  web      — domyślna skorupa: Vite + React + TanStack Router           (Faza 6)
-  admin    — panel administracyjny, osobno deployowalny (subdomena)     (Faza 6)
+  api      — Fastify + Zod, domain modules mounted from a registry        (phase 1+)
+  web      — the default shell: Vite + React + TanStack Router            (phase 6)
+  admin    — admin panel, separately deployable (subdomain)               (phase 6)
 packages/
-  schemas    — schematy Zod encji/formularzy + metadane; czysty TS       (Faza 4)
-  api-client — klient generowany z OpenAPI; framework-agnostic (fetch)   (Faza 5)
-  api-react  — bindingi TanStack Query nad klientem                      (Faza 5)
-  forms      — headless silnik formularzy                                (Faza 7)
-  forms-ui   — renderery pól spięte z DS                                 (Faza 7)
-  ui         — kompozycje na DS: DataTable, layout admina, EmptyState    (Faza 6)
-  config     — współdzielone ESLint / Prettier / tsconfig                (jest)
-design-system/ — DS jako git subtree (na razie placeholder; READ-ONLY)
-docs/          — recipes (przepisy), adr/, ds-component-inventory.md
+  schemas    — Zod schemas for entities and forms + metadata; pure TS      (phase 4)
+  api-client — client generated from OpenAPI; framework-agnostic (fetch)   (phase 5)
+  api-react  — TanStack Query bindings over the client                     (phase 5)
+  forms      — headless form engine                                        (phase 7)
+  forms-ui   — field renderers wired to the design system                  (phase 7)
+  ui         — compositions on the DS: DataTable, admin layout, EmptyState (phase 6)
+  config     — shared ESLint / Prettier / tsconfig                         (exists)
+design-system/ — the DS as a git subtree (a placeholder for now; READ-ONLY)
+docs/          — recipes, adr/, ds-component-inventory.md
 ```
 
-## Komendy
+## Commands
 
-- `pnpm install` — instalacja (workspace).
-- `pnpm lint` / `pnpm typecheck` / `pnpm build` / `pnpm test` — przez Turborepo, cały monorepo.
+- `pnpm install` — install (workspace).
+- `pnpm lint` / `pnpm typecheck` / `pnpm build` / `pnpm test` — through Turborepo, the whole monorepo.
 - `pnpm format` / `pnpm format:check` — Prettier.
-- `pnpm dev` — wszystko w trybie watch: `apps/{api,web,admin}` + `tsc -w` dla pakietów bibliotecznych. **Skorupy konsumują `dist` pakietów**, więc bez tych watchy zmiana w `packages/*` nie dociera do przeglądarki (HMR Vite widzi tylko kod aplikacji) — po `pnpm --filter <app> dev` trzeba by ręcznie robić `pnpm build`. `design-system` watcha nie ma: jest read-only.
-- `docker compose up -d` (lub `pnpm docker:up`) — infra: Postgres (5432) + mailhog (SMTP 1025, UI 8025); apka natywnie `pnpm dev`.
-- Cały stack w kontenerach: `pnpm docker:full` (prod-like: obrazy API + web/admin przez nginx) lub `pnpm docker:dev` (HMR). Seed admina: `pnpm docker:full:seed`. Porty: `API_PORT`/`WEB_PORT`/`ADMIN_PORT`. Przepis: `docs/recipes/how-to-run-in-docker.md` (ADR-0002).
-- Filtr do jednego workspace: `pnpm turbo run test --filter=@repo/<nazwa>`.
-- API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. Pojedynczy test: `pnpm --filter @repo/api test -- <wzorzec>`.
-- Baza: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Testy integracyjne DB wymagają `TEST_DATABASE_URL` (inaczej pomijane).
-- Klient API: `pnpm generate:client` (zrzut OpenAPI ze schematów → typy klienta). Po każdej zmianie API; CI pilnuje aktualności (`git diff`).
-- Skorupy FE: `pnpm --filter @repo/web dev` (5173) / `pnpm --filter @repo/admin dev` (5174). Build: `tsc --noEmit && vite build`. Wymagają działającego API (3000) do widoków. Port nadpisywalny przez `PORT`.
-- E2E: `pnpm --filter @repo/e2e test:e2e` (Playwright sam startuje API+web+admin; wymaga `DATABASE_URL` **i SMTP na 1025** — mailhog z `docker compose`, bo kreator wysyła zaproszenia; `global-setup.ts` seeduje admina dla widoków spod RBAC). Kolizje portów lokalnie: `E2E_API_PORT`/`E2E_WEB_PORT`/`E2E_ADMIN_PORT`. Pierwszy raz: `pnpm --filter @repo/e2e exec playwright install chromium`.
-- Scaffolder: `pnpm scaffold <encja>` — z encji `@repo/schemas` generuje Drizzle + moduł API + hooki + widoki admina + test CRUD. Buduje `@repo/schemas` automatycznie (czyta jej `dist`, jak `db:generate` dla drizzle-kit). Po: `db:generate` + `generate:client`.
+- `pnpm dev` — everything in watch mode: `apps/{api,web,admin}` plus `tsc -w` for the library packages. **The shells consume the packages' `dist`**, so without those watchers a change in `packages/*` never reaches the browser (Vite HMR only sees application code) — after `pnpm --filter <app> dev` you would have to run `pnpm build` by hand. `design-system` has no watcher: it is read-only.
+- `docker compose up -d` (or `pnpm docker:up`) — infrastructure: Postgres (5432) + mailhog (SMTP 1025, UI 8025); the app itself runs natively with `pnpm dev`.
+- The whole stack in containers: `pnpm docker:full` (prod-like: API images + web/admin behind nginx) or `pnpm docker:dev` (HMR). Admin seed: `pnpm docker:full:seed`. Ports: `API_PORT`/`WEB_PORT`/`ADMIN_PORT`. Recipe: [`docs/recipes/how-to-run-in-docker.md`](./docs/recipes/how-to-run-in-docker.md) (ADR-0002).
+- Narrow to one workspace: `pnpm turbo run test --filter=@repo/<name>`.
+- API: `pnpm --filter @repo/api dev` (watch) / `build` / `start`. A single test: `pnpm --filter @repo/api test -- <pattern>`.
+- Database: `pnpm --filter @repo/api db:generate` / `db:migrate` / `db:seed` / `db:studio`. Database integration tests need `TEST_DATABASE_URL` (they are skipped without it).
+- API client: `pnpm generate:client` (dump OpenAPI from the schemas → client types). After every API change; CI enforces freshness with `git diff`.
+- Frontend shells: `pnpm --filter @repo/web dev` (5173) / `pnpm --filter @repo/admin dev` (5174). Build: `tsc --noEmit && vite build`. The views need a running API (3000). The port is overridable through `PORT`.
+- E2E: `pnpm --filter @repo/e2e test:e2e` (Playwright starts API + web + admin itself; needs `DATABASE_URL` **and SMTP on 1025** — mailhog from `docker compose`, because the wizard sends invitations; `global-setup.ts` seeds the admin account for the views behind RBAC). Local port collisions: `E2E_API_PORT`/`E2E_WEB_PORT`/`E2E_ADMIN_PORT`. First run: `pnpm --filter @repo/e2e exec playwright install chromium`.
+- Scaffolder: `pnpm scaffold <entity>` — from an entity in `@repo/schemas` it generates Drizzle + the API module + hooks + admin views + a CRUD test. It builds `@repo/schemas` automatically (it reads that package's `dist`, as `db:generate` does for drizzle-kit). Afterwards: `db:generate` + `generate:client`.
 
-## Stack (rozstrzygnięty — nie proponuj alternatyw)
+## Stack (settled — do not propose alternatives)
 
 Node 22 LTS · pnpm · Turborepo · TypeScript strict · PostgreSQL · Drizzle · Fastify + Zod
-(`fastify-type-provider-zod`) · REST + OpenAPI (`zod-openapi`) + generowany klient · Vite + React +
+(`fastify-type-provider-zod`) · REST + OpenAPI (`zod-openapi`) + a generated client · Vite + React +
 TanStack Router/Query · Vitest + Playwright · pino · docker-compose (Postgres + mailhog) ·
-error tracking przez abstrakcję + adapter Sentry · GitHub Actions.
+error tracking behind an abstraction + a Sentry adapter · GitHub Actions.
 
-## Granice twarde (pilnowane w review i lintcie)
+## Hard boundaries (enforced in review and by lint)
 
-- **DS read-only**: nie edytuj `design-system/`. Zmiany idą upstream albo przez `packages/ui`.
-- **`packages/` bez skorupy**: żadnych importów routera (`@tanstack/react-router`) ani
-  `import.meta.env`. React tak, TanStack Query tak; env wstrzykiwany jawnie przy inicjalizacji
-  skorupy. Reguła egzekwowana przez `@repo/config/eslint-package`. `apps/admin` jako druga skorupa
-  jest permanentnym testem tej granicy.
-- **Moduły opt-in** (multi-tenancy, upload, save&resume, OTel, kolejki) i pozycje „poza zakresem"
-  (patrz `PLAN.md`): nie implementuj — tylko przepisy/interfejsy (`docs/recipes/opt-in/`).
+- **The DS is read-only**: do not edit `design-system/`. Changes go upstream, or through
+  `packages/ui`.
+- **`packages/` without a shell**: no router imports (`@tanstack/react-router`) and no
+  `import.meta.env`. React yes, TanStack Query yes; the environment is injected explicitly when the
+  shell initialises. The rule is enforced by `@repo/config/eslint-package`. `apps/admin`, as a second
+  shell, is a permanent test of this boundary.
+- **Opt-in modules** (multi-tenancy, upload, save & resume, OTel, queues) and everything listed as
+  "out of scope" (see `PLAN.md`): do not implement them — recipes and interfaces only
+  ([`docs/recipes/opt-in/`](./docs/recipes/opt-in/README.md)).
 
-## Priorytety (w tej kolejności)
+## Priorities (in this order)
 
-1. Nie psuj istniejących funkcji (zero regresji).
-2. Czytelność i utrzymywalność ponad spryt.
-3. Testy i observability są częścią zmiany, nie dodatkiem.
+1. Do not break existing functionality (zero regressions).
+2. Readability and maintainability over cleverness.
+3. Tests and observability are part of a change, not an addition to it.
 
-## Zawsze
+## Always
 
-- Małe, jednotematyczne zmiany. Duże zadanie dziel na etapy.
-- Testy dla logiki biznesowej i przypadków brzegowych, proporcjonalne do ryzyka.
-- Warstwy oddzielone: BE controller → service → repository; FE logika oddzielona od prezentacji.
-- Walidacja wejścia na granicy systemu (API) schematami Zod.
-- Opisowe nazwy; boolean z `is`/`has`/`can`. Jedna konwencja w całym repo.
-- Komentuj „dlaczego", nie „co".
-- Structured logi (JSON) z poziomami i `correlation_id`; metryki i tracing dla kluczowych ścieżek.
-- Ryzykowne nowe zachowanie za feature flagą.
-- FE: obsłuż każdy stan UI (loading/error/empty/success); a11y jako wymaganie; pilnuj bundla.
+- Small, single-topic changes. Split a large task into stages.
+- Tests for business logic and edge cases, proportional to the risk.
+- Separated layers: backend controller → service → repository; frontend logic separated from
+  presentation.
+- Validate input at the system boundary (the API) with Zod schemas.
+- Descriptive names; booleans with `is`/`has`/`can`. One convention across the whole repository.
+- Comment the "why", not the "what".
+- Structured logs (JSON) with levels and a `correlation_id`; metrics and tracing for the key paths.
+- Risky new behaviour behind a feature flag.
+- Frontend: handle every UI state (loading/error/empty/success); accessibility is a requirement;
+  watch the bundle.
 
-## Nigdy
+## Never
 
-- Nie usuwaj/nie zmieniaj pól/endpointów API bez wersjonowania i sprawdzenia konsumentów.
-- Nie rób niekompatybilnych zmian schematu — etapy expand → migrate → contract.
-- Nie wkładaj sekretów/PII do kodu ani logów.
-- Nie połykaj wyjątków po cichu — błędy obsługiwane jawnie i spójnie.
-- Nie dodawaj abstrakcji „na zapas" ani nieużywanych zależności.
-- Nie optymalizuj bez pomiaru (najpierw profiluj; ustaw budżety).
+- Do not remove or change API fields or endpoints without versioning and checking the consumers.
+- Do not make incompatible schema changes — stage them expand → migrate → contract.
+- Do not put secrets or PII into the code or the logs.
+- Do not swallow exceptions silently — errors are handled explicitly and consistently.
+- Do not add abstractions "just in case", nor unused dependencies.
+- Do not optimise without measuring (profile first; set budgets).
 
-## Backward compatibility (krytyczne)
+## Backward compatibility (critical)
 
-- Zmiany API są addytywne. Zmiana łamiąca = wersjonowanie + okres przejściowy.
-- Baza: expand → migracja danych → contract. Każda zmiana produkcyjna ma plan rollbacku.
-- Testy regresji i kontraktowe (BE↔FE) muszą przechodzić.
+- API changes are additive. A breaking change means versioning plus a transition period.
+- Database: expand → data migration → contract. Every production change has a rollback plan.
+- Regression and contract (BE ↔ FE) tests must pass.
 
-## Konwencje
+## Conventions
 
-- **Branch:** `type/opis-kebab-case` (feat, fix, refactor, chore, docs, test, hotfix); dodaj numer ticketu.
-- **Commit:** `type(scope): opis` w trybie rozkazującym, małą literą, bez kropki. Breaking: `type(scope)!:` + `BREAKING CHANGE:`.
-- **BE:** typy `PascalCase`, stałe `UPPER_SNAKE_CASE`, reszta wg konwencji języka.
-- **FE:** komponenty `PascalCase`, hooki `useCamelCase`, reszta `camelCase`.
-- **API:** ścieżki w liczbie mnogiej, `kebab-case`, prefix `/api/v1`; pola JSON spójne w całym API.
-- **Błędy API:** RFC 7807 (problem+json), spójne z globalnym handlerem. Błąd dotyczący konkretnych pól niesie rozszerzenie `errors` (`[{ path, message }]`, ta sama lista dla walidacji 400, konfliktu 409 i 422) — `detail` jest dla człowieka, `errors` dla formularza. Konflikt unikalności buduj przez `uniqueConflictError(label, fields)`. Klient (`ApiError.errors`) → `serverErrorToFieldErrors` z `@repo/forms` → błąd przy kontrolce. Widoki **nie** owijają submitu w `try/catch` z komunikatem zastępczym — to kasuje odpowiedź API.
-- **Paginacja:** offset-based w core; cursor-based jako przepis.
-- **Baza (Drizzle):** pola audytowe (`created_at`/`updated_at`/`created_by`) i soft delete (`deleted_at`) przez helpery `src/db/columns.ts`; odczyty przez `notDeleted()`. Migracje generowane ze schematu (nie ręcznie; `drizzle-kit` czyta skompilowany `dist`, więc `db:generate` buduje najpierw), rejestrowane przy kotwicy w `src/db/schema.ts`. Zmiany łamiące: expand → migrate → contract. Seedery idempotentne. Przepis: `docs/recipes/how-to-add-a-migration.md`.
-- **Encje:** jedno źródło prawdy = schemat Zod + metadane w `packages/schemas` (`defineEntity` + `validation` z `refine` międzypolowym). Pola deklaruj **builderami `f.*`** (`f.text().min(1).sortable()`, `f.select({ value: "Label" })`, `f.relation("venue", "name").optional()`) — jedna deklaracja produkuje schemat Zod i metadane, więc `control` nie może rozjechać się z typem Zod, a wartości `select` są wpisane raz; etykieta pominięta w `.label()` wywodzi się z nazwy pola. Escape hatch dla kształtów spoza builderów to **osobna funkcja** `defineEntityRaw` (własny `schema` + companion-map `fields`, parytet kluczy wymuszany typem) — rozdzielone, żeby obie miały po jednej sygnaturze i żeby błąd wskazywał pole, a nie całe wywołanie. Unikalność: `.unique()` na polu, złożona jako `unique: [["eventId", "email"]]` na encji — scaffolder robi z tego **częściowy** indeks unikalny (`where deleted_at is null`, żeby soft delete zwalniał wartość) i mapuje konflikt na 409. Etykiety encji/admina po angielsku. Tabela Drizzle w module API (enumy jako `text().$type<>()`, relacje przez `.references()` z jawnym `onDelete`). DTO wywiedzione z encji (`entity.validation`/`schema.partial()`/`schema.extend()`). Moduł: routes → service → repository, sort po allowliście kolumn, soft delete, `createdBy` z sesji. Rejestracja przy kotwicach `db/schema.ts` i `modules/index.ts`. Encje referencyjne: `Project`, `Task`. Przepis: `docs/recipes/how-to-add-an-entity.md`.
-- **Scaffolder (`tools/scaffold`):** `pnpm scaffold <encja>` czyta encję z `@repo/schemas` (jedyne źródło prawdy) i generuje warstwy pochodne (Drizzle, moduł API CRUD, hooki api-react, widoki admina List/Detail/Create/Edit, test CRUD), rejestrując je przy kotwicach `// scaffolder:… — do not remove` (bez AST). `control` → typy Drizzle/Zod/komponent; generowany kod formatowany Prettierem; nie nadpisuje plików; rejestracje idempotentne. **Formy nazwy:** `plural` daje cztery zapisy — identyfikatory w kodzie `camelCase`, tabela `snake_case`, ścieżka API/admina i nazwy plików `kebab-case` (encje wielowyrazowe jak `talkSpeaker` działają bez obejść; `name` musi być identyfikatorem camelCase). Zakres: 1:N tak, unikalność jedno- i wielopolowa tak (częściowy indeks + 409); upload/full-text — nie. M:N z atrybutami = zwykła encja z dwiema relacjami (scaffoldowalna), ale zagnieżdżone trasy i widget przypisania na detalu rodzica dokładasz ręcznie. Przepis: `docs/recipes/how-to-add-an-entity.md`, szczegóły `tools/scaffold/README.md`.
-- **FE (skorupy + UI):** `design-system/` = workspace-package `@repo/design-system` (mock na Tailwind wg inwentarza sekcji 10, READ-ONLY). `packages/ui` = kompozycje na DS (`DataTable`, `AdminLayout`, `EmptyState`), router-agnostyczne (nav/actions jako sloty). Skorupy `apps/{web,admin}` = Vite + React + TanStack Router (code-based); env (`import.meta.env.VITE_API_URL`) i router **tylko w skorupach**. Tailwind v4: `@import "tailwindcss"` + `@source` na `design-system/src` i `packages/ui/src`. Admin: rejestr encji (`src/entities/registry.ts`, kotwica `scaffolder:admin-entities`) → menu + trasy; auth-gate `ProtectedShell`; widoki lista/detal/usuwanie. Przepis: `docs/recipes/frontend-shell-structure.md`.
-- **Formularze:** `packages/forms` = headless silnik na Zod (`useForm` — walidacja per-pole + międzypolowa z `refine`, plus błąd rzucony z `onSubmit` mapowany na pola/`_form`; `useWizard` — kroki + `onComplete` orkiestrujący wiele handlerów, błąd finalny w `submitError` + na polach, `WizardStepError.from(stepId, error)` cofa do kroku zachowując błąd źródłowy). Wizardy buduj przez `<Wizard>` z `packages/forms-ui` (narzucona struktura: Stepper + nawigacja + stan/gating; wstrzykujesz `steps[].render` + `onComplete`, helper `entityStep`); `useWizard` to escape hatch bez chrome. `packages/forms-ui` = renderery z **jawnym mapowaniem** `FieldControl → komponent DS` (tabela w README) + `deriveFields(entity)`/`emptyValues(entity)`. Formularz encji wywiedziony z `entity.fields` + `entity.validation` (jedno źródło prawdy). Pola relacji: **generyczny** `RelationSource` wstrzykiwany przez skorupę (async fetcher `GET /api/v1/<plural>`, działa dla dowolnej encji-celu bez rejestracji; label z `relation.displayField`). Wizard referencyjny „utwórz projekt": dane→baza, zaproszenia→**mailer** (`POST /projects/:id/invitations`, bez zapisu), zadania→hurt. Save&resume = opt-in (Faza 9). Przepis: `docs/recipes/how-to-define-a-form.md`.
-- **Klient API:** `packages/api-client` = typy generowane z OpenAPI (`openapi-typescript`) + runtime `openapi-fetch` (framework-agnostic, `baseUrl` wstrzykiwany jawnie, `credentials: "include"`); `openapi.json` zrzucany ze schematów Zod (`apps/api openapi:dump`, offline), nigdy ręcznie. `packages/api-react` = bindingi TanStack Query nad klientem: `ApiProvider` (wstrzykuje klienta), hooki `use{Projects,Tasks,…}` + mutacje invalidujące `*Keys.all`, query-option factories testowalne bez React. Regeneracja: `pnpm generate:client` (CI pilnuje `git diff`). Przepis: `docs/recipes/how-to-regenerate-the-api-client.md`.
-- **Auth:** email+hasło (argon2) jako pierwsza implementacja interfejsu providera tożsamości (`modules/auth/providers/`); sesje = access JWT (cookie) + refresh opaque hashowany (tabela `sessions`, rotacja); RBAC przez `roles` na userze + guard `requireRoles()` po `app.authenticate`; reset hasła przez abstrakcję mailera (`lib/mailer`, dev=mailhog); admin na subdomenie: CORS dwa originy + cookies (`COOKIE_DOMAIN`). Sekrety/tokeny trzymane wyłącznie jako hash. Przepis: `docs/recipes/how-to-add-an-identity-provider.md`.
+- **Branch:** `type/description-in-kebab-case` (feat, fix, refactor, chore, docs, test, hotfix); add the ticket number.
+- **Commit:** `type(scope): description` in the imperative mood, lower case, no full stop. Breaking: `type(scope)!:` + `BREAKING CHANGE:`.
+- **Backend:** types `PascalCase`, constants `UPPER_SNAKE_CASE`, everything else per the language convention.
+- **Frontend:** components `PascalCase`, hooks `useCamelCase`, everything else `camelCase`.
+- **API:** plural paths, `kebab-case`, prefixed with `/api/v1`; JSON field naming consistent across the API.
+- **API errors:** RFC 7807 (problem+json), consistent with the global handler. An error about specific fields carries the `errors` extension (`[{ path, message }]` — the same list for validation 400, conflict 409 and 422): `detail` is for a human, `errors` is for a form. Build uniqueness conflicts with `uniqueConflictError(label, fields)`. The client (`ApiError.errors`) → `serverErrorToFieldErrors` from `@repo/forms` → an error next to the control. Views do **not** wrap a submit in `try/catch` with a stand-in message — that erases the API response.
+- **Pagination:** offset-based in core; cursor-based as a recipe.
+- **Database (Drizzle):** audit columns (`created_at`/`updated_at`/`created_by`) and soft delete (`deleted_at`) come from the helpers in `src/db/columns.ts`; reads go through `notDeleted()`. Migrations are generated from the schema (never hand-written; `drizzle-kit` reads the compiled `dist`, so `db:generate` builds first) and registered at the anchor in `src/db/schema.ts`. Breaking changes: expand → migrate → contract. Seeders are idempotent. Recipe: [`docs/recipes/how-to-add-a-migration.md`](./docs/recipes/how-to-add-a-migration.md).
+- **Entities:** the single source of truth is a Zod schema + metadata in `packages/schemas` (`defineEntity` + `validation` with a cross-field `refine`). Declare fields with the **`f.*` builders** (`f.text().min(1).sortable()`, `f.select({ value: "Label" })`, `f.relation("venue", "name").optional()`) — one declaration produces both the Zod schema and the metadata, so `control` cannot drift away from the Zod type and `select` values are written once; a label omitted from `.label()` is derived from the field name. The escape hatch for shapes the builders cannot express is a **separate function**, `defineEntityRaw` (your own `schema` + a companion `fields` map, with key parity enforced by the type) — they are separate so that each has one signature and an error points at the field rather than at the whole call. Uniqueness: `.unique()` on a field, composite as `unique: [["eventId", "email"]]` on the entity — the scaffolder turns it into a **partial** unique index (`where deleted_at is null`, so a soft delete releases the value) and maps a conflict to a 409. Entity and admin labels are in English. The Drizzle table lives in the API module (enums as `text().$type<>()`, relations through `.references()` with an explicit `onDelete`). DTOs are derived from the entity (`entity.validation`/`schema.partial()`/`schema.extend()`). Module: routes → service → repository, sorting through a column allowlist, soft delete, `createdBy` from the session. Registration at the `db/schema.ts` and `modules/index.ts` anchors. Reference entities: `Project`, `Task`. Recipe: [`docs/recipes/how-to-add-an-entity.md`](./docs/recipes/how-to-add-an-entity.md).
+- **Scaffolder (`tools/scaffold`):** `pnpm scaffold <entity>` reads the entity from `@repo/schemas` (the only source of truth) and generates the derived layers (Drizzle, the CRUD API module, api-react hooks, the admin List/Detail/Create/Edit views, a CRUD test), registering them at the `// scaffolder:… — do not remove` anchors (no AST). `control` → Drizzle/Zod/component types; generated code is formatted with Prettier; it never overwrites files; registrations are idempotent. **Name forms:** `plural` yields four spellings — code identifiers `camelCase`, the table `snake_case`, the API and admin path and the file names `kebab-case` (multi-word entities such as `talkSpeaker` work without workarounds; `name` must be a camelCase identifier). Scope: one-to-many yes, single- and multi-field uniqueness yes (a partial index + 409); upload and full-text search no. Many-to-many with attributes is an ordinary entity with two relations (scaffoldable), but nested routes and an assignment widget on the parent's detail page are added by hand. Recipe: [`docs/recipes/how-to-add-an-entity.md`](./docs/recipes/how-to-add-an-entity.md), details in [`tools/scaffold/README.md`](./tools/scaffold/README.md).
+- **Frontend (shells + UI):** `design-system/` is the workspace package `@repo/design-system` (a Tailwind mock following the inventory in section 10, READ-ONLY). `packages/ui` holds compositions on the DS (`DataTable`, `AdminLayout`, `EmptyState`), router-agnostic (nav and actions as slots). The shells `apps/{web,admin}` are Vite + React + TanStack Router (code-based); the environment (`import.meta.env.VITE_API_URL`) and the router live **only in the shells**. Tailwind v4: `@import "tailwindcss"` plus `@source` pointing at `design-system/src` and `packages/ui/src`. Admin: an entity registry (`src/entities/registry.ts`, anchor `scaffolder:admin-entities`) → the menu and the routes; the `ProtectedShell` auth gate; list, detail and delete views. Recipe: [`docs/recipes/frontend-shell-structure.md`](./docs/recipes/frontend-shell-structure.md).
+- **Forms:** `packages/forms` is a headless engine on Zod (`useForm` — per-field and cross-field validation through `refine`, plus an error thrown from `onSubmit` mapped onto the fields and `_form`; `useWizard` — steps plus an `onComplete` orchestrating several handlers, with the final error in `submitError` and on the fields, and `WizardStepError.from(stepId, error)` returning to the step while keeping the original error). Build wizards with `<Wizard>` from `packages/forms-ui` (an imposed structure: stepper + navigation + state and gating; you inject `steps[].render` + `onComplete`, with the `entityStep` helper); `useWizard` is the escape hatch without the chrome. `packages/forms-ui` holds the renderers with an **explicit mapping** `FieldControl → design-system component` (table in the README) plus `deriveFields(entity)`/`emptyValues(entity)`. An entity form is derived from `entity.fields` + `entity.validation` (a single source of truth). Relation fields: a **generic** `RelationSource` injected by the shell (an async fetcher over `GET /api/v1/<plural>`, working for any target entity without registration; the label comes from `relation.displayField`). The reference "create a project" wizard: data → database, invitations → **the mailer** (`POST /projects/:id/invitations`, nothing persisted), tasks → bulk. Save & resume is opt-in. Recipe: [`docs/recipes/how-to-define-a-form.md`](./docs/recipes/how-to-define-a-form.md).
+- **API client:** `packages/api-client` holds types generated from OpenAPI (`openapi-typescript`) plus the `openapi-fetch` runtime (framework-agnostic, `baseUrl` injected explicitly, `credentials: "include"`); `openapi.json` is dumped from the Zod schemas (`apps/api openapi:dump`, offline), never written by hand. `packages/api-react` holds the TanStack Query bindings over the client: `ApiProvider` (injects the client), `use{Projects,Tasks,…}` hooks plus mutations invalidating `*Keys.all`, and query-option factories testable without React. Regeneration: `pnpm generate:client` (CI enforces it with `git diff`). Recipe: [`docs/recipes/how-to-regenerate-the-api-client.md`](./docs/recipes/how-to-regenerate-the-api-client.md).
+- **Auth:** email + password (argon2) as the first implementation of the identity provider interface (`modules/auth/providers/`); sessions are an access JWT (cookie) plus an opaque hashed refresh token (the `sessions` table, rotated); RBAC through `roles` on the user plus the `requireRoles()` guard after `app.authenticate`; password reset through the mailer abstraction (`lib/mailer`, dev = mailhog); admin on a subdomain: CORS with two origins plus cookies (`COOKIE_DOMAIN`). Secrets and tokens are stored as hashes only. Recipe: [`docs/recipes/how-to-add-an-identity-provider.md`](./docs/recipes/how-to-add-an-identity-provider.md).
 
-## Decyzje architektoniczne
+## Language
 
-- Znaczącą decyzję zapisuj jako ADR w `docs/adr/` (szablon `adr-template.md`). ADR jest immutable.
+Documentation, code comments, commit messages and test names are in **English**. User-facing runtime
+strings (problem+json messages, admin toasts and labels) are currently Polish — do not translate them
+as a side effect of another change.
+
+## Architecture decisions
+
+- Record a significant decision as an ADR in [`docs/adr/`](./docs/adr/README.md) (template:
+  [`adr-template.md`](./adr-template.md)). An ADR is immutable.
 
 ## Definition of Done
 
-- [ ] Testy napisane i przechodzą, CI zielone.
-- [ ] Zmiany API/bazy backward compatible lub wersjonowane.
-- [ ] Logi/metryki/tracing dla nowej ścieżki (jeśli dotyczy).
-- [ ] Brak sekretów/PII.
-- [ ] Nazwy i konwencje zachowane; granice (DS read-only, packages bez routera/`import.meta.env`) nienaruszone.
-- [ ] ADR dodany, jeśli to decyzja architektoniczna.
-- [ ] **Dokumentacja zaktualizowana w tym samym commicie/PR — przy KAŻDEJ zmianie, która powinna być tam odwzorowana** (`README.md` — uruchamianie/komendy/stan budowy · `CLAUDE.md` — konwencje/granice/komendy · `docs/recipes/*` — procesy · `docs/adr/*` — znaczące decyzje · inwentarz DS). Nieaktualna dokumentacja = zmiana niezakończona.
-- [ ] Opis PR wg `pull-request-template.md` (co/dlaczego, testy, ryzyka, rollback).
+- [ ] Tests written and passing, CI green.
+- [ ] API and database changes are backward compatible or versioned.
+- [ ] Logs, metrics and tracing for the new path (where applicable).
+- [ ] No secrets or PII.
+- [ ] Names and conventions preserved; the boundaries (DS read-only, no router or `import.meta.env` in packages) intact.
+- [ ] An ADR added, if this is an architecture decision.
+- [ ] **Documentation updated in the same commit or PR — for EVERY change that should be reflected there** (`README.md` — running the project, commands, build status · `CLAUDE.md` — conventions, boundaries, commands · `docs/recipes/*` — processes · `docs/adr/*` — significant decisions · the DS inventory). Stale documentation means the change is not finished.
+- [ ] PR description following [`pull-request-template.md`](./pull-request-template.md) (what/why, tests, risks, rollback).
 
-## Gdy coś niejasne
+## When something is unclear
 
-Jeśli wymaganie, kontrakt API lub konwencja są niejednoznaczne — zapytaj lub zaproponuj opcje z
-rekomendacją, zamiast zgadywać i wprowadzać niespójność.
+If a requirement, an API contract or a convention is ambiguous — ask, or propose options with a
+recommendation, instead of guessing and introducing an inconsistency.
