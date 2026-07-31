@@ -9,6 +9,7 @@ import {
   useVenue,
   useVenues,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Button, Modal, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { venueEntity } from "@repo/schemas";
@@ -126,7 +127,7 @@ export function VenueDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/venues" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

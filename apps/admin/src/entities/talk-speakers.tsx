@@ -9,6 +9,7 @@ import {
   useTalkSpeaker,
   useTalkSpeakers,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Badge, Button, Modal, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { talkSpeakerEntity } from "@repo/schemas";
@@ -131,7 +132,7 @@ export function TalkSpeakerDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/talk-speakers" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

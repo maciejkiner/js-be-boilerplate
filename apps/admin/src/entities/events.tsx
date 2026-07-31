@@ -9,6 +9,7 @@ import {
   useEvent,
   useEvents,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { eventEntity } from "@repo/schemas";
@@ -179,7 +180,7 @@ export function EventDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/events" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

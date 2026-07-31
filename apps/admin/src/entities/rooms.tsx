@@ -9,6 +9,7 @@ import {
   useRoom,
   useRooms,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Button, Modal, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { roomEntity } from "@repo/schemas";
@@ -133,7 +134,7 @@ export function RoomDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/rooms" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

@@ -9,6 +9,7 @@ import {
   useTalk,
   useTalks,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Badge, Button, Modal, Select, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { talkEntity } from "@repo/schemas";
@@ -189,7 +190,7 @@ export function TalkDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/talks" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >

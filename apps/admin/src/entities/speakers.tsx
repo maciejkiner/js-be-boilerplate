@@ -9,6 +9,7 @@ import {
   useSpeaker,
   useSpeakers,
 } from "@repo/api-react";
+import { errorMessage } from "@repo/api-client";
 import { Button, Modal, useToast } from "@repo/design-system";
 import { emptyValues } from "@repo/forms-ui";
 import { speakerEntity } from "@repo/schemas";
@@ -138,7 +139,7 @@ export function SpeakerDetail() {
                     toast("Usunięto.", "success");
                     navigate({ to: "/speakers" });
                   },
-                  onError: () => toast("Nie udało się usunąć.", "error"),
+                  onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
             >
