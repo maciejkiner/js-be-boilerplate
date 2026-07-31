@@ -1,99 +1,113 @@
-# ADR-0005: Formy nazwy encji w scaffolderze i unikalność w modelu encji
+[Home](../../README.md) › [Documentation](../README.md) › [Architecture decisions](./README.md) › ADR-0005
+
+# ADR-0005: Entity name forms in the scaffolder, and uniqueness in the entity model
 
 - **Status:** Accepted
 - **Date:** 2026-07-30
-- **Authors:** zespół bootstrap
-- **Related:** ADR-0004 (buildery pól), `tools/scaffold`, `packages/schemas`, pilot DX (`docs/dx-pilot/conference.md`)
+- **Authors:** bootstrap team
+- **Related:** ADR-0004 (field builders), `tools/scaffold`, `packages/schemas`, the DX pilot
+  ([`docs/dx-pilot/conference.md`](../dx-pilot/conference.md))
 
 ## Context
 
-Pilot DX doszedł do encji `TalkSpeaker` (obsada prelekcji — M:N z atrybutami) i odsłonił dwie dziury,
-które dla dotychczasowych encji były niewidoczne.
+The DX pilot reached the `TalkSpeaker` entity (talk staffing — many-to-many with attributes) and
+exposed two holes that earlier entities had hidden.
 
-**1. Jeden napis w czterech rolach.** Scaffolder używał `entity.plural` jednocześnie jako nazwy stałej
-Drizzle (`export const ${plural}`), nazwy tabeli (`pgTable("${plural}")`), ścieżki API
-(`/api/v1/${plural}`) oraz nazw katalogu i plików modułu. Dla `projects` / `tasks` / `comments`
-wszystkie cztery formy są identyczne, więc nikt tego nie zauważył. Pierwsza encja wielowyrazowa nie ma
-poprawnego wyboru: `talkSpeakers` daje tabelę `talkSpeakers` (camelCase przy kolumnach snake_case, bo
-te były snake'owane osobno przez `camelToSnake`) i ścieżkę `/api/v1/talkSpeakers` łamiącą konwencję
-kebab-case z `CLAUDE.md`; `talk-speakers` daje `export const talk-speakers = …`, czyli kod, który się
-nie kompiluje.
+**1. One string in four roles.** The scaffolder used `entity.plural` simultaneously as the Drizzle
+constant name (`export const ${plural}`), the table name (`pgTable("${plural}")`), the API path
+(`/api/v1/${plural}`) and the module's directory and file names. For `projects`, `tasks` and
+`comments` all four forms are identical, so nobody noticed. The first multi-word entity has no correct
+option: `talkSpeakers` produces the table `talkSpeakers` (camelCase next to snake_case columns, since
+those were snake-cased separately by `camelToSnake`) and the path `/api/v1/talkSpeakers`, breaking the
+kebab-case convention from `CLAUDE.md`; `talk-speakers` produces `export const talk-speakers = …`,
+which does not compile.
 
-**2. Brak unikalności w modelu.** Encja nie potrafiła wyrazić `unique` w żadnej formie. Pilot
-potrzebuje tego w trzech miejscach naraz: `Event.slug` (globalnie), e-mail uczestnika w obrębie
-wydarzenia (para) i para `(talkId, speakerId)` w obsadzie. Bez tego duplikaty wchodzą do bazy,
-a jedynym obejściem jest ręcznie dopisywany indeks w migracji — poza jedynym źródłem prawdy.
+**2. No uniqueness in the model.** An entity could not express `unique` in any form. The pilot needs it
+in three places at once: `Event.slug` (globally), an attendee's e-mail within an event (a pair) and
+the `(talkId, speakerId)` pair in the staffing table. Without it duplicates reach the database, and
+the only workaround is a hand-written index in a migration — outside the single source of truth.
 
-Dodatkowo trzeba było rozstrzygnąć, jak unikalność współgra z **soft delete**, który jest domyślny
-w każdej tabeli. Istniejące `users.email` używa zwykłego `.unique()`, więc miękko usunięty user
-rezerwuje swój adres na zawsze — zachowanie, którego nie chcemy powtarzać w generatorze.
+We also had to settle how uniqueness interacts with **soft delete**, which every table has by default.
+The existing `users.email` uses a plain `.unique()`, so a soft-deleted user reserves their address
+forever — behaviour we do not want to reproduce in the generator.
 
 ## Considered options
 
-**Formy nazwy:**
+**Name forms:**
 
-1. **Wyprowadzać cztery formy z `plural`** — deskryptor liczy `plural` (camelCase), `table`
-   (snake_case), `path` i `file` (kebab-case). Pros: encje wielowyrazowe działają bez wiedzy autora
-   encji; zapis wejściowy dowolny; encje jednowyrazowe bez zmiany. Cons: cztery pola w deskryptorze
-   zamiast jednego — szablony muszą wybierać właściwe.
-2. **Wymagać czterech pól w encji** (`plural`, `tableName`, `apiPath`, …). Cons: przenosi problem na
-   autora encji i mnoży okazje do niespójności.
-3. **Zabronić encji wielowyrazowych** (walidacja przy generacji). Cons: `orderItem`, `userGroup`,
-   `talkSpeaker` to zwykłe encje — zakaz jest arbitralny.
+1. **Derive four forms from `plural`** — the descriptor computes `plural` (camelCase), `table`
+   (snake_case), and `path` and `file` (kebab-case). Pros: multi-word entities work without the entity
+   author knowing about it; the input spelling is free; single-word entities are unaffected. Cons:
+   four descriptor fields instead of one — the templates must pick the right one.
+2. **Require four fields on the entity** (`plural`, `tableName`, `apiPath`, …). Cons: moves the problem
+   to the entity author and multiplies the chances of inconsistency.
+3. **Forbid multi-word entities** (validated at generation time). Cons: `orderItem`, `userGroup` and
+   `talkSpeaker` are ordinary entities — the ban would be arbitrary.
 
-**Unikalność:**
+**Uniqueness:**
 
-1. **Deklaracja w encji + częściowy indeks unikalny** (`where deleted_at is null`) + mapowanie
-   konfliktu na 409. Pros: jedno źródło prawdy; soft delete zwalnia wartość; API zwraca poprawny kod
-   błędu z nazwami pól. Cons: dwa miejsca deklaracji (pole vs encja) dla przypadku jedno- i
-   wielopolowego; indeks częściowy jest mniej oczywisty w migracji niż `UNIQUE`.
-2. **Zwykłe `UNIQUE`** (jak `users.email`). Pros: prostsze. Cons: miękko usunięty rekord blokuje
-   wartość bezterminowo — przy soft delete jako domyślnym to pułapka.
-3. **Tylko walidacja w service** (sprawdź przed zapisem). Cons: wyścig między sprawdzeniem a zapisem;
-   baza nadal przyjmie duplikat.
+1. **Declaration on the entity plus a partial unique index** (`where deleted_at is null`) plus mapping
+   the conflict to a 409. Pros: a single source of truth; a soft delete releases the value; the API
+   returns the right status code with the field names. Cons: two declaration sites (field versus
+   entity) for the single- and multi-field cases; a partial index is less obvious in a migration than
+   a plain `UNIQUE`.
+2. **A plain `UNIQUE`** (like `users.email`). Pros: simpler. Cons: a soft-deleted row blocks the value
+   indefinitely — a trap when soft delete is the default.
+3. **Validation in the service only** (check before writing). Cons: a race between the check and the
+   write; the database still accepts a duplicate.
 
 ## Decision
 
-Obie opcje 1.
+Option 1 in both cases.
 
-Deskryptor scaffoldera (`tools/scaffold/src/descriptor.ts`) rozbija nazwę na słowa niezależnie od
-zapisu wejściowego (`talkSpeakers`, `talk-speakers`, `talk_speakers` dają ten sam wynik) i wyprowadza
-cztery formy: `plural` do identyfikatorów w kodzie, `table` do nazwy tabeli, `path` do ścieżek API
-i admina, `file` do katalogu i nazw plików. `entity.name` musi pozostać identyfikatorem camelCase,
-bo scaffolder składa z niego nazwę eksportu `<name>Entity` — nieprawidłowa nazwa jest odrzucana
-z komunikatem.
+The scaffolder descriptor (`tools/scaffold/src/descriptor.ts`) splits the name into words regardless
+of input spelling (`talkSpeakers`, `talk-speakers` and `talk_speakers` all give the same result) and
+derives four forms: `plural` for code identifiers, `table` for the table name, `path` for API and
+admin paths, and `file` for the directory and file names. `entity.name` must remain a camelCase
+identifier, because the scaffolder builds the `<name>Entity` export name from it — an invalid name is
+rejected with a message.
 
-Unikalność deklaruje encja: `.unique()` na polu (jednopolowa) oraz `unique: [["eventId", "email"]]`
-na encji (złożona); obie trafiają do `entity.unique`. Scaffolder generuje z każdej grupy **częściowy
-indeks unikalny** z `where deleted_at is null`, a service mapuje naruszenie na `ConflictError` (409)
-z nazwami pól — rozpoznając je po deterministycznej nazwie indeksu (`<table>_<kolumny>_key`) przez
-helper `apps/api/src/db/unique-violation.ts`.
+Uniqueness is declared on the entity: `.unique()` on a field (single-field) and
+`unique: [["eventId", "email"]]` on the entity (composite); both end up in `entity.unique`. From each
+group the scaffolder generates a **partial unique index** with `where deleted_at is null`, and the
+service maps a violation to a `ConflictError` (409) naming the fields — recognising it by the
+deterministic index name (`<table>_<columns>_key`) through the helper
+`apps/api/src/db/unique-violation.ts`.
 
-Przy okazji rozstrzygnięto zakres M:N z atrybutami: tabela łącząca z własnymi polami to **zwykła
-encja z dwiema relacjami** i jest w pełni scaffoldowalna. Poza generatorem zostaje wyłącznie UX
-przypisania — trasy zagnieżdżone (`/talks/:id/speakers`) i widget obsady na detalu rodzica. Poprzedni
-zapis „M:N z atrybutami poza generatorem" był mylący i został poprawiony w `tools/scaffold/README.md`.
+Along the way we settled the scope of many-to-many with attributes: a join table with its own fields
+is **an ordinary entity with two relations** and is fully scaffoldable. Only the assignment UX stays
+outside the generator — nested routes (`/talks/:id/speakers`) and a staffing widget on the parent's
+detail page. The earlier phrasing "many-to-many with attributes is outside the generator" was
+misleading and has been corrected in `tools/scaffold/README.md`.
 
 ## Consequences
 
-- **Positive:** encje wielowyrazowe działają bez obejść, a nazwa tabeli jest spójna ze snake_case
-  kolumn. Ścieżki API trzymają konwencję kebab-case. Unikalność żyje w jedynym źródle prawdy i daje
-  409 zamiast 500. Soft delete nie rezerwuje unikalnych wartości bezterminowo.
-- **Negative / costs:** szablony muszą świadomie wybierać formę nazwy — użycie `plural` tam, gdzie
-  powinna być `table` albo `path`, jest cichym błędem (dlatego pilnują tego testy generatora).
-  Unikalność ma dwa miejsca deklaracji zależnie od liczby pól. Częściowy indeks unikalny jest
-  niestandardowy względem `users.email`, które zostaje na zwykłym `UNIQUE` (nie migrujemy go —
-  zmiana zachowania rejestracji to osobna decyzja).
-- **Impact:** `tools/scaffold` (deskryptor + wszystkie szablony + nowy zestaw testów),
-  `packages/schemas` (`.unique()`, `entity.unique`), `apps/api/src/db/unique-violation.ts`,
-  `apps/admin/src/relation-source.ts` (ścieżka relacji kebab-case). Encje jednowyrazowe generują
-  **identyczny** kod jak przed zmianą — pilnuje tego test regresyjny.
+- **Positive:** multi-word entities work without workarounds, and the table name matches the
+  snake_case of the columns. API paths keep the kebab-case convention. Uniqueness lives in the single
+  source of truth and yields a 409 instead of a 500. Soft delete no longer reserves unique values
+  indefinitely.
+- **Negative / costs:** the templates must consciously pick a name form — using `plural` where `table`
+  or `path` belongs is a silent bug (which is why the generator tests guard it). Uniqueness has two
+  declaration sites depending on the number of fields. The partial unique index is non-standard next
+  to `users.email`, which stays on a plain `UNIQUE` (we are not migrating it — changing registration
+  behaviour is a separate decision).
+- **Impact:** `tools/scaffold` (the descriptor, every template and a new set of tests),
+  `packages/schemas` (`.unique()`, `entity.unique`), `apps/api/src/db/unique-violation.ts` and
+  `apps/admin/src/relation-source.ts` (kebab-case relation paths). Single-word entities generate
+  **identical** code to before, which a regression test guards.
 
 ## Notes
 
-Wygenerowany fragment Drizzle (`pgTable` z częściowym indeksem unikalnym) został skompilowany
-względem `drizzle-orm@0.38.4` osobno, przed dodaniem do szablonu — API trzeciego argumentu `pgTable`
-zmieniało się między wersjami (obiekt → tablica) i wymagało potwierdzenia.
+The generated Drizzle fragment (a `pgTable` with a partial unique index) was compiled against
+`drizzle-orm@0.38.4` separately, before being added to the template — the API of `pgTable`'s third
+argument changed between versions (object → array) and needed confirmation.
+
+## Related
+
+- [ADR-0004](./ADR-0004-entity-field-builders.md) — the field builders this extends
+- [`tools/scaffold`](../../tools/scaffold/README.md) — the four name forms in practice
+- [`packages/schemas`](../../packages/schemas/README.md) — how uniqueness is declared
+- [How to add an entity](../recipes/how-to-add-an-entity.md) — the process that relies on both
 
 ---
 

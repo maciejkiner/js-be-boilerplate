@@ -1,3 +1,5 @@
+[Home](./README.md) › [Documentation](./docs/README.md) › [Architecture decisions](./docs/adr/README.md) › Template
+
 # ADR-NNNN: Decision title
 
 - **Status:** Proposed | Accepted | Superseded by ADR-XXXX | Deprecated

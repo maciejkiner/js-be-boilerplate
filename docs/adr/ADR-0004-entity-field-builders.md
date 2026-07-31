@@ -1,82 +1,97 @@
-# ADR-0004: Buildery pól (`f.*`) jako domyślny sposób deklaracji encji
+[Home](../../README.md) › [Documentation](../README.md) › [Architecture decisions](./README.md) › ADR-0004
+
+# ADR-0004: Field builders (`f.*`) as the default way to declare an entity
 
 - **Status:** Accepted
 - **Date:** 2026-07-29
-- **Authors:** zespół bootstrap
-- **Related:** ADR-0001, `packages/schemas`, `tools/scaffold`, pilot DX (`docs/dx-pilot/conference.md`)
+- **Authors:** bootstrap team
+- **Related:** ADR-0001, `packages/schemas`, `tools/scaffold`, the DX pilot
+  ([`docs/dx-pilot/conference.md`](../dx-pilot/conference.md))
 
 ## Context
 
-Encja jest jednym źródłem prawdy dla bazy, walidacji BE/FE, OpenAPI, kolumn admina i formularzy.
-Do tej pory deklarowało się ją dwiema niezależnymi częściami: schematem Zod (`schema`) i companion-mapą
-metadanych (`fields`). Parytet **kluczy** wymuszał TypeScript, ale **treść** obu części musiała być
-spójna z ręki człowieka:
+An entity is the single source of truth for the database, backend and frontend validation, OpenAPI,
+admin columns and forms. Until now it was declared as two independent halves: a Zod schema (`schema`)
+and a companion metadata map (`fields`). TypeScript enforced parity of the **keys**, but the
+**content** of both halves had to be kept consistent by hand:
 
-- `control` i typ Zod to dwie deklaracje tego samego faktu. `control: "number"` przy `z.string()`
-  kompilował się bez ostrzeżenia. Rozjazd wychodził dopiero w runtime i to skośnie: scaffolder bierze
-  typ kolumny Drizzle z `control` (`tools/scaffold/src/be-templates.ts`), a wymagalność z Zoda
-  (`tools/scaffold/src/descriptor.ts`) — efektem była kolumna `integer` w bazie przy walidacji stringa
-  w API.
-- Wartości `select` / `radio` trzeba było wpisać dwa razy: w `z.enum([...])` i w `options[]`.
-  Encja `task` miała tak zadeklarowane dwa pola.
-- `packages/schemas/README.md` dokumentował tabelę parowania `control` ↔ typ Zod z adnotacją
-  „muszą być spójne" — czyli inwariant, którego kompilator nie sprawdza.
+- `control` and the Zod type are two declarations of the same fact. `control: "number"` next to
+  `z.string()` compiled without a warning. The mismatch only surfaced at runtime, and obliquely: the
+  scaffolder takes the Drizzle column type from `control`
+  (`tools/scaffold/src/be-templates.ts`) and the requiredness from Zod
+  (`tools/scaffold/src/descriptor.ts`) — the result was an `integer` column in the database validated
+  as a string in the API.
+- The values of a `select`/`radio` had to be written twice: in `z.enum([...])` and in `options[]`.
+  The `task` entity had two fields declared that way.
+- `packages/schemas/README.md` documented the `control` ↔ Zod type pairing table with a note saying
+  "these must be consistent" — that is, an invariant the compiler does not check.
 
-Bezpośrednim impulsem było pytanie o ergonomię: deklarowanie pól z podpowiedzi edytora, bez pamiętania
-nazw kluczy metadanych i wymaganych dodatków per kontrolka.
+The immediate trigger was a question about ergonomics: declaring fields from editor completion,
+without memorising metadata key names and the extras each control requires.
 
 ## Considered options
 
-1. **Buildery na poziomie pola (`f.*`) wpięte w `defineEntity`** — `fields` przyjmuje buildery,
-   `schema` jest wywodzony. Pros: jedna deklaracja produkuje obie strony, więc rozjazd staje się
-   niewyrażalny; `f.` wypisuje kontrolki w edytorze; wartości enuma wpisane raz; minimalna nowa
-   powierzchnia API. Cons: `defineEntity` dostaje przeciążenie; buildery muszą odwzorować to,
-   co dziś wyraża Zod bezpośrednio (potrzebny escape hatch).
-2. **Buildery + osobny chain na poziomie encji** (`entity().labels().fields().build()`). Pros: więcej
-   autocomplete (np. `displayField` z kluczy pól). Cons: druga równorzędna ścieżka definiowania encji
-   obok `defineEntity` — sprzeczne z zasadą jednej konwencji w repo.
-3. **Walidacja spójności w runtime** — sprawdzać parowanie `control` ↔ typ Zod przy starcie lub
-   w scaffolderze. Pros: mało kodu, zero zmian w API. Cons: leczy objaw, nie przyczynę; nadal dwie
-   deklaracje do utrzymania i podwójne listy opcji; błąd łapany później, nie w edytorze.
-4. **Status quo** — zostawić inwariant w dokumentacji. Cons: pułapka, która realnie kosztowała czas
-   przy każdej nowej encji.
+1. **Field-level builders (`f.*`) wired into `defineEntity`** — `fields` accepts builders and `schema`
+   is derived. Pros: one declaration produces both halves, so a mismatch becomes inexpressible; `f.`
+   lists the controls in the editor; enum values are written once; minimal new API surface. Cons:
+   `defineEntity` gains an overload; the builders have to cover what Zod expresses directly today (an
+   escape hatch is needed).
+2. **Builders plus a separate entity-level chain** (`entity().labels().fields().build()`). Pros: more
+   autocomplete (for example `displayField` from the field keys). Cons: a second, equally valid way to
+   define an entity next to `defineEntity` — contrary to the "one convention per repository"
+   principle.
+3. **Runtime consistency validation** — check the `control` ↔ Zod type pairing at startup or in the
+   scaffolder. Pros: little code, no API change. Cons: treats the symptom, not the cause; there are
+   still two declarations to maintain and duplicated option lists; the error arrives late rather than
+   in the editor.
+4. **Status quo** — leave the invariant in the documentation. Cons: a trap that genuinely cost time on
+   every new entity.
 
 ## Decision
 
-Wybieramy opcję 1. Fabryki `f.*` (`packages/schemas/src/lib/field-builder.ts`) tworzą pole razem
-z jego schematem Zod; `defineEntity` dostaje przeciążenie, w którym `fields` to mapa builderów,
-a `schema` wynika z pól. Wariant surowy (własny `schema` + metadane wprost) **zostaje** jako
-udokumentowany escape hatch dla kształtów, których buildery nie wyrażają.
+We choose option 1. The `f.*` factories (`packages/schemas/src/lib/field-builder.ts`) create a field
+together with its Zod schema; `defineEntity` gains an overload in which `fields` is a map of builders
+and `schema` follows from them. The raw variant (your own `schema` plus metadata written out)
+**stays** as a documented escape hatch for shapes the builders cannot express.
 
-Zakres celowo ograniczony do **liftu 1:1** względem dzisiejszych możliwości `FieldMeta`: wynik
-`defineEntity` jest nieodróżnialny od ręcznego, więc żaden konsument (scaffolder, `forms-ui`,
-`api-react`) nie wymagał zmiany. Braki wykraczające poza dzisiejsze możliwości — kontrolka `datetime`
-(dziś `date` gubi godzinę w formularzu) i deklaracja unikalności (`unique`) — są **poza tym ADR**;
-zostaną rozstrzygnięte, gdy pilot DX potwierdzi ich koszt.
+The scope is deliberately limited to a **1:1 lift** of what `FieldMeta` can express today: the result
+of `defineEntity` is indistinguishable from the hand-written one, so no consumer (the scaffolder,
+`forms-ui`, `api-react`) needed to change. Gaps beyond today's capabilities — a `datetime` control
+(today `date` loses the time in the form) and a uniqueness declaration (`unique`) — are **outside this
+ADR**; they will be settled once the DX pilot confirms their cost.
 
-Uzupełniająco: etykieta pominięta w `.label()` wywodzi się z nazwy pola (`dueDate` → „Due date",
-`venueId` → „Venue"). Po migracji encji referencyjnych jawnej etykiety wymagało 1 pole z 18.
+In addition: a label omitted from `.label()` is derived from the field name (`dueDate` → "Due date",
+`venueId` → "Venue"). After migrating the reference entities, 1 field out of 18 still needed an
+explicit label.
 
 ## Consequences
 
-- **Positive:** rozjazd `control` ↔ typ Zod jest niewyrażalny, nie tylko odradzany. Wartości list
-  zamkniętych wpisane raz. Deklaracja pola jest krótsza (encja `project`: 40 → 24 linie) i odkrywalna
-  z edytora. Buildery są niemutowalne, więc definicje pól da się współdzielić.
-- **Negative / costs:** `defineEntity` ma dwa warianty — przy błędnym użyciu komunikat inferencji jest
-  dłuższy niż przy jednej sygnaturze. Buildery pokrywają podzbiór Zoda; bogatsza walidacja wymaga
-  `.zod(fn)`, co jest dodatkowym pojęciem do nauczenia. Mapa `wartość → etykieta` opiera się na
-  kolejności kluczy obiektu — klucze numeryczne zmieniłyby kolejność opcji (udokumentowane).
-- **Impact:** `packages/schemas` (nowy plik + przeciążenie + 3 encje referencyjne przepisane),
-  dokumentacja (`README` pakietu, `CLAUDE.md`, przepis dodania encji). Scaffolder, `forms-ui`
-  i `api-react` — **bez zmian**. Kontrolą regresji na kontrakcie jest brak nowej migracji Drizzle
-  (`db:generate`) i pusty diff `openapi.json` po `generate:client` — schemat bazy i OpenAPI zależą
-  od `control` oraz wymagalności, więc każdy rozjazd migracji encji by je poruszył.
+- **Positive:** a `control` ↔ Zod type mismatch is inexpressible, not merely discouraged. Closed-list
+  values are written once. A field declaration is shorter (the `project` entity: 40 → 24 lines) and
+  discoverable from the editor. Builders are immutable, so field definitions can be shared.
+- **Negative / costs:** `defineEntity` has two variants — on incorrect use the inference message is
+  longer than it would be with a single signature. The builders cover a subset of Zod; richer
+  validation needs `.zod(fn)`, which is one more concept to learn. The `value → label` map relies on
+  object key order, so numeric keys would reorder the options (documented).
+- **Impact:** `packages/schemas` (a new file, the overload and three rewritten reference entities) and
+  the documentation (the package README, `CLAUDE.md`, the entity recipe). The scaffolder, `forms-ui`
+  and `api-react` — **unchanged**. The contract regression check is the absence of a new Drizzle
+  migration (`db:generate`) and an empty `openapi.json` diff after `generate:client`: the database
+  schema and OpenAPI both depend on `control` and requiredness, so any drift during the entity
+  migration would have moved them.
 
 ## Notes
 
-Dowód liftu 1:1 jest zautomatyzowany w `packages/schemas/test/field-builder.test.ts`: ta sama encja
-zadeklarowana obiema drogami musi dać identyczne `fields`, identyczną kolejność i wymagalność kluczy
-oraz identycznie zachowującą się `validation`.
+The 1:1 lift is proven automatically in `packages/schemas/test/field-builder.test.ts`: the same entity
+declared both ways must produce identical `fields`, identical key order and requiredness, and a
+`validation` that behaves identically.
+
+## Related
+
+- [ADR-0006](./ADR-0006-splitting-define-entity.md) — replaces the overload decided here with two functions
+- [ADR-0005](./ADR-0005-entity-name-forms-and-uniqueness.md) — settles the uniqueness gap left open here
+- [`packages/schemas`](../../packages/schemas/README.md) — the builders as documented today
+- [How to add an entity](../recipes/how-to-add-an-entity.md) — the process that uses them
 
 ---
 

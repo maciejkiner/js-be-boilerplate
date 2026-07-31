@@ -1,23 +1,25 @@
-# ADR-0006: Rozdzielenie `defineEntity` na dwie funkcje zamiast przeciążenia
+[Home](../../README.md) › [Documentation](../README.md) › [Architecture decisions](./README.md) › ADR-0006
+
+# ADR-0006: Splitting `defineEntity` into two functions instead of an overload
 
 - **Status:** Accepted
 - **Date:** 2026-07-30
-- **Authors:** zespół bootstrap
-- **Related:** ADR-0004 (buildery pól — zastępuje jego decyzję o przeciążeniu), `packages/schemas`
+- **Authors:** bootstrap team
+- **Related:** ADR-0004 (field builders — this replaces its overload decision), `packages/schemas`
 
 ## Context
 
-ADR-0004 wprowadził buildery pól `f.*` i wpiął je w istniejącą funkcję `defineEntity` jako
-**przeciążenie**: pierwsza sygnatura przyjmowała mapę builderów, druga surowy `schema` + companion-mapę
-metadanych. Celem była minimalna powierzchnia API — jedna nazwa dla obu wariantów. ADR-0004 odnotował
-koszt: „przy błędnym użyciu komunikat inferencji jest dłuższy niż przy jednej sygnaturze".
+ADR-0004 introduced the `f.*` field builders and wired them into the existing `defineEntity` function
+as an **overload**: the first signature accepted a map of builders, the second a raw `schema` plus a
+companion metadata map. The goal was a minimal API surface — one name for both variants. ADR-0004
+noted the cost: "on incorrect use the inference message is longer than it would be with a single
+signature".
 
-W praktyce koszt okazał się wyższy, niż zakładano. Podczas pilotu DX ten sam problem uderzył
-**trzykrotnie w jednej sesji** (błędny `displayField`, płaska tablica w `unique`, `unique`
-wskazujące pola innej encji). TypeScript przy nieudanym dopasowaniu przeciążenia raportuje
-`TS2769: No overload matches this call`, a następnie dla **każdej** niepasującej właściwości powtarza
-całą zinstancjonowaną sygnaturę generyczną. Efekt zmierzony na realnym przypadku (`unique` z dwoma
-nieistniejącymi polami):
+In practice the cost turned out to be higher than assumed. During the DX pilot the same problem hit
+**three times in a single session** (a wrong `displayField`, a flat array in `unique`, and a `unique`
+naming fields of another entity). When an overload fails to match, TypeScript reports
+`TS2769: No overload matches this call` and then repeats the entire instantiated generic signature for
+**every** mismatching property. Measured on a real case (`unique` with two non-existent fields):
 
 ```
 a.ts(3,18): error TS2769: No overload matches this call.
@@ -25,63 +27,70 @@ a.ts(3,18): error TS2769: No overload matches this call.
   false>; speakerId: PlainFieldBuilder<ZodString, false>; role: PlainFieldBuilder<ZodEnum<[...]>,
   false>; }>): Entity<...>', gave the following error.
     Type '"eventId"' is not assignable to type '"role" | "talkId" | "speakerId"'.
-  … (to samo powtórzone dla '"email"')
+  … (the same repeated for '"email"')
 ```
 
-Osiem linii, a pozycja `(3,18)` wskazuje **wywołanie** `defineEntity({`, nie miejsce pomyłki —
-w realnym pliku błąd raportowany był w linii 4, podczas gdy literówka siedziała w linii 16.
+Eight lines — and the position `(3,18)` points at the **call** `defineEntity({`, not at the mistake.
+In the real file the error was reported on line 4 while the typo sat on line 16.
 
 ## Considered options
 
-1. **Dwie osobne funkcje** — `defineEntity` (buildery) i `defineEntityRaw` (surowy schemat), każda
-   z jedną sygnaturą. Pros: TypeScript raportuje błąd bezpośrednio na niepasującej właściwości,
-   jednolinijkowym komunikatem; nazwa `Raw` sama tłumaczy, że to wyjście awaryjne. Cons: dwie nazwy
-   w API; zmiana łamiąca dla forków używających wariantu surowego przez `defineEntity`.
-2. **Zostawić przeciążenie** — Cons: koszt płacony przy każdej literówce w definicji encji, a encje
-   pisze się często; problem potwierdzony empirycznie trzy razy w jednej sesji.
-3. **Runtime-owa walidacja kształtu** przed inferencją (np. rzucanie czytelnego błędu przy płaskim
-   `unique`). Cons: leczy jeden objaw, a nie klasę problemu — błąd i tak najpierw pojawia się jako
-   ściana z `tsc`, zanim kod w ogóle się uruchomi.
+1. **Two separate functions** — `defineEntity` (builders) and `defineEntityRaw` (a raw schema), each
+   with a single signature. Pros: TypeScript reports the error directly on the mismatching property,
+   in a one-line message; the `Raw` name says on its own that this is the escape hatch. Cons: two
+   names in the API; a breaking change for forks using the raw variant through `defineEntity`.
+2. **Keep the overload** — Cons: the cost is paid on every typo in an entity definition, and entities
+   are written often; the problem was confirmed empirically three times in one session.
+3. **Runtime shape validation** before inference (for example throwing a readable error on a flat
+   `unique`). Cons: treats one symptom rather than the class of problem — the error still shows up
+   first as a wall of `tsc` output, before the code runs at all.
 
 ## Decision
 
-Opcja 1. `defineEntity` przyjmuje wyłącznie mapę builderów; `defineEntityRaw` przyjmuje własny
-`schema` + companion-mapę metadanych. Obie mają po jednej sygnaturze i osobne ciało — dotychczasowa
-implementacja rozgałęziała się przez `if ("schema" in definition)`, więc rozdzielenie to rozcięcie
-w miejscu tego warunku.
+Option 1. `defineEntity` accepts only a map of builders; `defineEntityRaw` accepts a custom `schema`
+plus a companion metadata map. Both have a single signature and a separate body — the previous
+implementation branched on `if ("schema" in definition)`, so splitting them is a cut along exactly
+that condition.
 
-Efekt zmierzony na tym samym pliku, który wygenerował wynik z sekcji Context:
+Measured on the same file that produced the output in the Context section:
 
 ```
 a.ts(9,13): error TS2322: Type '"eventId"' is not assignable to type '"role" | "talkId" | "speakerId"'.
 a.ts(9,24): error TS2322: Type '"email"' is not assignable to type '"role" | "talkId" | "speakerId"'.
 ```
 
-Ta decyzja **zastępuje** ustalenie z ADR-0004 dotyczące przeciążenia. Pozostałe ustalenia ADR-0004
-(buildery jako droga domyślna, wariant surowy jako escape hatch, lift 1:1) pozostają w mocy.
+This decision **replaces** the overload arrangement from ADR-0004. Everything else in ADR-0004
+(builders as the default path, the raw variant as an escape hatch, the 1:1 lift) stands.
 
 ## Consequences
 
-- **Positive:** błąd w definicji encji wskazuje konkretną właściwość zamiast całego wywołania,
-  komunikat mieści się w jednej linii. Znika asymetria, w której jedna nazwa oznaczała dwa różne
-  kontrakty. Nazwa `defineEntityRaw` czytelnie sygnalizuje, że to wyjście awaryjne.
-- **Negative / costs:** dwie nazwy zamiast jednej. **Zmiana łamiąca dla forków**: projekt, który
-  wystartował z bootstrapa i użył `defineEntity` z własnym `schema`, przestanie się kompilować —
-  łamie się jednak głośno, na etapie kompilacji, a poprawka to zmiana nazwy wywołania. Wymaga wpisu-
-  przepisu w `CHANGELOG.md` przy merge'u gałęzi `dx-test` do `main` (wpisy są na czas iteracji
-  wstrzymane).
-- **Impact:** `packages/schemas/src/lib/define-entity.ts` (~30 linii), jeden konsument wariantu
-  surowego w repo (test równoważności w `packages/schemas/test/field-builder.test.ts`), dokumentacja
-  (`README` pakietu, `CLAUDE.md`, przepis dodania encji). Encje referencyjne i encje pilota — bez
-  zmian, wszystkie używają builderów. Zachowanie w runtime i kształt zwracanego obiektu
-  identyczne — potwierdzone brakiem zmian w migracjach i pustym diffem `openapi.json`.
+- **Positive:** an error in an entity definition points at the specific property instead of the whole
+  call, and the message fits on one line. The asymmetry where one name meant two different contracts
+  is gone. The name `defineEntityRaw` clearly signals an escape hatch.
+- **Negative / costs:** two names instead of one. **A breaking change for forks**: a project that
+  started from the bootstrap and used `defineEntity` with its own `schema` stops compiling — but it
+  breaks loudly, at compile time, and the fix is renaming the call. It needs a recipe entry in
+  `CHANGELOG.md` when the `dx-test` branch is merged into `main` (entries are paused for the duration
+  of the iteration).
+- **Impact:** `packages/schemas/src/lib/define-entity.ts` (~30 lines), one consumer of the raw variant
+  in the repository (the equivalence test in `packages/schemas/test/field-builder.test.ts`) and the
+  documentation (the package README, `CLAUDE.md`, the entity recipe). The reference entities and the
+  pilot entities are unchanged — they all use builders. Runtime behaviour and the shape of the
+  returned object are identical, confirmed by the absence of migration changes and an empty
+  `openapi.json` diff.
 
 ## Notes
 
-Cena rozdzielenia to jedna asercja typu w ciele `defineEntity`: schemat jest składany dynamicznie
-z builderów, więc jego typ wynika z konstrukcji, a nie z inferencji. Wcześniej tę samą asercję
-ukrywała para przeciążeń — różnica polega na tym, że teraz jest widoczna i opisana komentarzem
-w miejscu, w którym obowiązuje.
+The price of the split is a single type assertion in the body of `defineEntity`: the schema is
+assembled dynamically from the builders, so its type follows from the construction rather than from
+inference. The same assertion used to be hidden by the pair of overloads — the difference is that it
+is now visible and explained by a comment where it applies.
+
+## Related
+
+- [ADR-0004](./ADR-0004-entity-field-builders.md) — the decision this one amends
+- [`packages/schemas`](../../packages/schemas/README.md) — both functions as documented today
+- [How to add an entity](../recipes/how-to-add-an-entity.md) — which one to reach for
 
 ---
 
