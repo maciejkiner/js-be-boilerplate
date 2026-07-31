@@ -5,6 +5,7 @@ import {
   createRouter,
   Outlet,
 } from "@tanstack/react-router";
+import { CreateEventWizard } from "./entities/event-wizard";
 import { CreateProjectWizard } from "./entities/project-wizard";
 import { entityRegistry } from "./entities/registry";
 import { Dashboard, LoginPage, ProtectedShell } from "./shell";
@@ -70,6 +71,12 @@ const entityRoutes: AnyRoute[] = entityRegistry.flatMap((entity) => {
 });
 
 // Wizard referencyjny (poza rejestrem — pojedynczy przypadek). Statyczny → wygrywa z `/projects/$id`.
+const eventWizardRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: "/events/wizard",
+  component: CreateEventWizard,
+});
+
 const wizardRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: "/projects/wizard",
@@ -78,7 +85,12 @@ const wizardRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  protectedRoute.addChildren([indexRoute, wizardRoute, ...entityRoutes] as AnyRoute[]),
+  protectedRoute.addChildren([
+    indexRoute,
+    wizardRoute,
+    eventWizardRoute,
+    ...entityRoutes,
+  ] as AnyRoute[]),
 ]);
 
 export const router = createRouter({ routeTree });

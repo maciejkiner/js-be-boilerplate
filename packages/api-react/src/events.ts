@@ -81,3 +81,39 @@ export function useDeleteEvent() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: eventsKeys.all }),
   });
 }
+
+type InviteSpeakersBody =
+  paths["/api/v1/events/{id}/invitations"]["post"]["requestBody"]["content"]["application/json"];
+type CreateEventTalksBody =
+  paths["/api/v1/events/{id}/talks"]["post"]["requestBody"]["content"]["application/json"];
+
+/** Agenda hurtem: jedno żądanie na całą paczkę, „wszystko albo nic". Używane w kreatorze. */
+export function useCreateEventTalks() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; talks: CreateEventTalksBody["talks"] }) =>
+      unwrap(
+        await client.POST("/api/v1/events/{id}/talks", {
+          params: { path: { id: vars.id } },
+          body: { talks: vars.talks },
+        }),
+      ),
+    // Nowe prelekcje unieważniają listy prelekcji, nie wydarzeń.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["talks"] }),
+  });
+}
+
+/** Zaproszenia prelegentów → mailer (bez zapisu). Osobny handler — używany w kreatorze. */
+export function useInviteEventSpeakers() {
+  const client = useApiClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; emails: InviteSpeakersBody["emails"] }) =>
+      unwrap(
+        await client.POST("/api/v1/events/{id}/invitations", {
+          params: { path: { id: vars.id } },
+          body: { emails: vars.emails },
+        }),
+      ),
+  });
+}

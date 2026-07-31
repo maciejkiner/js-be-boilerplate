@@ -23,3 +23,10 @@ export const EventListResponseSchema = paginatedResponse(EventResponseSchema);
 export const IdParamSchema = z.object({ id: z.string().uuid() });
 
 export type EventListQuery = z.infer<typeof EventListQuerySchema>;
+
+/** Zaproszenia prelegentów — maile idą do mailera, NIE do bazy (jak w module projektów). */
+export const InviteSpeakersSchema = z.object({
+  emails: z.array(z.string().email()).min(1),
+});
+
+export const InviteResultSchema = z.object({ invited: z.number().int() });

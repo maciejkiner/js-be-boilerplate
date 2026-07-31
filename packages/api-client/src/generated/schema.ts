@@ -2483,6 +2483,135 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/events/{id}/talks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        talks: {
+                            title: string;
+                            abstract?: string | null;
+                            /** @enum {string} */
+                            track: "product" | "engineering" | "design" | "business";
+                            /** @enum {string} */
+                            level: "intro" | "intermediate" | "advanced";
+                            /** Format: date-time */
+                            startsAt: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            isRecorded: boolean;
+                            /** Format: uuid */
+                            roomId: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            created: number;
+                            items: {
+                                title: string;
+                                abstract?: string | null;
+                                /** @enum {string} */
+                                track: "product" | "engineering" | "design" | "business";
+                                /** @enum {string} */
+                                level: "intro" | "intermediate" | "advanced";
+                                /** Format: date-time */
+                                startsAt: string;
+                                /** Format: date-time */
+                                endsAt: string;
+                                isRecorded: boolean;
+                                /** Format: uuid */
+                                eventId: string;
+                                /** Format: uuid */
+                                roomId: string;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                updatedAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        emails: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            invited: number;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/talks/": {
         parameters: {
             query?: never;

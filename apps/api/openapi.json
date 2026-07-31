@@ -4908,6 +4908,273 @@
         }
       }
     },
+    "/api/v1/events/{id}/talks": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "talks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "abstract": {
+                          "type": "string",
+                          "maxLength": 4000,
+                          "nullable": true
+                        },
+                        "track": {
+                          "type": "string",
+                          "enum": [
+                            "product",
+                            "engineering",
+                            "design",
+                            "business"
+                          ]
+                        },
+                        "level": {
+                          "type": "string",
+                          "enum": [
+                            "intro",
+                            "intermediate",
+                            "advanced"
+                          ]
+                        },
+                        "startsAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "endsAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "isRecorded": {
+                          "type": "boolean"
+                        },
+                        "roomId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "track",
+                        "level",
+                        "startsAt",
+                        "endsAt",
+                        "isRecorded",
+                        "roomId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 50
+                  }
+                },
+                "required": [
+                  "talks"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "abstract": {
+                            "type": "string",
+                            "maxLength": 4000,
+                            "nullable": true
+                          },
+                          "track": {
+                            "type": "string",
+                            "enum": [
+                              "product",
+                              "engineering",
+                              "design",
+                              "business"
+                            ]
+                          },
+                          "level": {
+                            "type": "string",
+                            "enum": [
+                              "intro",
+                              "intermediate",
+                              "advanced"
+                            ]
+                          },
+                          "startsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "endsAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "isRecorded": {
+                            "type": "boolean"
+                          },
+                          "eventId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "roomId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "track",
+                          "level",
+                          "startsAt",
+                          "endsAt",
+                          "isRecorded",
+                          "eventId",
+                          "roomId",
+                          "id",
+                          "createdAt",
+                          "updatedAt",
+                          "createdBy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "created",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/{id}/invitations": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "emails"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invited": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "invited"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/talks/": {
       "get": {
         "tags": [

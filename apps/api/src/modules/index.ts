@@ -37,7 +37,9 @@ export function apiV1Routes(deps: { db: Db; mailer: Mailer; env: Env }): Fastify
     await app.register(venuesRoutes({ db: deps.db }), { prefix: "/venues" });
     await app.register(speakersRoutes({ db: deps.db }), { prefix: "/speakers" });
     await app.register(roomsRoutes({ db: deps.db }), { prefix: "/rooms" });
-    await app.register(eventsRoutes({ db: deps.db }), { prefix: "/events" });
+    await app.register(eventsRoutes({ db: deps.db, mailer: deps.mailer }), {
+      prefix: "/events",
+    });
     await app.register(talksRoutes({ db: deps.db }), { prefix: "/talks" });
     await app.register(registrationsRoutes({ db: deps.db }), { prefix: "/registrations" });
     await app.register(talkSpeakersRoutes({ db: deps.db }), { prefix: "/talk-speakers" });

@@ -79,6 +79,17 @@ export const talksRepository = {
     return row!;
   },
 
+  /**
+   * Wstawia wiele prelekcji JEDNYM `INSERT`-em — atomowo, bez jawnej transakcji: albo wejdą
+   * wszystkie, albo żadna. Reguły domenowe sprawdza service PRZED wywołaniem.
+   */
+  async createMany(db: Db, values: TalkInsert[]) {
+    if (values.length === 0) {
+      return [];
+    }
+    return db.insert(talks).values(values).returning();
+  },
+
   async update(db: Db, id: string, values: TalkUpdate) {
     const [row] = await db
       .update(talks)

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Db } from "../../db/client.js";
+import type { Mailer } from "../../lib/mailer/index.js";
 import { uniqueViolationConstraint } from "../../db/unique-violation.js";
 import { BadRequestError, ConflictError, NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
@@ -66,6 +67,27 @@ export const eventsService = {
       throw new NotFoundError("Event nie istnieje.");
     }
     return updated;
+  },
+
+  /**
+   * Zaproszenia prelegentów: treść leci do mailera i NIGDZIE się nie zapisuje. Krok 3 kreatora —
+   * dowód, że silnik formularzy nie jest przywiązany do CRUD.
+   */
+  async inviteSpeakers(db: Db, eventId: string, emails: string[], mailer: Mailer) {
+    const event = await eventsRepository.findById(db, eventId);
+    if (!event) {
+      throw new NotFoundError("Event nie istnieje.");
+    }
+    await Promise.all(
+      emails.map((to) =>
+        mailer.send({
+          to,
+          subject: `Zaproszenie do wystąpienia: ${event.name}`,
+          text: `Zapraszamy do wystąpienia na wydarzeniu „${event.name}".`,
+        }),
+      ),
+    );
+    return { invited: emails.length };
   },
 
   async remove(db: Db, id: string) {

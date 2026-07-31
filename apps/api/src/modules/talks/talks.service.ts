@@ -7,14 +7,20 @@ import {
   UnprocessableEntityError,
 } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
-import { type CreateTalkSchema, type TalkListQuery, type UpdateTalkSchema } from "./talks.dto.js";
+import {
+  type CreateTalkInEventSchema,
+  type CreateTalkSchema,
+  type TalkListQuery,
+  type UpdateTalkSchema,
+} from "./talks.dto.js";
 import { eventsRepository } from "../events/events.repository.js";
 import { roomsRepository } from "../rooms/rooms.repository.js";
 import { talksRepository } from "./talks.repository.js";
-import { intervalContains } from "./talks.rules.js";
+import { intervalContains, intervalsOverlap } from "./talks.rules.js";
 
 type CreateInput = z.infer<typeof CreateTalkSchema>;
 type UpdateInput = z.infer<typeof UpdateTalkSchema>;
+type CreateInEventInput = z.infer<typeof CreateTalkInEventSchema>;
 
 /** Komplet wartości potrzebnych do sprawdzenia reguł czasowych (po scaleniu przy edycji). */
 interface ScheduledTalk {
@@ -24,48 +30,65 @@ interface ScheduledTalk {
   endsAt: Date;
 }
 
+interface ScheduleCheckOptions {
+  /** Id edytowanej prelekcji — wykluczane z wyszukiwania kolizji, by nie kolidowała sama ze sobą. */
+  exceptId?: string;
+  /** Prefiks komunikatów, np. „Prelekcja 2" — przy tworzeniu hurtem wskazuje pozycję w paczce. */
+  label?: string;
+}
+
 /**
  * Reguły domenowe prelekcji. Wymagają odczytu innych rekordów, więc NIE mogą żyć w schemacie Zod
  * (ten widzi wyłącznie payload i jest współdzielony z frontendem) — patrz `docs/dx-pilot/konferencja.md`.
- *
- * `exceptId` przekazujemy przy edycji, żeby prelekcja nie kolidowała sama ze sobą.
  */
-async function assertSchedule(db: Db, values: ScheduledTalk, exceptId?: string): Promise<void> {
+async function assertSchedule(
+  db: Db,
+  values: ScheduledTalk,
+  { exceptId, label }: ScheduleCheckOptions = {},
+): Promise<void> {
+  const prefix = label ? `${label}: ` : "";
   // Kolejność sprawdzeń: najpierw istnienie relacji, potem reguły — inaczej pytalibyśmy o okno
   // czasowe nieistniejącego wydarzenia.
   const event = await eventsRepository.findById(db, values.eventId);
   if (!event) {
-    throw new BadRequestError("Wskazana relacja (eventId) nie istnieje.");
+    throw new BadRequestError(`${prefix}wskazana relacja (eventId) nie istnieje.`);
   }
   const room = await roomsRepository.findById(db, values.roomId);
   if (!room) {
-    throw new BadRequestError("Wskazana relacja (roomId) nie istnieje.");
+    throw new BadRequestError(`${prefix}wskazana relacja (roomId) nie istnieje.`);
   }
 
   // `UpdateTalkSchema` to `schema.partial()`, więc międzypolowy `refine` encji NIE obowiązuje przy
   // PATCH — porządek godzin sprawdzamy tutaj, żeby obie ścieżki zachowywały się tak samo.
   if (values.endsAt <= values.startsAt) {
-    throw new UnprocessableEntityError("Koniec prelekcji musi być późniejszy niż jej początek.");
+    throw new UnprocessableEntityError(
+      `${prefix}koniec prelekcji musi być późniejszy niż jej początek.`,
+    );
   }
 
   if (!intervalContains(event, values)) {
-    throw new UnprocessableEntityError("Prelekcja musi mieścić się w oknie czasowym wydarzenia.", {
-      eventStartsAt: event.startsAt,
-      eventEndsAt: event.endsAt,
-    });
+    throw new UnprocessableEntityError(
+      `${prefix}prelekcja musi mieścić się w oknie czasowym wydarzenia.`,
+      {
+        eventStartsAt: event.startsAt,
+        eventEndsAt: event.endsAt,
+      },
+    );
   }
 
   // `event.venueId` jest opcjonalny (wymagany dopiero przy publikacji) — dopóki wydarzenie nie ma
   // obiektu, nie ma czego pilnować.
   if (event.venueId && room.venueId !== event.venueId) {
     throw new UnprocessableEntityError(
-      "Sala musi należeć do obiektu, w którym odbywa się wydarzenie.",
+      `${prefix}sala musi należeć do obiektu, w którym odbywa się wydarzenie.`,
     );
   }
 
   const clash = await talksRepository.findOverlappingInRoom(db, { ...values, exceptId });
   if (clash) {
-    throw new ConflictError(`Sala jest w tym czasie zajęta przez prelekcję „${clash.title}".`);
+    throw new ConflictError(
+      `${prefix}sala jest w tym czasie zajęta przez prelekcję „${clash.title}".`,
+    );
   }
 }
 
@@ -89,6 +112,49 @@ export const talksService = {
     return talksRepository.create(db, { ...input, createdBy: createdById });
   },
 
+  /**
+   * Tworzy wiele prelekcji jednego wydarzenia naraz (krok „agenda" kreatora).
+   *
+   * Semantyka **wszystko albo nic**: najpierw sprawdzamy reguły dla każdej pozycji, dopiero potem
+   * jeden `INSERT`. Dzięki temu paczka z jedną kolizją nie zostawia połowy prelekcji w bazie.
+   * Kolizje liczone są w dwóch miejscach, bo mają dwa różne źródła: SQL widzi rekordy już zapisane,
+   * a pętla poniżej — pozycje z tej samej paczki, których w bazie jeszcze nie ma.
+   */
+  async createManyForEvent(
+    db: Db,
+    eventId: string,
+    inputs: CreateInEventInput[],
+    createdById: string,
+  ) {
+    const event = await eventsRepository.findById(db, eventId);
+    if (!event) {
+      throw new NotFoundError("Event nie istnieje.");
+    }
+
+    const accepted: ScheduledTalk[] = [];
+    const values = inputs.map((input, index) => {
+      const candidate = { ...input, eventId };
+      const label = `Prelekcja ${index + 1} („${input.title}")`;
+      return { candidate, label };
+    });
+
+    for (const { candidate, label } of values) {
+      await assertSchedule(db, candidate, { label });
+      const clash = accepted.find(
+        (earlier) => earlier.roomId === candidate.roomId && intervalsOverlap(earlier, candidate),
+      );
+      if (clash) {
+        throw new ConflictError(`${label}: koliduje z inną prelekcją z tej samej paczki.`);
+      }
+      accepted.push(candidate);
+    }
+
+    return talksRepository.createMany(
+      db,
+      values.map(({ candidate }) => ({ ...candidate, createdBy: createdById })),
+    );
+  },
+
   async update(db: Db, id: string, input: UpdateInput) {
     // PATCH jest częściowy, więc reguły sprawdzamy na wartościach PO scaleniu z bieżącym rekordem —
     // sama zmiana sali musi być weryfikowana względem dotychczasowych godzin.
@@ -104,7 +170,7 @@ export const talksService = {
         startsAt: input.startsAt ?? current.startsAt,
         endsAt: input.endsAt ?? current.endsAt,
       },
-      id,
+      { exceptId: id },
     );
 
     const updated = await talksRepository.update(db, id, input);
