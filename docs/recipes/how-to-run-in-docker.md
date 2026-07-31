@@ -2,8 +2,8 @@
 
 Trzy tryby. Domyślny dev-native jest niezmieniony; pełny stack to **samowystarczalne** pliki
 (`docker-compose.app.yml` / `docker-compose.dev.yml` — każdy zawiera Postgres + mailhog + API + web +
-admin), uruchamiane jednym `-f` (patrz [ADR-0003](../adr/ADR-0003-full-stack-compose-samowystarczalny.md)
-i [ADR-0002](../adr/ADR-0002-konteneryzacja-full-stack.md)).
+admin), uruchamiane jednym `-f` (patrz [ADR-0003](../adr/ADR-0003-self-contained-full-stack-compose.md)
+i [ADR-0002](../adr/ADR-0002-full-stack-containerization.md)).
 
 | Tryb                | Komenda            | Co uruchamia                                              |
 | ------------------- | ------------------ | --------------------------------------------------------- |

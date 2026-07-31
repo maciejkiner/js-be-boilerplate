@@ -77,4 +77,4 @@ z niego nazwę eksportu `<name>Entity`) — inaczej generacja jest odrzucana z k
 - Wygenerowany test CRUD tworzy prerekwizyty dla relacji do `project`/`user`; egzotyczne relacje —
   dostosuj test ręcznie.
 
-Przepis end-to-end: `docs/recipes/jak-dodac-encje.md`.
+Przepis end-to-end: `docs/recipes/how-to-add-an-entity.md`.

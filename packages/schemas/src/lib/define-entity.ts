@@ -166,7 +166,7 @@ export interface BuilderEntityDefinition<M extends FieldBuilderMap> {
  * Kształty, których buildery nie wyrażają: {@link defineEntityRaw} (escape hatch).
  *
  * Mapowanie `control` → komponent DS: `packages/forms-ui/README.md`. Pełny proces dodania encji
- * (scaffolder): `docs/recipes/jak-dodac-encje.md`.
+ * (scaffolder): `docs/recipes/how-to-add-an-entity.md`.
  *
  * @example
  * export const ticketEntity = defineEntity({

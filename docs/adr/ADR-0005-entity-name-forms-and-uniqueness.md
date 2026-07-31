@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-07-30
 - **Authors:** zespół bootstrap
-- **Related:** ADR-0004 (buildery pól), `tools/scaffold`, `packages/schemas`, pilot DX (`docs/dx-pilot/konferencja.md`)
+- **Related:** ADR-0004 (buildery pól), `tools/scaffold`, `packages/schemas`, pilot DX (`docs/dx-pilot/conference.md`)
 
 ## Context
 

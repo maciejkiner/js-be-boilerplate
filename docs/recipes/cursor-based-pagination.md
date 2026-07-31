@@ -48,7 +48,7 @@ sortowania + `id` (tie-breaker). Sortuj po `(kolumna, id)` stabilnie.
      });
    ```
 4. **Indeks DB:** dodaj indeks złożony `(created_at desc, id desc)` (lub po kolumnie sortowania),
-   by keyset był szybki. Migracja jak w `jak-dodac-migracje.md`.
+   by keyset był szybki. Migracja jak w `how-to-add-a-migration.md`.
 5. **FE:** TanStack Query `useInfiniteQuery` z `getNextPageParam: (last) => last.nextCursor`.
 
 ## Uwagi

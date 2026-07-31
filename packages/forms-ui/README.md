@@ -48,4 +48,4 @@ const form = useForm({
 </form>;
 ```
 
-Przepis: `docs/recipes/jak-zdefiniowac-formularz.md` (Faza 7, etap C).
+Przepis: `docs/recipes/how-to-define-a-form.md` (Faza 7, etap C).

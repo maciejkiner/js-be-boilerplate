@@ -8,7 +8,7 @@ Słownik dla generatorów i agentów: komponenty, na których wolno budować `pa
 
 > Docelowy DS: `netguru/silk-storybook` (`@silk/components`). Analiza luk (co dorobić w silk przed
 > podmianą) + luki integracyjne: [`ds-gap-analysis.md`](./ds-gap-analysis.md). Podmiana:
-> [`recipes/jak-zaktualizowac-ds.md`](./recipes/jak-zaktualizowac-ds.md).
+> [`recipes/how-to-update-the-design-system.md`](./recipes/how-to-update-the-design-system.md).
 
 ## Pokrycie (spec sekcja 10) — mock `@repo/design-system`
 

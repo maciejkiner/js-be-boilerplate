@@ -41,4 +41,4 @@ Zmienia to strukturę z ADR-0002 (overlay → samowystarczalne), zachowując jeg
 - **Negative / costs:** definicje `postgres`/`mailhog` zduplikowane między `docker-compose.yml` a plikami
   full-stack (świadoma, drobna duplikacja zamiast kruchego merge’owania list `ports`).
 - **Impact:** `docker-compose.app.yml`, `docker-compose.dev.yml` (samowystarczalne), skrypty `docker:*`
-  w root `package.json` (pojedynczy `-f`). Dokumentacja: README, `docs/recipes/jak-uruchomic-w-dockerze.md`.
+  w root `package.json` (pojedynczy `-f`). Dokumentacja: README, `docs/recipes/how-to-run-in-docker.md`.

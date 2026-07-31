@@ -155,4 +155,4 @@ Encje referencyjne: `project.entity.ts`, `task.entity.ts`, `comment.entity.ts` �
 builderach. Etykiety po angielsku (język admina). Mapowanie `control` → komponent DS:
 `packages/forms-ui/README.md`.
 
-Pełny proces dodania encji: `docs/recipes/jak-dodac-encje.md`.
+Pełny proces dodania encji: `docs/recipes/how-to-add-an-entity.md`.

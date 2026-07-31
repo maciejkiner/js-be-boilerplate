@@ -1,14 +1,25 @@
-# Moduły opt-in — TYLKO przepisy/interfejsy
+[Home](../../../README.md) › [Documentation](../../README.md) › [Recipes](../README.md) › Opt-in modules
 
-Te moduły są **świadomie NIE implementowane** w bootstrapie (spec sekcja 2/6). To przepisy +
-szkice interfejsów — włączasz je **w projekcie**, gdy faktycznie potrzebne. Bootstrap zostaje
-lekki („nie na zapas").
+# Opt-in modules — recipes and interfaces only
 
-- [`multi-tenancy.md`](./multi-tenancy.md) — organizacje / zaproszenia / role per org
-- [`upload-plikow.md`](./upload-plikow.md) — abstrakcja storage + upload
-- [`save-and-resume.md`](./save-and-resume.md) — persystencja częściowego stanu wizarda
-- [`opentelemetry.md`](./opentelemetry.md) — tracing (OTel)
-- [`kolejki-jobs.md`](./kolejki-jobs.md) — kolejki / zadania w tle
+These modules are **deliberately NOT implemented** in the bootstrap (specification, sections 2 and 6).
+What you get is a recipe plus an interface sketch — you turn the module on **in your project**, once
+you actually need it. The bootstrap stays light ("nothing on spec").
 
-Zasada: dopóki nie włączysz modułu, jego serwisy/tabele/zależności nie istnieją. Włączenie dokłada
-je w projekcie (schemat, adapter, endpoint, ew. usługa w compose) wg przepisu.
+| Module                                          | What it adds                                        |
+| ------------------------------------------------- | --------------------------------------------------- |
+| [`multi-tenancy.md`](./multi-tenancy.md)        | Organizations, invitations, per-organization roles  |
+| [`file-upload.md`](./file-upload.md)            | Storage abstraction and upload handling             |
+| [`save-and-resume.md`](./save-and-resume.md)    | Persisting partial wizard state                     |
+| [`opentelemetry.md`](./opentelemetry.md)        | Tracing (OTel)                                      |
+| [`job-queues.md`](./job-queues.md)              | Queues and background jobs                          |
+
+The rule: until you turn a module on, its services, tables and dependencies do not exist. Turning it
+on adds them **in your project** (schema, adapter, endpoint, and possibly a compose service),
+following the recipe.
+
+## Related
+
+- [Recipes](../README.md) — all step-by-step procedures
+- [`PLAN.md`](../../../PLAN.md) — what else is intentionally out of scope
+- [`CLAUDE.md`](../../../CLAUDE.md) — the boundary that keeps these modules opt-in

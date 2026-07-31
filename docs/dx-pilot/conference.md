@@ -243,7 +243,7 @@ Każdy proces: **cel → aktor → przebieg → endpointy → reguły → kryter
 3. **Zaproszenia prelegentów** — lista adresów e-mail. → **wysyłka maili, bez zapisu encji.**
 
 `onComplete` orkiestruje trzy handlery. Budujesz przez `<Wizard>` z `packages/forms-ui`, wg
-`docs/recipes/jak-zdefiniowac-formularz.md`.
+`docs/recipes/how-to-define-a-form.md`.
 
 **Endpointy:** `POST /api/v1/events` · `POST /api/v1/events/:id/talks` (hurt) ·
 `POST /api/v1/events/:id/invitations`.
@@ -359,7 +359,7 @@ kolejność) i usunięcie.
 prelegenta z obsadą nie da się usunąć (`restrict`).
 
 **Gotowe, gdy:** publiczny detal prelekcji (P3) pokazuje obsadę w kolejności `orderIndex`.
-**Sonda DX:** czy `docs/recipes/jak-dodac-encje.md` prowadzi przez ten przypadek, czy trzeba
+**Sonda DX:** czy `docs/recipes/how-to-add-an-entity.md` prowadzi przez ten przypadek, czy trzeba
 odtwarzać wzorzec z wygenerowanego kodu.
 
 ### P8. Zmiana łamiąca w połowie projektu
@@ -375,7 +375,7 @@ odtwarzać wzorzec z wygenerowanego kodu.
 3. **Contract** — `fullName` usunięte, nowe pola wymagane.
 
 **Gotowe, gdy:** na każdym etapie `pnpm build` i testy są zielone, a aplikacja działa — bez „wielkiego
-skoku". **Sonda DX:** czy `docs/recipes/jak-dodac-migracje.md` opisuje ten cykl na tyle konkretnie,
+skoku". **Sonda DX:** czy `docs/recipes/how-to-add-a-migration.md` opisuje ten cykl na tyle konkretnie,
 by dało się go wykonać bez wymyślania procedury od zera.
 
 ### P9. Wolumen i listy
@@ -387,7 +387,7 @@ by dało się go wykonać bez wymyślania procedury od zera.
 rozłożonych po statusach.
 
 **Gotowe, gdy:** lista rejestracji z filtrem i sortem działa w akceptowalnym czasie, paginacja się
-nie rozjeżdża. **Sonda DX:** czy offset wystarcza, czy sięgasz po `docs/recipes/paginacja-cursor-based.md`
+nie rozjeżdża. **Sonda DX:** czy offset wystarcza, czy sięgasz po `docs/recipes/cursor-based-pagination.md`
 — i czy ten przepis daje się zastosować.
 
 ### P10. E2E i Docker

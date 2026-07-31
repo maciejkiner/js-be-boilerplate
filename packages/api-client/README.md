@@ -32,4 +32,4 @@ pnpm --filter @repo/api openapi:dump      # zrzuca openapi.json ze schematów Zo
 pnpm --filter @repo/api-client generate   # openapi.json → src/generated/schema.d.ts
 ```
 
-Pełny przepis: `docs/recipes/jak-regenerowac-klienta.md`.
+Pełny przepis: `docs/recipes/how-to-regenerate-the-api-client.md`.

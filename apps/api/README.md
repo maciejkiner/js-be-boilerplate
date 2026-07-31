@@ -33,7 +33,7 @@ Baza: `docker compose up -d` (Postgres). Testy integracyjne DB uruchamiają się
 ## Auth
 
 - Email+hasło jako pierwsza implementacja **interfejsu providera tożsamości**
-  (`modules/auth/providers/`); kolejni providerzy — patrz `docs/recipes/jak-dodac-providera-tozsamosci.md`.
+  (`modules/auth/providers/`); kolejni providerzy — patrz `docs/recipes/how-to-add-an-identity-provider.md`.
 - **Sesje/tokeny**: access token (JWT, cookie `access_token`) + refresh token (opaque, hashowany
   w tabeli `sessions`, cookie `refresh_token`), rotowany przy `refresh`.
 - **RBAC**: `roles` na userze; guard `requireRoles("admin")` po `app.authenticate`.
@@ -84,4 +84,4 @@ drizzle.config.ts            — konfiguracja drizzle-kit
 - **Logi**: structured JSON (pino); `reqId` = correlation_id (nagłówek `x-request-id`).
 - **OpenAPI**: patrz `docs/adr/ADR-0001-openapi-generation.md`.
 
-Przepis dodania modułu: `docs/recipes/struktura-modulu-api.md`.
+Przepis dodania modułu: `docs/recipes/api-module-structure.md`.

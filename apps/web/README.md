@@ -8,4 +8,4 @@ granicy wymienialności (ten sam DS, `packages/ui`, `api-client`/`api-react`; ro
 `import.meta.env` tylko tu). Providery i wstrzykiwanie env jak w `admin`
 (`src/api.ts` + `src/main.tsx`).
 
-Uruchomienie: `pnpm --filter @repo/web dev`. Przepis: `docs/recipes/struktura-skorupy-fe.md`.
+Uruchomienie: `pnpm --filter @repo/web dev`. Przepis: `docs/recipes/frontend-shell-structure.md`.

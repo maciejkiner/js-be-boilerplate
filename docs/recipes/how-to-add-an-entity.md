@@ -74,7 +74,7 @@ Eksportuj encję z `packages/schemas/src/index.ts`.
 - **Unikalność** — `.unique()` na polu, złożona jako `unique: [["eventId", "email"]]` na encji.
   Wychodzi z tego częściowy indeks unikalny (soft delete zwalnia wartość) i 409 przy konflikcie.
   409 niesie `errors` z nazwami pól obok `detail`, więc formularz podświetla winną kontrolkę —
-  patrz `docs/recipes/jak-zdefiniowac-formularz.md`.
+  patrz `docs/recipes/how-to-define-a-form.md`.
 - **Nazwa mnoga** może być zapisana dowolnie (`talkSpeakers`, `talk-speakers`, `talk_speakers`) —
   scaffolder sam wyprowadza z niej identyfikatory (`camelCase`), nazwę tabeli (`snake_case`) oraz
   ścieżkę API i nazwy plików (`kebab-case`). `name` encji musi być identyfikatorem camelCase.
@@ -126,7 +126,7 @@ pnpm --filter @repo/api db:migrate    # apply (lokalnie / w CI na TEST_DATABASE_
 ```
 
 Migracje **generowane ze schematu, nigdy pisane ręcznie**. Zmiany łamiące: expand → migrate →
-contract (patrz `jak-dodac-migracje.md`).
+contract (patrz `how-to-add-a-migration.md`).
 
 ## 4. Moduł API: dto → repository → service → routes
 

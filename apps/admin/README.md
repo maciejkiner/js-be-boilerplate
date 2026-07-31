@@ -20,5 +20,5 @@ Panel administracyjny — druga skorupa (osobno deployowalna, subdomena) na tych
   orkiestruje dane→baza, zaproszenia→mailer, zadania→hurt (dowód separacji silnika od CRUD).
 
 Router żyje TYLKO tutaj; `packages/ui` dostaje linki przez sloty (`nav`/`actions`).
-Uruchomienie: `pnpm --filter @repo/admin dev`. Przepisy: `docs/recipes/struktura-skorupy-fe.md`,
-`docs/recipes/jak-zdefiniowac-formularz.md`.
+Uruchomienie: `pnpm --filter @repo/admin dev`. Przepisy: `docs/recipes/frontend-shell-structure.md`,
+`docs/recipes/how-to-define-a-form.md`.

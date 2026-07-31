@@ -52,4 +52,4 @@ dokładany overlayami:
 - **Impact:** nowe pliki `docker-compose.app.yml`, `docker-compose.dev.yml`, `apps/*/Dockerfile`,
   `docker/{Dockerfile.dev,nginx.spa.conf}`, `.dockerignore`; drobna zmiana `apps/{web,admin}/vite.config.ts`
   (`host: true`, opcjonalny polling). Deploy do rejestru/HTTPS/compose produkcyjny — poza zakresem
-  bootstrapa (robi projekt). Przepis: `docs/recipes/jak-uruchomic-w-dockerze.md`.
+  bootstrapa (robi projekt). Przepis: `docs/recipes/how-to-run-in-docker.md`.

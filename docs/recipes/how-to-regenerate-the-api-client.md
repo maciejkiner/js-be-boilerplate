@@ -30,7 +30,7 @@ działają bez odpalonego API.
 ## Kiedy regenerować
 
 Po każdej zmianie tras/DTO: nowy endpoint, zmiana pól body/response, filtrów listy, ścieżek.
-Nowe encje dodajesz wg `jak-dodac-encje.md` — potem regeneracja klienta wprowadza je do FE.
+Nowe encje dodajesz wg `how-to-add-an-entity.md` — potem regeneracja klienta wprowadza je do FE.
 
 ## Kontrola w CI (kontrakt BE↔FE)
 

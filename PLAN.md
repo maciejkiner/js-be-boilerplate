@@ -3,7 +3,7 @@
 ## Kontekst
 
 Budujemy **bootstrap** (repozytorium startowe) dla projektów TypeScript BE+FE. Pełna, wiążąca
-specyfikacja: `spec/bootstrap-opis-projektu.md`. Wszystkie decyzje architektoniczne w spec są
+specyfikacja: `spec/bootstrap-project-description.md`. Wszystkie decyzje architektoniczne w spec są
 **rozstrzygnięte** — nie proponuj alternatyw (inny ORM, admin framework, silnik runtime zamiast
 scaffoldera itd.). Filozofia: _bootstrap nie framework_ (fork & forget), _generator nie silnik
 runtime_, _jedno źródło prawdy = schemat Zod + metadane_, _AI-first_, _konwencja nad konfiguracją_.
@@ -49,7 +49,7 @@ Oprócz DoD specyficznego dla fazy, zawsze:
 - **D. `design-system/`** to na teraz zwykły katalog-placeholder (mock na prymitywach HTML + Tailwind) w docelowej ścieżce montowania subtree; interfejsy komponentów zgodne z inwentarzem sekcji 10, tak by podmiana na prawdziwy subtree nie ruszała `packages/ui` ani `packages/forms-ui`. Reguła „DS read-only" obowiązuje od fazy 0. Komponenty dorabiane just-in-time (fazy 6/7), nie na zapas.
 - **E. Paginacja** offset-based w core; cursor-based tylko jako przepis.
 - **F. Aktualność dokumentacji AI** pilnowana pozycją w szablonie PR; automatyczny check CI pozostaje otwartą kwestią (sekcja 13 spec) — nie implementujemy go teraz.
-- **G. Konteneryzacja full-stack (poza-fazowe, wymaganie organizacyjne).** `docker-compose.yml` zostaje infra-only (dev-native). Cały stack w kontenerach dokładany overlayami: `docker-compose.app.yml` (prod-like) i `docker-compose.dev.yml` (HMR); Dockerfile'e w `apps/*` + `docker/`. Nie renumeruje faz. Decyzja: **ADR-0002**; przepis: `docs/recipes/jak-uruchomic-w-dockerze.md`.
+- **G. Konteneryzacja full-stack (poza-fazowe, wymaganie organizacyjne).** `docker-compose.yml` zostaje infra-only (dev-native). Cały stack w kontenerach dokładany overlayami: `docker-compose.app.yml` (prod-like) i `docker-compose.dev.yml` (HMR); Dockerfile'e w `apps/*` + `docker/`. Nie renumeruje faz. Decyzja: **ADR-0002**; przepis: `docs/recipes/how-to-run-in-docker.md`.
 
 ---
 
@@ -193,7 +193,7 @@ Cel: pętla aktualizacji przez instrukcje + komplet dokumentacji AI + przepisy m
 - [x] Szablon PR rozszerzony o sekcję **„wpis changeloga"** (`pull-request-template.md`).
 - [x] Komplet dokumentacji AI: `CLAUDE.md`/`AGENTS.md`, README per moduł, **inwentarz DS z przykładami** (finalny), przepisy (dodać encję / providera / zaktualizować DS / regenerować klienta / formularz / docker).
 - [x] **Przepisy modułów opt-in — TYLKO przepisy/interfejsy, zero implementacji**: `docs/recipes/opt-in/` (multi-tenancy, upload, save&resume, OpenTelemetry, kolejki/jobs).
-- [x] Przepis „paginacja cursor-based" (`docs/recipes/paginacja-cursor-based.md`) jako uzupełnienie offset-based.
+- [x] Przepis „paginacja cursor-based" (`docs/recipes/cursor-based-pagination.md`) jako uzupełnienie offset-based.
 
 **DoD fazy 9:** changelog-przepisy + BOOTSTRAP_VERSION + szablon PR gotowe; dokumentacja AI kompletna i spójna z kodem; moduły opt-in obecne wyłącznie jako przepisy/interfejsy; jawnie poza zakresem — nietknięte.
 

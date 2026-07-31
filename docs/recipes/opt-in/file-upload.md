@@ -29,4 +29,4 @@ export interface Storage {
 ## Uwagi
 
 Sekrety storage tylko w env. Nie trzymaj plików w Postgresie. Sprzątanie osieroconych kluczy —
-job w tle (patrz `kolejki-jobs.md`).
+job w tle (patrz `job-queues.md`).

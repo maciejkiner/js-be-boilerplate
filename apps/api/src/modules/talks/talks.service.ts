@@ -39,7 +39,7 @@ interface ScheduleCheckOptions {
 
 /**
  * Reguły domenowe prelekcji. Wymagają odczytu innych rekordów, więc NIE mogą żyć w schemacie Zod
- * (ten widzi wyłącznie payload i jest współdzielony z frontendem) — patrz `docs/dx-pilot/konferencja.md`.
+ * (ten widzi wyłącznie payload i jest współdzielony z frontendem) — patrz `docs/dx-pilot/conference.md`.
  */
 async function assertSchedule(
   db: Db,
