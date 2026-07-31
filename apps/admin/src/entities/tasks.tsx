@@ -211,13 +211,9 @@ export function TaskCreate() {
         submitLabel="Utwórz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateTaskBody);
-            toast("Zadanie utworzone.", "success");
-            navigate({ to: "/tasks/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć zadania.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateTaskBody);
+          toast("Zadanie utworzone.", "success");
+          navigate({ to: "/tasks/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -248,13 +244,9 @@ export function TaskEdit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: task.id, body: values as UpdateTaskBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/tasks/$id", params: { id: task.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: task.id, body: values as UpdateTaskBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/tasks/$id", params: { id: task.id } });
         }}
       />
     </Page>

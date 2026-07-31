@@ -34,6 +34,30 @@ agenta w sforkowanym projekcie** — jak przenieść poprawkę do kodu, który j
 
 <!-- Nowe wpisy dodawaj NA GÓRZE (pod tym komentarzem), najnowsze pierwsze. -->
 
+## 2026-07-31 — Błąd API wskazuje POLE formularza (rozszerzenie `errors`)
+
+- **Co:** (1) API: konflikt unikalności buduje `uniqueConflictError(label, fields)` — 409 niesie
+  `errors: [{ path, message }]` obok `detail` (ten sam kształt, co walidacja 400). (2) Klient:
+  `ApiError.errors`. (3) `@repo/forms`: `serverErrorToFieldErrors` + `errorMessage`; `useForm` łapie
+  błąd z `onSubmit` (pola → `errors`, treść → `_form`), `useWizard` dokłada błędy pól do
+  `submitError`, a `WizardStepError.from(stepId, error)` zachowuje błąd źródłowy jako `cause`.
+  (4) Szablony scaffoldera: widoki create/edit **bez** `try/catch` z komunikatem zastępczym.
+- **Dlaczego:** 409 „wartości (slug) muszą być unikalne" docierał do UI jako toast „Nie udało się
+  utworzyć" (widok połykał wyjątek), a nawet pokazany — nie wskazywał pola, bo nazwa siedziała
+  wyłącznie w zdaniu `detail`. Użytkownik nie wiedział ani co jest nie tak, ani co poprawić.
+- **Jak znaleźć w projekcie:** `apps/api/src/db/unique-violation.ts`, `lib/http/problem.ts`
+  (`ProblemFieldError`, `ConflictError` z `extensions`); `packages/api-client/src/api-error.ts`;
+  `packages/forms/src/{server-errors.ts,use-form.ts,use-wizard.ts}`;
+  `tools/scaffold/src/{be,fe}-templates.ts`; wygenerowane `*.service.ts` (mapa `UNIQUE_FIELDS`)
+  i widoki admina (`onSubmit={async (values) => { try { … } catch { toast(…) } }}`).
+- **Co zrobić:** w serwisach zamień `UNIQUE_FIELDS: Record<string, string>` (sklejone zdanie) na
+  `Record<string, string[]>` i `new ConflictError(...)` na `uniqueConflictError(label, fields)`;
+  w widokach usuń `try/catch` wokół mutacji (zostaw toast tylko na sukcesie); w wizardach zamień
+  `new WizardStepError(id, error.message)` na `WizardStepError.from(id, error)`.
+- **Ryzyko/rollback:** addytywne po stronie kontraktu API (`errors` to rozszerzenie RFC 7807 —
+  starzy konsumenci ignorują). Zmiana zachowania FE: błędy pokazują się w formularzu zamiast
+  w toaście. Rollback = przywrócenie `try/catch` w widokach; API może zostać.
+
 ## 2026-07-28 — `FieldMeta` jako unia dyskryminowana po `control`
 
 - **Co:** `FieldMeta` (metadane pola encji) z płaskiego interfejsu (wszystko opcjonalne) przerobione

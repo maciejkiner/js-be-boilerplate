@@ -71,7 +71,12 @@ export function EntityForm<Shape extends z.ZodRawShape>({
     <form onSubmit={form.handleSubmit} className="flex max-w-lg flex-col gap-4">
       <FormFields fields={fields} form={form} relationSource={relationSource} />
       {form.errors._form && (
-        <p role="alert" className="text-sm text-red-600">
+        // Błąd bez przypisania do pola: walidacja międzypolowa albo odpowiedź API (`detail`
+        // z problem+json). Pola wskazane przez API podświetla `FormFields` — tu ląduje reszta.
+        <p
+          role="alert"
+          className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+        >
           {form.errors._form}
         </p>
       )}

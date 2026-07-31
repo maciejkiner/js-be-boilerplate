@@ -192,13 +192,9 @@ export function ProjectCreate() {
         defaultValues={emptyValues(projectEntity)}
         submitLabel="Utwórz"
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateProjectBody);
-            toast("Projekt utworzony.", "success");
-            navigate({ to: "/projects/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć projektu.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateProjectBody);
+          toast("Projekt utworzony.", "success");
+          navigate({ to: "/projects/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -227,13 +223,9 @@ export function ProjectEdit() {
         defaultValues={recordToFormValues(projectEntity, project)}
         submitLabel="Zapisz"
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: project.id, body: values as UpdateProjectBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/projects/$id", params: { id: project.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: project.id, body: values as UpdateProjectBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/projects/$id", params: { id: project.id } });
         }}
       />
     </Page>

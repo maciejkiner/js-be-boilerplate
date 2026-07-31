@@ -11,6 +11,12 @@ export class ApiError extends Error {
   readonly title?: string;
   readonly detail?: string;
   readonly instance?: string;
+  /**
+   * Rozszerzenie `errors` — błędy przypisane do PÓL żądania (walidacja 400, konflikt unikalności
+   * 409, 422). Konsument formularzy mapuje je na pola przez `serverErrorToFieldErrors`
+   * z `@repo/forms`; bez nich zostaje wyłącznie komunikat globalny.
+   */
+  readonly errors?: ApiFieldError[];
   /** Surowe ciało odpowiedzi — dla przypadków spoza RFC 7807. */
   readonly body: unknown;
 
@@ -23,8 +29,16 @@ export class ApiError extends Error {
     this.title = problem?.title;
     this.detail = problem?.detail;
     this.instance = problem?.instance;
+    this.errors = fieldErrorsOf(problem);
     this.body = body;
   }
+}
+
+/** Błąd pojedynczego pola z problem+json (`path` zgodne ze ścieżką pola w schemacie Zod). */
+export interface ApiFieldError {
+  path: string;
+  message: string;
+  code?: string;
 }
 
 interface Problem {
@@ -33,6 +47,22 @@ interface Problem {
   status?: number;
   detail?: string;
   instance?: string;
+  errors?: unknown;
+}
+
+/** Odsiewa wpisy o obcym kształcie — `errors` to rozszerzenie, więc nie ufamy mu na słowo. */
+function fieldErrorsOf(problem: Problem | undefined): ApiFieldError[] | undefined {
+  if (!Array.isArray(problem?.errors)) {
+    return undefined;
+  }
+  const errors = problem.errors.filter(
+    (entry): entry is ApiFieldError =>
+      typeof entry === "object" &&
+      entry !== null &&
+      typeof (entry as ApiFieldError).path === "string" &&
+      typeof (entry as ApiFieldError).message === "string",
+  );
+  return errors.length > 0 ? errors : undefined;
 }
 
 function isProblem(body: unknown): body is Problem {

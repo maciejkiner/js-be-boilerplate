@@ -18,6 +18,13 @@ const { data, error } = await api.GET("/api/v1/projects/", {
 });
 ```
 
+## Błędy
+
+`ApiError` (rzucany przez `unwrap` w `@repo/api-react`) rozkłada problem+json na `status`, `title`,
+`detail` (= `message`), `instance` oraz **`errors`** — listę `[{ path, message }]` przypisującą błąd do
+pola żądania (walidacja 400, konflikt unikalności 409, 422). `@repo/forms` zamienia ją na błędy przy
+kontrolkach (`serverErrorToFieldErrors`), więc nie owijaj mutacji w `catch` z własnym komunikatem.
+
 ## Regeneracja po zmianie API
 
 ```bash

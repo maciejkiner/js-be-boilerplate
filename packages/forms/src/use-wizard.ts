@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import type { z } from "zod";
+import { errorMessage, serverErrorToFieldErrors } from "./server-errors.js";
 import { type FormErrors, zodErrorsToFieldErrors } from "./use-form.js";
 
 export interface WizardStep {
@@ -31,6 +32,8 @@ export interface WizardApi<Values extends Record<string, unknown>> {
   isLast: boolean;
   isSubmitting: boolean;
   setValue: <K extends keyof Values>(name: K, value: Values[K]) => void;
+  /** Nadpisuje błędy pól — dla źródeł spoza schematu kroku (np. odpowiedź API). */
+  setErrors: (errors: FormErrors) => void;
   /** Waliduje bieżący krok; jeśli OK → przechodzi dalej. */
   next: () => void;
   prev: () => void;
@@ -49,9 +52,23 @@ export class WizardStepError extends Error {
   constructor(
     readonly stepId: string,
     message: string,
+    /** Błąd źródłowy — wizard wyciąga z niego błędy pól (`errors` z problem+json). */
+    options?: { cause?: unknown },
   ) {
     super(message);
     this.name = "WizardStepError";
+    if (options && "cause" in options) {
+      this.cause = options.cause;
+    }
+  }
+
+  /**
+   * Opakowuje błąd z API, zachowując go jako `cause`. Preferowane nad ręcznym przepisywaniem
+   * `error.message`: tamto gubi listę pól, więc wizard cofa do kroku, ale nie potrafi już
+   * podświetlić kontrolki, która wywołała błąd.
+   */
+  static from(stepId: string, error: unknown, fallbackMessage?: string): WizardStepError {
+    return new WizardStepError(stepId, errorMessage(error, fallbackMessage), { cause: error });
   }
 }
 
@@ -121,7 +138,10 @@ export function useWizard<Values extends Record<string, unknown>>(
     } catch (error) {
       // Błąd finalny NIE może wylecieć poza wizard: użytkownik stoi wtedy na ostatnim kroku
       // z nieobsłużonym odrzuceniem promise'a i bez żadnej informacji.
-      setSubmitError(error instanceof Error ? error.message : "Nie udało się ukończyć kreatora.");
+      setSubmitError(errorMessage(error, "Nie udało się ukończyć kreatora."));
+      // Gdy API wskazało pola (`errors` z problem+json), zaznaczamy je w formularzu kroku —
+      // sam komunikat w chrome wizarda nie mówi, którą kontrolkę poprawić.
+      setErrors(serverErrorToFieldErrors(error));
       if (error instanceof WizardStepError) {
         goTo(error.stepId);
       }
@@ -140,6 +160,7 @@ export function useWizard<Values extends Record<string, unknown>>(
     isLast: stepIndex === steps.length - 1,
     isSubmitting,
     setValue,
+    setErrors,
     next,
     prev,
     submit,

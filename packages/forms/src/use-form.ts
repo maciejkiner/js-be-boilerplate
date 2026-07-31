@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import type { z } from "zod";
+import { errorMessage, FORM_ERROR_KEY, serverErrorToFieldErrors } from "./server-errors.js";
 
 /** Mapa błędów: klucz = ścieżka pola (`issue.path`), wartość = pierwszy komunikat. */
 export type FormErrors = Record<string, string>;
@@ -20,8 +21,14 @@ export interface UseFormOptions<Values extends Record<string, unknown>> {
   /** Schemat walidacji (np. `entity.validation` — z walidacją międzypolową). */
   schema: z.ZodType<unknown>;
   defaultValues: Values;
-  /** Handler po pomyślnej walidacji; dostaje sparsowane (przez Zod) dane. */
+  /**
+   * Handler po pomyślnej walidacji; dostaje sparsowane (przez Zod) dane. Może rzucać — błąd
+   * (zwykle z API) trafi do `errors` zamiast zniknąć, więc NIE otaczaj go własnym `try/catch`
+   * tylko po to, żeby pokazać zastępczy komunikat.
+   */
   onSubmit: (values: unknown) => void | Promise<void>;
+  /** Komunikat globalny, gdy błąd z `onSubmit` nie ma własnego (np. zerwana sieć). */
+  submitErrorFallback?: string;
 }
 
 export interface FormApi<Values extends Record<string, unknown>> {
@@ -31,6 +38,8 @@ export interface FormApi<Values extends Record<string, unknown>> {
   isSubmitting: boolean;
   setValue: <K extends keyof Values>(name: K, value: Values[K]) => void;
   setFieldTouched: (name: keyof Values) => void;
+  /** Nadpisuje błędy — dla źródeł spoza schematu (np. odpowiedź API mapowana ręcznie). */
+  setErrors: (errors: FormErrors) => void;
   /** Waliduje całość, ustawia błędy, zwraca czy poprawne. */
   validate: () => boolean;
   handleSubmit: (event?: { preventDefault: () => void }) => Promise<void>;
@@ -45,7 +54,7 @@ export interface FormApi<Values extends Record<string, unknown>> {
 export function useForm<Values extends Record<string, unknown>>(
   options: UseFormOptions<Values>,
 ): FormApi<Values> {
-  const { schema, defaultValues, onSubmit } = options;
+  const { schema, defaultValues, onSubmit, submitErrorFallback } = options;
   const [values, setValues] = useState<Values>(defaultValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -81,11 +90,19 @@ export function useForm<Values extends Record<string, unknown>>(
       setIsSubmitting(true);
       try {
         await onSubmit(result.data);
+      } catch (error) {
+        // Błąd z handlera (zwykle odpowiedź API) NIE może zniknąć: `errors` z problem+json lądują
+        // na polach, a treść `detail` — w błędzie globalnym. Inaczej odrzucony promise nigdzie nie
+        // dociera i użytkownik widzi formularz, który „nic nie zrobił".
+        setErrors({
+          ...serverErrorToFieldErrors(error),
+          [FORM_ERROR_KEY]: errorMessage(error, submitErrorFallback),
+        });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [runValidation, onSubmit],
+    [runValidation, onSubmit, submitErrorFallback],
   );
 
   const reset = useCallback(
@@ -104,6 +121,7 @@ export function useForm<Values extends Record<string, unknown>>(
     isSubmitting,
     setValue,
     setFieldTouched,
+    setErrors,
     validate,
     handleSubmit,
     reset,

@@ -242,28 +242,28 @@ export function service(d: EntityDescriptor): string {
     : "";
   const badRequestImport = hasRelations ? "BadRequestError, " : "";
   const hasUnique = d.unique.length > 0;
-  const conflictImport = hasUnique ? "ConflictError, " : "";
-  // Naruszenie unikalności łapiemy po nazwie indeksu (generowanej deterministycznie), żeby
-  // komunikat 409 wskazywał konkretne pola, a nie tylko „konflikt".
+  // Naruszenie unikalności łapiemy po nazwie indeksu (generowanej deterministycznie), żeby 409
+  // wskazywało konkretne pola — i w `detail` (dla człowieka), i w rozszerzeniu `errors` (dla
+  // formularza, który podświetla kontrolkę).
   const uniqueFn = hasUnique
     ? `
-const UNIQUE_FIELDS: Record<string, string> = {
-${d.unique.map((u) => `  "${u.indexName}": "${u.fields.join(", ")}",`).join("\n")}
+const UNIQUE_FIELDS: Record<string, string[]> = {
+${d.unique.map((u) => `  "${u.indexName}": [${u.fields.map((f) => `"${f}"`).join(", ")}],`).join("\n")}
 };
 
-/** Naruszenie unikalności → 409 z nazwami pól; każdy inny błąd przechodzi dalej. */
+/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
   if (fields) {
-    throw new ConflictError(\`${d.label}: wartości (\${fields}) muszą być unikalne.\`);
+    throw uniqueConflictError("${d.label}", fields);
   }
   throw error;
 }
 `
     : "";
   const uniqueImport = hasUnique
-    ? `import { uniqueViolationConstraint } from "../../db/unique-violation.js";\n`
+    ? `import { uniqueConflictError, uniqueViolationConstraint } from "../../db/unique-violation.js";\n`
     : "";
   // `.catch(rethrowAsConflict)` zamiast try/catch: helper zwraca `never`, więc typ wyniku zostaje
   // nietknięty (wariant z `let` gubiłby go do `any`).
@@ -272,7 +272,7 @@ function rethrowAsConflict(error: unknown): never {
   const updateBody = `    const updated = await ${d.plural}Repository.update(db, id, input)${conflictCatch};`;
   return `import { z } from "zod";
 import type { Db } from "../../db/client.js";
-${uniqueImport}import { ${badRequestImport}${conflictImport}NotFoundError } from "../../lib/http/problem.js";
+${uniqueImport}import { ${badRequestImport}NotFoundError } from "../../lib/http/problem.js";
 import { paginate } from "../../lib/http/pagination.js";
 import {
   type Create${d.Pascal}Schema,

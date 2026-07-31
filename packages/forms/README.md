@@ -14,6 +14,22 @@ Własny, minimalny, oparty na React + Zod. Bez routera i `import.meta.env`.
   `submit()` (waliduje ostatni krok → `onComplete(values)`). W `onComplete` **orkiestrujesz dowolne
   handlery** — kluczowe dla przypadku „część danych → API/baza, część → mailer" (separacja od CRUD).
 - **`zodErrorsToFieldErrors(error)`** — `ZodError` → mapa błędów per pole (po `issue.path`).
+- **`serverErrorToFieldErrors(error)`** — odpowiedź błędu z API → mapa błędów per pole. Czyta
+  rozszerzenie `errors` z problem+json (`[{ path, message }]`; też przez `cause`), rozpoznając kształt
+  **strukturalnie** — silnik nie zależy od `@repo/api-client`. Ścieżka pusta → `FORM_ERROR_KEY`.
+- **`errorMessage(error, fallback?)`** — komunikat dla użytkownika (`ApiError.message` = `detail`).
+
+## Błędy z API
+
+`onSubmit`/`onComplete` **mogą rzucać** — silnik nie pozwala takiemu błędowi zniknąć:
+
+| Gdzie       | Co się dzieje                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| `useForm`   | pola z `errors` → `form.errors[pole]`; treść `detail` → `form.errors._form`               |
+| `useWizard` | treść → `submitError`; pola → `errors`; `WizardStepError` dodatkowo cofa do swojego kroku |
+
+Opakowując błąd dla kroku używaj `WizardStepError.from(stepId, error)` — trzyma błąd źródłowy jako
+`cause`, więc lista pól przeżywa. Ręczne `new WizardStepError(stepId, error.message)` gubi ją.
 
 ```ts
 const form = useForm({

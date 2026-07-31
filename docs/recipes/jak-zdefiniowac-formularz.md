@@ -23,6 +23,26 @@ defaultValues, onSubmit })` + `deriveFields(entity)` + `FormFields`. Walidacja (
 międzypolowa** — np. `endDate ≥ startDate`) pochodzi z `entity.validation`; błędy renderują się przy
 polach. Wzorzec pokrywa Project i Task — nic nie piszemy per encja poza podpięciem mutacji.
 
+## Błędy z API (nie owijaj submitu w `try/catch`)
+
+`onSubmit` **może rzucać** — `useForm` łapie błąd i zamienia go na błędy formularza:
+
+- pola wskazane w rozszerzeniu `errors` z problem+json (`[{ path, message }]`) → błąd przy **tej**
+  kontrolce (np. 409 o unikalności podświetla `slug`),
+- `detail` odpowiedzi → błąd globalny pod kluczem `_form` (`EntityForm` renderuje go jako alert nad
+  przyciskiem).
+
+Dlatego wygenerowane widoki create/edit **nie mają własnego `catch`**: własny `catch` z komunikatem
+zastępczym („Nie udało się zapisać") kasuje to, co API właśnie wytłumaczyło, i gubi informację, które
+pole poprawić. Toast zostaje wyłącznie dla ścieżki sukcesu.
+
+Po stronie API: 409 z konfliktu unikalności buduje `uniqueConflictError(label, fields)`
+(`apps/api/src/db/unique-violation.ts`) — dokłada `errors` obok `detail`. Ręcznie rzucane błędy
+walidacji domenowej mogą zrobić to samo: `new BadRequestError(detail, { errors: [{ path, message }] })`.
+
+Mapper jest publiczny (`serverErrorToFieldErrors` z `@repo/forms`) — rozpoznaje kształt strukturalnie,
+więc działa też dla błędu opakowanego (`cause`) i poza `EntityForm`.
+
 ## Pola relacji (async)
 
 Skorupa wstrzykuje **generyczny** `RelationSource` (`apps/admin/src/relation-source.ts`): jeden async
@@ -88,6 +108,18 @@ wymyślasz mechaniki na nowo.
   Referencyjny „utwórz projekt" (`apps/admin/src/entities/project-wizard.tsx`): dane → `createProject`
   (baza), zaproszenia → `inviteProjectMembers` (**mailer, bez zapisu**), zadania → `createTask` hurtem.
   Dowód, że silnik formularzy jest niezależny od CRUD.
+- **Błąd w `onComplete`** też nie wymaga `try/catch` w widoku: `<Wizard>` pokazuje komunikat w swoim
+  chrome (`submitError`) i zaznacza pola wskazane przez API. Fazę, której dotyczy, wskaż rzucając
+  `WizardStepError.from(stepId, error)` — wizard cofnie do tego kroku, **zachowując błąd źródłowy**,
+  więc podświetli konkretną kontrolkę:
+
+  ```tsx
+  const project = await createProject.mutateAsync(body).catch((error: unknown) => {
+    throw WizardStepError.from("project", error); // NIE: new WizardStepError(id, error.message)
+  });
+  ```
+
+  Ręczne przepisanie `error.message` do konstruktora gubi listę pól — zostaje sam komunikat.
 
 **Escape hatch:** `useWizard({ steps, defaultValues, onComplete })` z `@repo/forms` — sam silnik (stan,
 kroki, `next/prev/submit`) bez narzuconego chrome, gdy potrzebujesz nietypowego layoutu.

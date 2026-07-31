@@ -67,7 +67,9 @@ z niego nazwę eksportu `<name>Entity`) — inaczej generacja jest odrzucana z k
   (dedupe po stabilnym kluczu). Ponowna generacja: usuń wygenerowane pliki + cofnij wpisy przy kotwicach.
 - **Zakres:** 1:N — tak (uuid + references + assertRelations + RelationSource). Soft delete + audyt —
   domyślnie. Unikalność (jedno- i wielopolowa) — tak, jako **częściowy** indeks unikalny
-  (`where deleted_at is null`) + mapowanie konfliktu na 409. Upload/full-text — poza zakresem.
+  (`where deleted_at is null`) + mapowanie konfliktu na 409 z listą pól w `errors`
+  (`uniqueConflictError`), którą formularz zamienia na błąd przy kontrolce. Upload/full-text — poza
+  zakresem.
 - **M:N z atrybutami:** tabela łącząca z własnymi polami to **zwykła encja** z dwiema relacjami —
   scaffoldujesz ją normalnie i dostajesz warstwę danych, CRUD i widoki. Generator **nie** robi
   zagnieżdżonych tras (`/talks/:id/speakers`) ani widgetu przypisania na detalu rodzica — to

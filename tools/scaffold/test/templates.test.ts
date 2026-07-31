@@ -97,21 +97,32 @@ describe("moduł API", () => {
     expect(generated).not.toContain("talkSpeakers}");
   });
 
-  it("naruszenie unikalności mapuje się na 409 z nazwami pól", () => {
+  it("naruszenie unikalności mapuje się na 409 z listą pól (dla formularza)", () => {
     const generated = service(talkSpeaker);
 
-    expect(generated).toContain(
-      'import { uniqueViolationConstraint } from "../../db/unique-violation.js"',
-    );
-    expect(generated).toContain('"talk_speakers_talk_id_speaker_id_key": "talkId, speakerId"');
-    expect(generated).toContain("ConflictError");
+    expect(generated).toContain("uniqueConflictError");
+    expect(generated).toContain("unique-violation.js");
+    // Lista, nie sklejone zdanie: `uniqueConflictError` robi z niej rozszerzenie `errors`,
+    // po którym formularz podświetla konkretne kontrolki.
+    expect(generated).toContain('"talk_speakers_talk_id_speaker_id_key": ["talkId", "speakerId"]');
+    expect(generated).toContain('uniqueConflictError("Talk speaker", fields)');
     expect(generated).toContain(".catch(rethrowAsConflict)");
+  });
+
+  it("widoki create/edit nie połykają błędu API (obsługuje go silnik formularza)", () => {
+    const generated = adminEntity(talkSpeaker);
+
+    // Własny `catch` w widoku zamieniał `detail` z problem+json na komunikat zastępczy, więc
+    // użytkownik nie wiedział ani co jest nie tak, ani które pole poprawić.
+    expect(generated).not.toContain("Nie udało się utworzyć.");
+    expect(generated).not.toContain("Nie udało się zapisać.");
+    expect(generated).toContain("const created = await create.mutateAsync(");
   });
 
   it("encja bez unikalności nie dostaje obsługi konfliktu", () => {
     const generated = service(project);
 
-    expect(generated).not.toContain("ConflictError");
+    expect(generated).not.toContain("uniqueConflictError");
     expect(generated).not.toContain("unique-violation");
   });
 

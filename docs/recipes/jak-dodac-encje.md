@@ -73,6 +73,8 @@ Eksportuj encję z `packages/schemas/src/index.ts`.
   `venueId` → „Venue"). Podawaj ją jawnie tylko wtedy, gdy ma brzmieć inaczej.
 - **Unikalność** — `.unique()` na polu, złożona jako `unique: [["eventId", "email"]]` na encji.
   Wychodzi z tego częściowy indeks unikalny (soft delete zwalnia wartość) i 409 przy konflikcie.
+  409 niesie `errors` z nazwami pól obok `detail`, więc formularz podświetla winną kontrolkę —
+  patrz `docs/recipes/jak-zdefiniowac-formularz.md`.
 - **Nazwa mnoga** może być zapisana dowolnie (`talkSpeakers`, `talk-speakers`, `talk_speakers`) —
   scaffolder sam wyprowadza z niej identyfikatory (`camelCase`), nazwę tabeli (`snake_case`) oraz
   ścieżkę API i nazwy plików (`kebab-case`). `name` encji musi być identyfikatorem camelCase.

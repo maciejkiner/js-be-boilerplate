@@ -16,6 +16,21 @@ export interface ProblemDetails {
 }
 
 /**
+ * Element rozszerzenia `errors`: błąd przypisany do konkretnego POLA żądania.
+ *
+ * Ten sam kształt dla walidacji schematu (400) i konfliktu unikalności (409) — dzięki temu klient ma
+ * jedną ścieżkę mapowania odpowiedzi błędu na pola formularza (`serverErrorToFieldErrors`
+ * w `@repo/forms`). Bez tego `detail` niesie nazwę pola tylko w zdaniu, którego UI nie umie
+ * rozłożyć, więc użytkownik dostaje komunikat globalny i sam musi szukać, co poprawić.
+ */
+export interface ProblemFieldError {
+  /** Ścieżka pola zgodna z `issue.path` Zoda (`"slug"`, `"address.city"`); pusta = błąd całości. */
+  path: string;
+  message: string;
+  code?: string;
+}
+
+/**
  * Bazowy błąd domenowy mapowany na problem+json przez globalny handler.
  * Rzucaj podklasy z warstwy service — nigdy nie formatuj odpowiedzi błędu ręcznie.
  */
@@ -68,8 +83,8 @@ export class NotFoundError extends AppError {
 }
 
 export class ConflictError extends AppError {
-  constructor(detail?: string) {
-    super({ status: 409, title: "Conflict", detail });
+  constructor(detail?: string, extensions?: Record<string, unknown>) {
+    super({ status: 409, title: "Conflict", detail, extensions });
   }
 }
 

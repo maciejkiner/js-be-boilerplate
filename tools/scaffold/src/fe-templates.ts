@@ -345,14 +345,12 @@ export function ${d.Pascal}Create() {
         defaultValues={emptyValues(${d.name}Entity)}
         submitLabel="Utwórz"
         relationSource={relationSource}
+        // Bez try/catch: błąd z API obsługuje silnik formularza — pola wskazane w problem+json
+        // (np. 409 o unikalności) podświetla przy kontrolkach, resztę pokazuje nad przyciskiem.
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as Create${d.Pascal}Body);
-            toast("Utworzono.", "success");
-            navigate({ to: "/${d.path}/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć.", "error");
-          }
+          const created = await create.mutateAsync(values as Create${d.Pascal}Body);
+          toast("Utworzono.", "success");
+          navigate({ to: "/${d.path}/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -383,13 +381,9 @@ export function ${d.Pascal}Edit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: row.id, body: values as Update${d.Pascal}Body });
-            toast("Zapisano.", "success");
-            navigate({ to: "/${d.path}/$id", params: { id: row.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: row.id, body: values as Update${d.Pascal}Body });
+          toast("Zapisano.", "success");
+          navigate({ to: "/${d.path}/$id", params: { id: row.id } });
         }}
       />
     </Page>

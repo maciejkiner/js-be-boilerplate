@@ -178,13 +178,9 @@ export function CommentCreate() {
         submitLabel="Utwórz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            const created = await create.mutateAsync(values as CreateCommentBody);
-            toast("Utworzono.", "success");
-            navigate({ to: "/comments/$id", params: { id: created.id } });
-          } catch {
-            toast("Nie udało się utworzyć.", "error");
-          }
+          const created = await create.mutateAsync(values as CreateCommentBody);
+          toast("Utworzono.", "success");
+          navigate({ to: "/comments/$id", params: { id: created.id } });
         }}
       />
     </Page>
@@ -215,13 +211,9 @@ export function CommentEdit() {
         submitLabel="Zapisz"
         relationSource={relationSource}
         onSubmit={async (values) => {
-          try {
-            await update.mutateAsync({ id: row.id, body: values as UpdateCommentBody });
-            toast("Zapisano.", "success");
-            navigate({ to: "/comments/$id", params: { id: row.id } });
-          } catch {
-            toast("Nie udało się zapisać.", "error");
-          }
+          await update.mutateAsync({ id: row.id, body: values as UpdateCommentBody });
+          toast("Zapisano.", "success");
+          navigate({ to: "/comments/$id", params: { id: row.id } });
         }}
       />
     </Page>

@@ -3,6 +3,7 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import type { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
+import { uniqueConflictError } from "../src/db/unique-violation.js";
 import { NotFoundError } from "../src/lib/http/problem.js";
 import { buildTestApp, recordingTracker } from "./helpers.js";
 
@@ -18,6 +19,12 @@ const testRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { body: z.object({ name: z.string().min(1) }) } },
     async (request) => request.body,
   );
+  app.get("/__test/conflict", async () => {
+    throw uniqueConflictError("Event", ["slug"]);
+  });
+  app.get("/__test/conflict-composite", async () => {
+    throw uniqueConflictError("Registration", ["eventId", "email"]);
+  });
 };
 
 const { tracker, captured } = recordingTracker();
@@ -68,6 +75,24 @@ describe("globalny handler błędów (RFC 7807)", () => {
     expect(body.status).toBe(400);
     expect(Array.isArray(body.errors)).toBe(true);
     expect(body.errors.length).toBeGreaterThan(0);
+  });
+
+  it("konflikt unikalności → 409 z polami w `errors` (formularz podświetli kontrolkę)", async () => {
+    const res = await app.inject({ method: "GET", url: "/__test/conflict" });
+    expect(res.statusCode).toBe(409);
+    const body = res.json();
+    expect(body.title).toBe("Conflict");
+    expect(body.detail).toBe("Event: wartości (slug) muszą być unikalne.");
+    expect(body.errors).toEqual([{ path: "slug", message: "Ta wartość jest już zajęta." }]);
+  });
+
+  it("konflikt złożony → `errors` wskazuje każde pole kombinacji", async () => {
+    const res = await app.inject({ method: "GET", url: "/__test/conflict-composite" });
+    expect(res.statusCode).toBe(409);
+    const body = res.json();
+    expect(body.detail).toBe("Registration: wartości (eventId, email) muszą być unikalne.");
+    expect(body.errors.map((entry: { path: string }) => entry.path)).toEqual(["eventId", "email"]);
+    expect(body.errors[0].message).toContain("kombinacja");
   });
 
   it("nieznana trasa → 404 problem+json", async () => {
