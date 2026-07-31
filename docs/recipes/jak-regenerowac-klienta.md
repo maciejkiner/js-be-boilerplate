@@ -21,6 +21,12 @@ pnpm generate:client
 Zacommituj **oba** wygenerowane pliki (`openapi.json` + `schema.ts`) — dzięki temu build i typy
 działają bez odpalonego API.
 
+> **Nowe typy widać dopiero po zbudowaniu pakietu.** `generate:client` odświeża `src`, ale
+> `api-react` i skorupy importują `@repo/api-client` przez `main: ./dist/index.js`. Bez builda
+> dostaniesz `Property '/api/v1/…' does not exist on type 'paths'` mimo poprawnie wygenerowanego
+> `schema.ts`. Zrób `pnpm --filter @repo/api-client build` (albo pracuj pod `pnpm dev`, gdzie
+> `tsc -w` pakietów robi to sam).
+
 ## Kiedy regenerować
 
 Po każdej zmianie tras/DTO: nowy endpoint, zmiana pól body/response, filtrów listy, ścieżek.
