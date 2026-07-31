@@ -6,15 +6,15 @@ import { type FormErrors, zodErrorsToFieldErrors } from "./use-form.js";
 export interface WizardStep {
   id: string;
   label: string;
-  /** Zod schema walidujący pola TEGO kroku (nadmiarowe klucze Zod ignoruje). */
+  /** The Zod schema validating THIS step's fields (Zod ignores the extra keys). */
   schema: z.ZodType<unknown>;
 }
 
 export interface UseWizardOptions<Values extends Record<string, unknown>> {
   steps: WizardStep[];
   defaultValues: Values;
-  /** Wywoływane po walidacji ostatniego kroku — TU orkiestrujesz wiele handlerów
-   * (np. część danych → API/baza, część → mailer). Dowód separacji silnika od CRUD. */
+  /** Called after the last step validates — THIS is where you orchestrate several handlers
+   * (some data → the API/database, some → the mailer). Proof the engine is separate from CRUD. */
   onComplete: (values: Values) => void | Promise<void>;
 }
 
@@ -22,8 +22,8 @@ export interface WizardApi<Values extends Record<string, unknown>> {
   values: Values;
   errors: FormErrors;
   /**
-   * Komunikat błędu z `onComplete` (orkiestracja finalna). Osobny od `errors`, bo NIE dotyczy
-   * pojedynczego pola — pochodzi z API i może dotyczyć danych z dowolnego kroku.
+   * The error message from `onComplete` (the final orchestration). Separate from `errors` because it
+   * does NOT belong to one field — it comes from the API and may concern data from any step.
    */
   submitError?: string;
   stepIndex: number;
@@ -32,27 +32,27 @@ export interface WizardApi<Values extends Record<string, unknown>> {
   isLast: boolean;
   isSubmitting: boolean;
   setValue: <K extends keyof Values>(name: K, value: Values[K]) => void;
-  /** Nadpisuje błędy pól — dla źródeł spoza schematu kroku (np. odpowiedź API). */
+  /** Overwrites the field errors — for sources outside the step schema (an API response). */
   setErrors: (errors: FormErrors) => void;
-  /** Waliduje bieżący krok; jeśli OK → przechodzi dalej. */
+  /** Validates the current step; if it passes → moves on. */
   next: () => void;
   prev: () => void;
-  /** Waliduje ostatni krok; jeśli OK → `onComplete(values)`. */
+  /** Validates the last step; if it passes → `onComplete(values)`. */
   submit: () => Promise<void>;
-  /** Skok do kroku po `id` — używane, gdy błąd finalny wskazuje krok, którego dotyczy. */
+  /** Jumps to a step by `id` — used when the final error names the step it belongs to. */
   goTo: (stepId: string) => void;
 }
 
 /**
- * Błąd z `onComplete` przypisany do KONKRETNEGO kroku. Rzuć go, gdy wiadomo, których danych
- * dotyczy — wizard wróci do tego kroku i pokaże komunikat obok jego treści, zamiast zostawiać
- * użytkownika na ostatnim kroku z komunikatem o polach, których tam nie widzi.
+ * An error from `onComplete` attached to a SPECIFIC step. Throw it when you know which data it
+ * concerns — the wizard returns to that step and shows the message next to its content, instead of
+ * leaving the user on the last step with a message about fields they cannot see there.
  */
 export class WizardStepError extends Error {
   constructor(
     readonly stepId: string,
     message: string,
-    /** Błąd źródłowy — wizard wyciąga z niego błędy pól (`errors` z problem+json). */
+    /** The original error — the wizard extracts the field errors (`errors` from problem+json). */
     options?: { cause?: unknown },
   ) {
     super(message);
@@ -63,9 +63,9 @@ export class WizardStepError extends Error {
   }
 
   /**
-   * Opakowuje błąd z API, zachowując go jako `cause`. Preferowane nad ręcznym przepisywaniem
-   * `error.message`: tamto gubi listę pól, więc wizard cofa do kroku, ale nie potrafi już
-   * podświetlić kontrolki, która wywołała błąd.
+   * Wraps an API error, keeping it as `cause`. Preferred over copying `error.message` by hand: that
+   * loses the field list, so the wizard returns to the step but can no longer highlight the control
+   * that caused the error.
    */
   static from(stepId: string, error: unknown, fallbackMessage?: string): WizardStepError {
     return new WizardStepError(stepId, errorMessage(error, fallbackMessage), { cause: error });
@@ -73,9 +73,9 @@ export class WizardStepError extends Error {
 }
 
 /**
- * Headless wizard wielokrokowy. Wartości współdzielone między krokami; walidacja per krok
- * (schemat kroku). Finalny `onComplete` orkiestruje dowolne handlery — kluczowe dla przypadku
- * „część danych do bazy, część do mailera" (separacja silnika od CRUD).
+ * A headless multi-step wizard. Values are shared between steps; validation happens per step (the
+ * step's schema). The final `onComplete` orchestrates arbitrary handlers — the key case being "some
+ * data to the database, some to the mailer" (the engine's separation from CRUD).
  */
 export function useWizard<Values extends Record<string, unknown>>(
   options: UseWizardOptions<Values>,
@@ -136,11 +136,11 @@ export function useWizard<Values extends Record<string, unknown>>(
     try {
       await onComplete(values);
     } catch (error) {
-      // Błąd finalny NIE może wylecieć poza wizard: użytkownik stoi wtedy na ostatnim kroku
-      // z nieobsłużonym odrzuceniem promise'a i bez żadnej informacji.
+      // The final error must NOT escape the wizard: the user would be left on the last step with an
+      // unhandled promise rejection and no information at all.
       setSubmitError(errorMessage(error, "Nie udało się ukończyć kreatora."));
-      // Gdy API wskazało pola (`errors` z problem+json), zaznaczamy je w formularzu kroku —
-      // sam komunikat w chrome wizarda nie mówi, którą kontrolkę poprawić.
+      // When the API named fields (`errors` from problem+json) we mark them in the step's form —
+      // the message in the wizard chrome alone does not say which control to fix.
       setErrors(serverErrorToFieldErrors(error));
       if (error instanceof WizardStepError) {
         goTo(error.stepId);

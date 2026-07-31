@@ -1,9 +1,9 @@
 import type { FormErrors } from "./use-form.js";
 
-/** Klucz błędu, który nie należy do żadnego pola (walidacja międzypolowa, komunikat globalny). */
+/** The key for an error that belongs to no field (cross-field validation, a global message). */
 export const FORM_ERROR_KEY = "_form";
 
-/** Ile poziomów `cause` przeszukujemy, zanim uznamy, że błąd nie niesie informacji o polach. */
+/** How many `cause` levels we search before deciding the error carries no field information. */
 const MAX_CAUSE_DEPTH = 3;
 
 interface FieldIssueLike {
@@ -12,21 +12,22 @@ interface FieldIssueLike {
 }
 
 /**
- * Odpowiedź błędu z API → błędy per pole formularza.
+ * An API error response → per-field form errors.
  *
- * Czyta rozszerzenie `errors` z problem+json (`[{ path, message }]`), które API wysyła przy
- * walidacji schematu (400), konflikcie unikalności (409) i 422. Bez tego kroku nazwa pola siedzi
- * wyłącznie w zdaniu `detail`, więc UI umie pokazać co najwyżej komunikat globalny, a użytkownik
- * sam musi zgadnąć, którą kontrolkę poprawić.
+ * It reads the `errors` extension of problem+json (`[{ path, message }]`), which the API sends for
+ * schema validation (400), uniqueness conflicts (409) and 422. Without this step the field name
+ * lives only inside the `detail` sentence, so the UI can show a global message at best and the user
+ * has to guess which control to fix.
  *
- * Rozpoznajemy kształt **strukturalnie**, nie przez `instanceof ApiError`: `@repo/forms` jest
- * headless i nie zależy od transportu — ten sam mapper obsłuży błąd z `@repo/api-client`, z innego
- * klienta HTTP i błąd opakowany (`cause`), np. przez `WizardStepError`.
+ * The shape is recognised **structurally**, not through `instanceof ApiError`: `@repo/forms` is
+ * headless and independent of the transport — the same mapper handles an error from
+ * `@repo/api-client`, from another HTTP client, and a wrapped one (`cause`), for example from
+ * `WizardStepError`.
  */
 export function serverErrorToFieldErrors(error: unknown): FormErrors {
   const result: FormErrors = {};
   for (const issue of fieldIssuesOf(error, 0)) {
-    // Pierwszy komunikat wygrywa — spójnie z `zodErrorsToFieldErrors`.
+    // The first message wins — consistent with `zodErrorsToFieldErrors`.
     const key = issue.path === "" ? FORM_ERROR_KEY : issue.path;
     if (!(key in result)) {
       result[key] = issue.message;
@@ -35,7 +36,7 @@ export function serverErrorToFieldErrors(error: unknown): FormErrors {
   return result;
 }
 
-/** Komunikat błędu dla użytkownika; `ApiError.message` niesie `detail` z problem+json. */
+/** The message to show the user; `ApiError.message` carries `detail` from problem+json. */
 export function errorMessage(error: unknown, fallback = "Operacja nie powiodła się."): string {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -43,15 +44,15 @@ export function errorMessage(error: unknown, fallback = "Operacja nie powiodła 
   return fallback;
 }
 
-/** Znajduje listę błędów pól w błędzie albo w łańcuchu jego `cause`. */
+/** Finds the list of field errors on the error itself or along its `cause` chain. */
 function fieldIssuesOf(error: unknown, depth: number): { path: string; message: string }[] {
   if (depth > MAX_CAUSE_DEPTH || typeof error !== "object" || error === null) {
     return [];
   }
   const { errors, cause } = error as { errors?: unknown; cause?: unknown };
   if (Array.isArray(errors)) {
-    // Wymagamy `path` typu string, żeby nie wciągnąć tu `AggregateError.errors` (lista wyjątków,
-    // nie lista pól) ani innego rozszerzenia o przypadkowo zbieżnej nazwie.
+    // We require `path` to be a string so that `AggregateError.errors` (a list of exceptions, not of
+    // fields) or another extension with a coincidentally matching name cannot be pulled in here.
     const issues = (errors as FieldIssueLike[]).filter(
       (issue): issue is { path: string; message: string } =>
         typeof issue === "object" &&

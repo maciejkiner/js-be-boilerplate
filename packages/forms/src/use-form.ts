@@ -2,10 +2,10 @@ import { useCallback, useState } from "react";
 import type { z } from "zod";
 import { errorMessage, FORM_ERROR_KEY, serverErrorToFieldErrors } from "./server-errors.js";
 
-/** Mapa błędów: klucz = ścieżka pola (`issue.path`), wartość = pierwszy komunikat. */
+/** Error map: the key is the field path (`issue.path`), the value is the first message. */
 export type FormErrors = Record<string, string>;
 
-/** ZodError → błędy per pole. Pierwszy błąd na pole; brak ścieżki → `_form` (błąd globalny/międzypolowy bez path). */
+/** ZodError → per-field errors. First error per field; no path → `_form` (a global or cross-field error). */
 export function zodErrorsToFieldErrors(error: z.ZodError): FormErrors {
   const errors: FormErrors = {};
   for (const issue of error.issues) {
@@ -18,16 +18,16 @@ export function zodErrorsToFieldErrors(error: z.ZodError): FormErrors {
 }
 
 export interface UseFormOptions<Values extends Record<string, unknown>> {
-  /** Schemat walidacji (np. `entity.validation` — z walidacją międzypolową). */
+  /** Validation schema (for example `entity.validation`, including cross-field rules). */
   schema: z.ZodType<unknown>;
   defaultValues: Values;
   /**
-   * Handler po pomyślnej walidacji; dostaje sparsowane (przez Zod) dane. Może rzucać — błąd
-   * (zwykle z API) trafi do `errors` zamiast zniknąć, więc NIE otaczaj go własnym `try/catch`
-   * tylko po to, żeby pokazać zastępczy komunikat.
+   * The handler run after successful validation; it receives the data parsed by Zod. It may throw —
+   * the error (usually from the API) lands in `errors` instead of disappearing, so do NOT wrap it in
+   * your own `try/catch` just to show a stand-in message.
    */
   onSubmit: (values: unknown) => void | Promise<void>;
-  /** Komunikat globalny, gdy błąd z `onSubmit` nie ma własnego (np. zerwana sieć). */
+  /** The global message when an error from `onSubmit` has none of its own (a dropped network, say). */
   submitErrorFallback?: string;
 }
 
@@ -38,18 +38,18 @@ export interface FormApi<Values extends Record<string, unknown>> {
   isSubmitting: boolean;
   setValue: <K extends keyof Values>(name: K, value: Values[K]) => void;
   setFieldTouched: (name: keyof Values) => void;
-  /** Nadpisuje błędy — dla źródeł spoza schematu (np. odpowiedź API mapowana ręcznie). */
+  /** Overwrites the errors — for sources outside the schema (an API response mapped by hand). */
   setErrors: (errors: FormErrors) => void;
-  /** Waliduje całość, ustawia błędy, zwraca czy poprawne. */
+  /** Validates everything, sets the errors, and returns whether the values are valid. */
   validate: () => boolean;
   handleSubmit: (event?: { preventDefault: () => void }) => Promise<void>;
   reset: (next?: Values) => void;
 }
 
 /**
- * Headless silnik pojedynczego formularza. Stan wartości + walidacja przez Zod (per-pole i
- * międzypolowa z `refine`) + dowolny (async) handler submitu. Bez komponentów — renderowanie
- * w `packages/forms-ui`.
+ * The headless engine for a single form. Value state + validation through Zod (per field and
+ * cross-field via `refine`) + any (async) submit handler. No components — rendering lives in
+ * `packages/forms-ui`.
  */
 export function useForm<Values extends Record<string, unknown>>(
   options: UseFormOptions<Values>,
@@ -91,9 +91,9 @@ export function useForm<Values extends Record<string, unknown>>(
       try {
         await onSubmit(result.data);
       } catch (error) {
-        // Błąd z handlera (zwykle odpowiedź API) NIE może zniknąć: `errors` z problem+json lądują
-        // na polach, a treść `detail` — w błędzie globalnym. Inaczej odrzucony promise nigdzie nie
-        // dociera i użytkownik widzi formularz, który „nic nie zrobił".
+        // An error from the handler (usually an API response) must NOT vanish: the `errors` from
+        // problem+json land on the fields and the `detail` text becomes the global error. Otherwise
+        // the rejected promise reaches nobody and the user sees a form that "did nothing".
         setErrors({
           ...serverErrorToFieldErrors(error),
           [FORM_ERROR_KEY]: errorMessage(error, submitErrorFallback),

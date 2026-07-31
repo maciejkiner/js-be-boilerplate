@@ -19,7 +19,7 @@ const projectSchema = z
   .refine((v) => v.endDate >= v.startDate, { message: "koniec≥start", path: ["endDate"] });
 
 describe("zodErrorsToFieldErrors", () => {
-  it("mapuje błędy per pole (pierwszy) i międzypolowe po path", () => {
+  it("maps per-field errors (the first one) and cross-field ones by path", () => {
     const result = projectSchema.safeParse({
       name: "",
       startDate: "2026-02-01",
@@ -29,14 +29,14 @@ describe("zodErrorsToFieldErrors", () => {
     if (result.success) return;
     const errors = zodErrorsToFieldErrors(result.error);
     expect(errors.name).toBe("wymagane");
-    expect(errors.endDate).toBe("koniec≥start"); // refine z path: ["endDate"]
+    expect(errors.endDate).toBe("koniec≥start"); // refine with path: ["endDate"]
   });
 });
 
 describe("useForm", () => {
   const defaults = { name: "", startDate: "2026-01-01", endDate: "2026-02-01" };
 
-  it("blokuje submit i ustawia błędy gdy niepoprawne", async () => {
+  it("blocks the submit and sets the errors when invalid", async () => {
     const onSubmit = vi.fn();
     const { result } = renderHook(() =>
       useForm({ schema: projectSchema, defaultValues: defaults, onSubmit }),
@@ -48,7 +48,7 @@ describe("useForm", () => {
     expect(result.current.errors.name).toBe("wymagane");
   });
 
-  it("submit z poprawnymi danymi woła onSubmit ze sparsowanymi wartościami", async () => {
+  it("a valid submit calls onSubmit with the parsed values", async () => {
     const onSubmit = vi.fn();
     const { result } = renderHook(() =>
       useForm({ schema: projectSchema, defaultValues: defaults, onSubmit }),
@@ -63,7 +63,7 @@ describe("useForm", () => {
     expect(arg.startDate).toBeInstanceOf(Date); // Zod coerce
   });
 
-  it("walidacja międzypolowa: endDate < startDate → błąd na endDate", async () => {
+  it("cross-field validation: endDate < startDate → an error on endDate", async () => {
     const onSubmit = vi.fn();
     const { result } = renderHook(() =>
       useForm({ schema: projectSchema, defaultValues: defaults, onSubmit }),
@@ -86,23 +86,23 @@ describe("useWizard", () => {
     { id: "s2", label: "Kontakt", schema: z.object({ email: z.string().email("email") }) },
   ];
 
-  it("next waliduje krok (blokuje) i przechodzi gdy OK; submit orkiestruje onComplete", async () => {
+  it("next validates the step (blocking) and advances when valid; submit orchestrates onComplete", async () => {
     const onComplete = vi.fn();
     const { result } = renderHook(() =>
       useWizard({ steps, defaultValues: { name: "", email: "" }, onComplete }),
     );
 
-    act(() => result.current.next()); // krok 1 niepoprawny → zostaje
+    act(() => result.current.next()); // step 1 invalid → stays put
     expect(result.current.stepIndex).toBe(0);
     expect(result.current.errors.name).toBe("wym");
 
     act(() => result.current.setValue("name", "Alpha"));
-    act(() => result.current.next()); // poprawny → dalej
+    act(() => result.current.next()); // valid → moves on
     expect(result.current.stepIndex).toBe(1);
     expect(result.current.isLast).toBe(true);
 
     await act(async () => {
-      await result.current.submit(); // email niepoprawny → brak onComplete
+      await result.current.submit(); // invalid e-mail → no onComplete
     });
     expect(onComplete).not.toHaveBeenCalled();
 
@@ -114,13 +114,13 @@ describe("useWizard", () => {
   });
 });
 
-/** Odpowiedź problem+json z rozszerzeniem `errors` — kształt, który rzuca `ApiError`. */
+/** A problem+json response with the `errors` extension — the shape `ApiError` throws. */
 function apiError(detail: string, errors?: { path: string; message: string }[]) {
   return Object.assign(new Error(detail), { status: 409, detail, errors });
 }
 
 describe("serverErrorToFieldErrors", () => {
-  it("mapuje rozszerzenie `errors` na pola; pusta ścieżka → błąd globalny", () => {
+  it("maps the `errors` extension onto fields; an empty path → the global error", () => {
     const error = apiError("Event: wartości (slug) muszą być unikalne.", [
       { path: "slug", message: "Ta wartość jest już zajęta." },
       { path: "", message: "Dane są sprzeczne." },
@@ -131,24 +131,24 @@ describe("serverErrorToFieldErrors", () => {
     });
   });
 
-  it("sięga po błędy pól do `cause` (błąd opakowany np. przez WizardStepError)", () => {
+  it("reaches into `cause` for field errors (an error wrapped by WizardStepError)", () => {
     const wrapped = new WizardStepError("event", "boom", {
       cause: apiError("konflikt", [{ path: "slug", message: "zajęte" }]),
     });
     expect(serverErrorToFieldErrors(wrapped)).toEqual({ slug: "zajęte" });
   });
 
-  it("ignoruje kształty, które nie są listą błędów pól", () => {
+  it("ignores shapes that are not a list of field errors", () => {
     expect(serverErrorToFieldErrors(new Error("sieć padła"))).toEqual({});
     expect(serverErrorToFieldErrors(new AggregateError([new Error("a")], "b"))).toEqual({});
     expect(serverErrorToFieldErrors(undefined)).toEqual({});
   });
 });
 
-describe("useForm — błąd z onSubmit", () => {
+describe("useForm — an error from onSubmit", () => {
   const defaults = { name: "Alpha", startDate: "2026-01-01", endDate: "2026-02-01" };
 
-  it("mapuje błąd API na pole i komunikat globalny zamiast go połykać", async () => {
+  it("maps an API error onto the field and the global message instead of swallowing it", async () => {
     const onSubmit = vi
       .fn()
       .mockRejectedValue(
@@ -171,7 +171,7 @@ describe("useForm — błąd z onSubmit", () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  it("błąd bez wskazania pól ląduje w komunikacie globalnym", async () => {
+  it("an error naming no fields lands in the global message", async () => {
     const onSubmit = vi.fn().mockRejectedValue(new Error("Sieć padła."));
     const { result } = renderHook(() =>
       useForm({ schema: projectSchema, defaultValues: defaults, onSubmit }),
@@ -185,14 +185,14 @@ describe("useForm — błąd z onSubmit", () => {
   });
 });
 
-describe("useWizard — błąd finalnej orkiestracji", () => {
+describe("useWizard — an error from the final orchestration", () => {
   const steps = [
     { id: "s1", label: "Dane", schema: z.object({ name: z.string().min(1, "wym") }) },
     { id: "s2", label: "Kontakt", schema: z.object({ email: z.string().email("email") }) },
   ];
   const defaultValues = { name: "Alpha", email: "a@b.com" };
 
-  it("cofa do kroku, pokazuje komunikat i zaznacza pole wskazane przez API", async () => {
+  it("returns to the step, shows the message and marks the field the API named", async () => {
     const onComplete = vi.fn().mockImplementation(() => {
       throw WizardStepError.from(
         "s1",
@@ -210,13 +210,13 @@ describe("useWizard — błąd finalnej orkiestracji", () => {
       await result.current.submit();
     });
 
-    expect(result.current.stepIndex).toBe(0); // wróciliśmy do kroku, którego dotyczy błąd
+    expect(result.current.stepIndex).toBe(0); // we returned to the step the error belongs to
     expect(result.current.submitError).toBe("Event: wartości (name) muszą być unikalne.");
     expect(result.current.errors.name).toBe("Ta wartość jest już zajęta.");
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  it("błąd bez wskazania pól: komunikat w chrome wizarda, pola czyste", async () => {
+  it("an error naming no fields: the message in the wizard chrome, the fields clean", async () => {
     const onComplete = vi.fn().mockRejectedValue(new Error("Mailer nie odpowiada."));
     const { result } = renderHook(() => useWizard({ steps, defaultValues, onComplete }));
 
