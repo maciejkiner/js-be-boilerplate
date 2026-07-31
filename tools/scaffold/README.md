@@ -1,80 +1,91 @@
+[Home](../../README.md) › [Documentation](../../docs/README.md) › tools/scaffold
+
 # tools/scaffold
 
-Scaffolder encji: z encji `@repo/schemas` (jedyne źródło prawdy) generuje warstwy pochodne —
-Drizzle + moduł API + hooki `api-react` + widoki admina + test CRUD — i rejestruje je przy kotwicach
-(`// scaffolder:… — do not remove`). Bez parsowania AST, bez inteligentnego mergowania (spec sekcja 6).
+The entity scaffolder: from an entity in `@repo/schemas` (the single source of truth) it generates the
+derived layers — the Drizzle table, the API module, the `api-react` hooks, the admin views and a CRUD
+test — and registers them at anchors (`// scaffolder:… — do not remove`). No AST parsing, no clever
+merging (specification, section 6).
 
-## Użycie
+## Usage
 
 ```bash
-# 1. Napisz encję (jedyne źródło prawdy) i wyeksportuj ją w packages/schemas/src/index.ts:
-#    packages/schemas/src/<name>/<name>.entity.ts  (defineEntity: schemat Zod + metadane)
+# 1. Write the entity (the single source of truth) and export it from packages/schemas/src/index.ts:
+#    packages/schemas/src/<name>/<name>.entity.ts  (defineEntity: Zod schema + metadata)
 
-# 2. Wygeneruj resztę (pakiet @repo/schemas budowany jest automatycznie przed generacją):
-pnpm scaffold <name>          # np. pnpm scaffold invoice
+# 2. Generate the rest (the @repo/schemas package is built automatically first):
+pnpm scaffold <name>          # e.g. pnpm scaffold invoice
 
-# 3. Kroki po (wypisywane przez CLI):
-pnpm --filter @repo/api db:generate   # migracja ze schematu
-pnpm generate:client                  # klient z OpenAPI
+# 3. Afterwards (the CLI prints these):
+pnpm --filter @repo/api db:generate   # migration from the schema
+pnpm generate:client                  # client from OpenAPI
 ```
 
-> Scaffolder czyta encję ze skompilowanego `dist` `@repo/schemas`, dlatego skrypt `scaffold`
-> **buduje ten pakiet automatycznie** (jak `db:generate` dla drizzle-kit) — nie musisz pamiętać o `build`.
+> The scaffolder reads the entity from the compiled `dist` of `@repo/schemas`, which is why the
+> `scaffold` script **builds that package automatically** (just as `db:generate` does for
+> drizzle-kit) — you do not have to remember to run `build`.
 
-## Co generuje
+## What it generates
 
-| Warstwa   | Plik                                           | Rejestracja (kotwica)                                       |
+| Layer     | File                                           | Registration (anchor)                                       |
 | --------- | ---------------------------------------------- | ----------------------------------------------------------- |
 | Drizzle   | `apps/api/src/modules/<file>/<file>.schema.ts` | `db/schema.ts` (`schema-export`)                            |
 | API       | `<file>.{dto,repository,service,routes}.ts`    | `modules/index.ts` (`entities-import`, `entities-register`) |
 | api-react | `packages/api-react/src/<file>.ts`             | `api-react/src/index.ts` (`hooks-export`)                   |
 | admin     | `apps/admin/src/entities/<file>.tsx`           | `registry.ts` (`admin-import`, `admin-entities`)            |
-| test      | `apps/api/test/<file>.test.ts`                 | — (plik)                                                    |
+| test      | `apps/api/test/<file>.test.ts`                 | — (a file)                                                  |
 
-Mapowanie `control` → Drizzle/Zod/komponent robione z metadanych; `required` z `schema.isOptional()`;
-sort/filtry z `fields[].list`; `unique` z `entity.unique`. Generowane pliki są od razu formatowane
-Prettierem.
+The `control` → Drizzle/Zod/component mapping comes from the metadata; `required` from
+`schema.isOptional()`; sorting and filters from `fields[].list`; uniqueness from `entity.unique`.
+Generated files are formatted with Prettier immediately.
 
-Dwie rzeczy, o których trzeba pamiętać przy dopisywaniu szablonów:
+Two things to keep in mind when extending the templates:
 
-- **`select` i `radio` to ta sama lista zamknięta** — różni je wyłącznie komponent na FE. W bazie,
-  DTO, filtrach i kolumnach admina zachowują się identycznie, więc szablon pyta o to predykatem
-  `isChoiceField()`, a nie porównaniem z `"select"`.
-- **Importy w generowanym kodzie muszą być warunkowe.** `noUnusedLocals` traktuje nieużywany import
-  jako błąd, a symbole takie jak `formatDate`, `Badge` czy `Select` pojawiają się tylko dla części
-  encji (odpowiednio: pole `date`, lista zamknięta, filtr listy zamkniętej).
+- **`select` and `radio` are the same closed list** — only the frontend component differs. In the
+  database, the DTOs, the filters and the admin columns they behave identically, so the templates ask
+  the `isChoiceField()` predicate rather than comparing against `"select"`.
+- **Imports in generated code must be conditional.** `noUnusedLocals` treats an unused import as an
+  error, and symbols such as `formatDate`, `Badge` or `Select` only appear for some entities (a `date`
+  field, a closed list, a closed-list filter respectively).
 
-## Formy nazwy encji
+## Entity name forms
 
-`plural` encji jest używany w czterech różnych rolach, które **nie mają tej samej konwencji zapisu**.
-Deskryptor wyprowadza je wszystkie z jednego napisu, więc encje wielowyrazowe działają bez obejść
-(wpisz `talkSpeakers`, `talk-speakers` albo `talk_speakers` — wynik jest ten sam):
+An entity's `plural` is used in four different roles, and **they do not share a spelling
+convention**. The descriptor derives all four from one string, so multi-word entities work without
+workarounds (write `talkSpeakers`, `talk-speakers` or `talk_speakers` — the result is the same):
 
-| Rola                                 | Forma        | Przykład        |
-| ------------------------------------ | ------------ | --------------- |
-| identyfikatory w kodzie (`d.plural`) | `camelCase`  | `talkSpeakers`  |
-| nazwa tabeli w bazie (`d.table`)     | `snake_case` | `talk_speakers` |
-| ścieżka API i admina (`d.path`)      | `kebab-case` | `talk-speakers` |
-| katalog i nazwy plików (`d.file`)    | `kebab-case` | `talk-speakers` |
+| Role                                | Form         | Example         |
+| ----------------------------------- | ------------ | --------------- |
+| Code identifiers (`d.plural`)       | `camelCase`  | `talkSpeakers`  |
+| Database table name (`d.table`)     | `snake_case` | `talk_speakers` |
+| API and admin path (`d.path`)       | `kebab-case` | `talk-speakers` |
+| Directory and file names (`d.file`) | `kebab-case` | `talk-speakers` |
 
-Dla encji jednowyrazowych wszystkie cztery formy są identyczne — dlatego `projects`/`tasks`/`comments`
-niczego nie zauważają. `name` encji musi być poprawnym identyfikatorem camelCase (scaffolder składa
-z niego nazwę eksportu `<name>Entity`) — inaczej generacja jest odrzucana z komunikatem.
+For single-word entities all four forms are identical, which is why `projects`, `tasks` and
+`comments` never noticed the difference. The entity `name` must be a valid camelCase identifier (the
+scaffolder builds the `<name>Entity` export name from it) — otherwise generation is rejected with a
+message.
 
-## Zasady i ograniczenia
+## Rules and limitations
 
-- **Nie nadpisuje** istniejących plików (odmawia). Rejestracje przy kotwicach są **idempotentne**
-  (dedupe po stabilnym kluczu). Ponowna generacja: usuń wygenerowane pliki + cofnij wpisy przy kotwicach.
-- **Zakres:** 1:N — tak (uuid + references + assertRelations + RelationSource). Soft delete + audyt —
-  domyślnie. Unikalność (jedno- i wielopolowa) — tak, jako **częściowy** indeks unikalny
-  (`where deleted_at is null`) + mapowanie konfliktu na 409 z listą pól w `errors`
-  (`uniqueConflictError`), którą formularz zamienia na błąd przy kontrolce. Upload/full-text — poza
-  zakresem.
-- **M:N z atrybutami:** tabela łącząca z własnymi polami to **zwykła encja** z dwiema relacjami —
-  scaffoldujesz ją normalnie i dostajesz warstwę danych, CRUD i widoki. Generator **nie** robi
-  zagnieżdżonych tras (`/talks/:id/speakers`) ani widgetu przypisania na detalu rodzica — to
-  dokładasz ręcznie, jeśli potrzebujesz właśnie takiego UX.
-- Wygenerowany test CRUD tworzy prerekwizyty dla relacji do `project`/`user`; egzotyczne relacje —
-  dostosuj test ręcznie.
+- It **never overwrites** existing files (it refuses). Anchor registrations are **idempotent**
+  (deduplicated by a stable key). To regenerate: delete the generated files and remove the anchor
+  entries.
+- **Scope:** one-to-many — yes (uuid + references + `assertRelations` + `RelationSource`). Soft delete
+  and audit columns — by default. Uniqueness (single- and multi-field) — yes, as a **partial** unique
+  index (`where deleted_at is null`) plus a 409 carrying the field list in `errors`
+  (`uniqueConflictError`), which the form turns into an error next to the control. Upload and
+  full-text search — out of scope.
+- **Many-to-many with attributes:** a join table with its own fields is **a normal entity** with two
+  relations — scaffold it as usual and you get the data layer, CRUD and views. The generator does
+  **not** produce nested routes (`/talks/:id/speakers`) or an assignment widget on the parent's detail
+  page; add those by hand if that is the UX you need.
+- The generated CRUD test creates prerequisites for relations to `project`/`user`; for more exotic
+  relations, adjust the test manually.
 
-Przepis end-to-end: `docs/recipes/how-to-add-an-entity.md`.
+## Related
+
+- [How to add an entity](../../docs/recipes/how-to-add-an-entity.md) — the end-to-end recipe
+- [`packages/schemas`](../../packages/schemas/README.md) — the input this generator reads
+- [ADR-0005](../../docs/adr/ADR-0005-entity-name-forms-and-uniqueness.md) — name forms and uniqueness
+- [`apps/api`](../../apps/api/README.md), [`apps/admin`](../../apps/admin/README.md) — where the output lands

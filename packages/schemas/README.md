@@ -1,27 +1,30 @@
+[Home](../../README.md) › [Documentation](../../docs/README.md) › packages/schemas
+
 # packages/schemas
 
-Schematy Zod encji/formularzy + metadane. Czysty TS, jedyna zależność runtime: `zod`.
-**Jedno źródło prawdy** dla kształtu danych (baza, walidacja BE/FE, typy, OpenAPI, kolumny admina,
-formularze).
+Zod schemas for entities and forms, plus their metadata. Pure TypeScript; the only runtime dependency
+is `zod`. This is the **single source of truth** for the shape of data: the database, backend and
+frontend validation, types, OpenAPI, admin columns and forms all come from here.
 
-## Model encji (`defineEntity`)
+## The entity model (`defineEntity`)
 
-Encja = schemat Zod (kształt + walidacja, w tym międzypolowa przez `refine`) **+** metadane
-prezentacji per pole (`label`, `control`, `options`, `relation`, `list`).
+An entity is a Zod schema (shape and validation, including cross-field rules through `refine`) **plus**
+presentation metadata per field (`label`, `control`, `options`, `relation`, `list`).
 
-- `name` / `plural` — pojedyncza / mnoga. `name` musi być identyfikatorem camelCase; z `plural`
-  scaffolder wyprowadza nazwę tabeli, ścieżkę API i nazwy plików (formy: `tools/scaffold/README.md`).
-- `label` / `labelPlural` — etykiety UI (detal / menu i lista admina).
-- `entity.schema` — czysty schemat (bez walidacji międzypolowej).
-- `entity.validation` — schemat z `refine` (albo `schema`, gdy `refine` nieustawione). Używany jako
-  body tworzenia w API.
-- `entity.fields` — metadane prezentacji per pole. `control` mapuje się na komponent DS.
+- `name` / `plural` — singular and plural. `name` must be a camelCase identifier; from `plural` the
+  scaffolder derives the table name, the API path and the file names (the forms are documented in
+  [`tools/scaffold/README.md`](../../tools/scaffold/README.md)).
+- `label` / `labelPlural` — UI labels (the detail page, and the admin menu and list).
+- `entity.schema` — the plain schema, without cross-field validation.
+- `entity.validation` — the schema including `refine` (or `schema` when `refine` is not set). Used as
+  the create body in the API.
+- `entity.fields` — presentation metadata per field. `control` maps to a design-system component.
 
-Pola deklaruj **builderami `f.*`** przez `defineEntity` (droga domyślna). Dla kształtów, których
-buildery nie wyrażają, jest osobna funkcja `defineEntityRaw` — własny `schema` + companion-map
-`fields`.
+Declare fields with the **`f.*` builders** through `defineEntity` (the default path). For shapes the
+builders cannot express there is a separate function, `defineEntityRaw` — your own `schema` plus a
+companion `fields` map.
 
-## Buildery pól (`f.*`) — droga domyślna
+## Field builders (`f.*`) — the default path
 
 ```ts
 import { defineEntity, f } from "@repo/schemas";
@@ -32,7 +35,7 @@ export const ticketEntity = defineEntity({
   label: "Ticket",
   labelPlural: "Tickets",
   displayField: "title",
-  // opcjonalna walidacja MIĘDZYPOLOWA (schemat wywiedziony z pól):
+  // optional CROSS-FIELD validation (the schema is derived from the fields):
   refine: (schema) =>
     schema.refine((value) => !value.dueDate || value.dueDate > new Date(), {
       message: "Termin musi być w przyszłości.",
@@ -47,90 +50,93 @@ export const ticketEntity = defineEntity({
 });
 ```
 
-Jedna deklaracja produkuje **obie** strony: schemat Zod i metadane. Dzięki temu:
+One declaration produces **both** halves: the Zod schema and the metadata. As a result:
 
-- `control` nie może rozjechać się z typem Zod — nie ma dwóch niezależnych deklaracji tego samego faktu,
-- lista wartości `select`/`radio` jest wpisana **raz** (mapa `wartość → etykieta` zamiast `z.enum`
-  osobno i `options` osobno),
-- `f.` w edytorze wypisuje wszystkie kontrolki, a każda z nich tylko swoje sensowne metody —
-  nie trzeba pamiętać nazw kluczy metadanych.
+- `control` cannot drift away from the Zod type — the same fact is not declared twice;
+- the value list of a `select`/`radio` is written **once** (a `value → label` map instead of a
+  `z.enum` here and `options` there);
+- typing `f.` in the editor lists every control, and each control offers only the methods that make
+  sense for it — no need to memorise metadata key names.
 
-### Fabryki
+### Factories
 
-| Fabryka                          | Typ Zod              | Metody własne                          |
-| -------------------------------- | -------------------- | -------------------------------------- |
-| `f.text()`                       | `z.string()`         | `.min` `.max` `.email` `.url` `.regex` |
-| `f.textarea()`                   | `z.string()`         | jak `text`                             |
-| `f.number()`                     | `z.number()`         | `.int` `.min` `.max` `.nonnegative`    |
-| `f.date()`                       | `z.coerce.date()`    | — (sama data)                          |
-| `f.datetime()`                   | `z.coerce.date()`    | — (data z godziną)                     |
-| `f.checkbox()` / `f.switch()`    | `z.boolean()`        | —                                      |
-| `f.select(map)` / `f.radio(map)` | `z.enum(klucze map)` | — (mapa niesie wartości i etykiety)    |
-| `f.relation(encja, pole)`        | `z.string().uuid()`  | —                                      |
+| Factory                          | Zod type            | Own methods                            |
+| -------------------------------- | ------------------- | -------------------------------------- |
+| `f.text()`                       | `z.string()`        | `.min` `.max` `.email` `.url` `.regex` |
+| `f.textarea()`                   | `z.string()`        | same as `text`                         |
+| `f.number()`                     | `z.number()`        | `.int` `.min` `.max` `.nonnegative`    |
+| `f.date()`                       | `z.coerce.date()`   | — (date only)                          |
+| `f.datetime()`                   | `z.coerce.date()`   | — (date with time)                     |
+| `f.checkbox()` / `f.switch()`    | `z.boolean()`       | —                                      |
+| `f.select(map)` / `f.radio(map)` | `z.enum(map keys)`  | — (the map carries values and labels)  |
+| `f.relation(entity, field)`      | `z.string().uuid()` | —                                      |
 
-### Metody wspólne
+### Shared methods
 
-| Metoda                          | Efekt                                                                                                 |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `.label(text)`                  | etykieta pola; **pominięta** — wywodzi się z nazwy pola (`dueDate` → „Due date", `venueId` → „Venue") |
-| `.help(text)`                   | podpowiedź pod polem w `forms-ui`                                                                     |
-| `.optional()`                   | pole opcjonalne (`nullish`); kolejność w chainie dowolna                                              |
-| `.sortable()` / `.filterable()` | kolumna sortowalna / filtrowalna w adminie (wchodzi do allowlisty w module API)                       |
-| `.hidden()`                     | ukrywa kolumnę na liście (pole nadal w formularzu i na detalu)                                        |
-| `.unique()`                     | wartość unikalna w tabeli (patrz niżej)                                                               |
-| `.zod(fn)`                      | escape hatch: dowolna transformacja schematu pola (`regex`, `refine`, `transform`)                    |
+| Method                          | Effect                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `.label(text)`                  | The field label; **omit it** and it is derived from the field name (`dueDate` → "Due date")   |
+| `.help(text)`                   | A hint rendered under the field by `forms-ui`                                                 |
+| `.optional()`                   | Makes the field optional (`nullish`); position in the chain does not matter                   |
+| `.sortable()` / `.filterable()` | A sortable / filterable column in the admin panel (it enters the allowlist in the API module) |
+| `.hidden()`                     | Hides the column in the list (the field stays in the form and on the detail page)             |
+| `.unique()`                     | The value is unique in the table (see below)                                                  |
+| `.zod(fn)`                      | Escape hatch: any transformation of the field schema (`regex`, `refine`, `transform`)         |
 
-Buildery są **niemutowalne** — każda metoda zwraca nowy builder, więc bazową definicję pola można
-bezpiecznie współdzielić i rozszerzać.
+Builders are **immutable** — every method returns a new builder, so a base field definition can be
+shared and extended safely.
 
-`.zod()` zwraca builder bez metod specyficznych dla typu, więc wołaj go po sugarze:
+`.zod()` returns a builder without the type-specific methods, so call it after the sugar:
 
 ```ts
 slug: f.text().max(80).zod((schema) => schema.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)),
 ```
 
-### Unikalność
+### Uniqueness
 
-Jednopolową deklarujesz na polu, **złożoną** na encji — obie trafiają do `entity.unique`:
+Single-field uniqueness is declared on the field, **composite** uniqueness on the entity — both end up
+in `entity.unique`:
 
 ```ts
 export const registrationEntity = defineEntity({
   // …
-  // e-mail unikalny w obrębie wydarzenia (nie globalnie):
+  // the e-mail is unique within an event, not globally:
   unique: [["eventId", "email"]],
   fields: {
     eventId: f.relation("event", "name"),
     email: f.text().email(),
-    code: f.text().unique(), // unikalny globalnie
+    code: f.text().unique(), // globally unique
   },
 });
 ```
 
-Scaffolder przekłada każdą grupę na **częściowy** indeks unikalny (`where deleted_at is null`), więc
-soft delete zwalnia wartość — usunięty miękko rekord nie blokuje jej na zawsze. Naruszenie wraca
-z API jako **409** z nazwami pól, które się powtórzyły (nie jako 500).
+The scaffolder turns each group into a **partial** unique index (`where deleted_at is null`), so a
+soft delete releases the value — a soft-deleted row does not block it forever. A violation comes back
+from the API as a **409** naming the fields that collided (not as a 500), and the form highlights
+them.
 
-## `defineEntityRaw` — escape hatch
+## `defineEntityRaw` — the escape hatch
 
-Gdy pole wymaga kształtu, którego buildery nie wyrażają, podaj własny `schema` i metadane wprost.
-To **osobna funkcja**, nie wariant `defineEntity` — dzięki temu obie mają po jednej sygnaturze,
-a błąd w definicji encji wskazuje konkretne pole zamiast całego wywołania.
+When a field needs a shape the builders cannot express, pass your own `schema` and the metadata
+directly. This is a **separate function**, not a variant of `defineEntity`, so both keep a single
+signature and an error in an entity definition points at the offending field rather than at the whole
+call.
 
-Wtedy **parytet kluczy `fields` ↔ schemat** wymusza TypeScript (brak metadanej = błąd kompilacji),
-ale parowanie `control` ↔ typ Zod pilnujesz **sam**:
+In that mode TypeScript enforces **key parity between `fields` and the schema** (a missing metadata
+entry is a compile error), but pairing `control` with the Zod type is **up to you**:
 
-| `control`             | typ Zod             | wymaga dodatkowo | wariant typu        |
-| --------------------- | ------------------- | ---------------- | ------------------- |
-| `text` / `textarea`   | `z.string()`        | —                | `SimpleFieldMeta`   |
-| `number`              | `z.number()`        | —                | `SimpleFieldMeta`   |
-| `date` / `datetime`   | `z.coerce.date()`   | —                | `SimpleFieldMeta`   |
-| `checkbox` / `switch` | `z.boolean()`       | —                | `SimpleFieldMeta`   |
-| `select` / `radio`    | `z.enum([...])`     | `options`        | `ChoiceFieldMeta`   |
-| `relation`            | `z.string().uuid()` | `relation`       | `RelationFieldMeta` |
+| `control`             | Zod type            | Also requires | Type variant        |
+| --------------------- | ------------------- | ------------- | ------------------- |
+| `text` / `textarea`   | `z.string()`        | —             | `SimpleFieldMeta`   |
+| `number`              | `z.number()`        | —             | `SimpleFieldMeta`   |
+| `date` / `datetime`   | `z.coerce.date()`   | —             | `SimpleFieldMeta`   |
+| `checkbox` / `switch` | `z.boolean()`       | —             | `SimpleFieldMeta`   |
+| `select` / `radio`    | `z.enum([...])`     | `options`     | `ChoiceFieldMeta`   |
+| `relation`            | `z.string().uuid()` | `relation`    | `RelationFieldMeta` |
 
-`FieldMeta` to unia dyskryminowana po `control` — `tsc` wymusza komplet dodatków (`select` bez
-`options` = błąd, `text` z `options` = błąd), ale **nie** sprawdza typu Zod. To właśnie ten inwariant
-buildery zdejmują z człowieka.
+`FieldMeta` is a union discriminated by `control`, so `tsc` enforces the extras (a `select` without
+`options` is an error, and so is a `text` with `options`) — but it does **not** check the Zod type.
+Lifting exactly that invariant off the author is what the builders are for.
 
 ```ts
 import { z } from "zod";
@@ -151,8 +157,14 @@ export const ticketEntity = defineEntityRaw({
 });
 ```
 
-Encje referencyjne: `project.entity.ts`, `task.entity.ts`, `comment.entity.ts` — wszystkie na
-builderach. Etykiety po angielsku (język admina). Mapowanie `control` → komponent DS:
-`packages/forms-ui/README.md`.
+The reference entities — `project.entity.ts`, `task.entity.ts`, `comment.entity.ts` — all use the
+builders. Labels are written in English (the admin language).
 
-Pełny proces dodania encji: `docs/recipes/how-to-add-an-entity.md`.
+## Related
+
+- [How to add an entity](../../docs/recipes/how-to-add-an-entity.md) — the full process end to end
+- [`tools/scaffold`](../../tools/scaffold/README.md) — what the generator derives from an entity
+- [`packages/forms-ui`](../forms-ui/README.md) — the `control` → design-system component mapping
+- [ADR-0004](../../docs/adr/ADR-0004-entity-field-builders.md) — why builders are the default
+- [ADR-0005](../../docs/adr/ADR-0005-entity-name-forms-and-uniqueness.md) — name forms and uniqueness
+- [ADR-0006](../../docs/adr/ADR-0006-splitting-define-entity.md) — why `defineEntityRaw` is separate

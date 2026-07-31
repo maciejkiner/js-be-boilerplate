@@ -1,16 +1,26 @@
+[Home](../../README.md) › [Documentation](../../docs/README.md) › packages/ui
+
 # packages/ui
 
-Kompozycje **na** design systemie (`@repo/design-system`): `DataTable`, `AdminLayout`,
-`EmptyState`. Bez routera i `import.meta.env` — komponenty sterowane propsami; router/dane żyją w
-skorupie.
+Compositions built **on top of** the design system (`@repo/design-system`): `DataTable`,
+`AdminLayout`, `EmptyState`. No router and no `import.meta.env` — the components are driven by props;
+routing and data live in the shell.
 
-## Komponenty
+## Components
 
-- **`DataTable<T>`** — sortowanie (nagłówki → `onSortChange`), paginacja (stopka → `onPageChange`),
-  stany loading/error/empty. Filtry przez slot `toolbar` (skorupa komponuje z DS `Select`/`Input`
-  i steruje query). Sterowana propsami: stan i pobieranie danych są po stronie skorupy.
-- **`AdminLayout`** — sidebar + header + main. Router-agnostyczny: `nav`/`actions` to sloty, do
-  których skorupa wstrzykuje `<Link>`i (granica „router tylko w apps/*").
-- **`EmptyState`** — pusty stan kolekcji.
+- **`DataTable<T>`** — sorting (headers → `onSortChange`), pagination (footer → `onPageChange`) and
+  the loading, error and empty states. Filters go through the `toolbar` slot, which the shell
+  composes from the design system's `Select`/`Input` while owning the query. Fully controlled: state
+  and data fetching belong to the shell.
+- **`AdminLayout`** — sidebar + header + main. Router-agnostic: `nav` and `actions` are slots into
+  which the shell injects its `<Link>`s (the "router only in apps/\*" boundary).
+- **`EmptyState`** — the empty state of a collection.
 
-Konsumowane przez `apps/admin` (widoki encji referencyjnych) i `apps/web`.
+Consumed by `apps/admin` (the entity views) and `apps/web`.
+
+## Related
+
+- [Frontend shell structure](../../docs/recipes/frontend-shell-structure.md) — how a shell wires these up
+- [How to update the design system](../../docs/recipes/how-to-update-the-design-system.md) — this layer absorbs DS changes
+- [`packages/forms-ui`](../forms-ui/README.md) — the other consumer of the design system
+- [`apps/admin`](../../apps/admin/README.md) — the reference usage

@@ -1,37 +1,45 @@
+[Home](../../README.md) › [Documentation](../../docs/README.md) › packages/forms-ui
+
 # packages/forms-ui
 
-Renderery pól spięte z design systemem — most między silnikiem (`@repo/forms`), metadanymi encji
-(`@repo/schemas`) a komponentami DS (`@repo/design-system`). Bez routera i `import.meta.env`.
+Field renderers wired to the design system — the bridge between the engine (`@repo/forms`), the
+entity metadata (`@repo/schemas`) and the design-system components (`@repo/design-system`). No router,
+no `import.meta.env`.
 
-## Mapowanie „typ pola (control) → komponent DS"
+## The "field control → design-system component" mapping
 
-Jawne i jedyne — definiowane w `src/field-renderer.tsx` (`Control`). Nowy typ pola = nowy `case` tutaj
+Explicit, and the only one — defined in `src/field-renderer.tsx` (`Control`). A new field type means a
+new `case` there, plus a row in this table and an entry in
+[`docs/ds-component-inventory.md`](../../docs/ds-component-inventory.md).
 
-- wpis w tej tabeli i w `docs/ds-component-inventory.md`.
-
-| `FieldControl` | Komponent DS                 | Adapter wartości                                               |
-| -------------- | ---------------------------- | -------------------------------------------------------------- |
-| `text`         | `Input`                      | `value: string` / `onChange(e.target.value)`                   |
-| `number`       | `Input[number]`              | `Number(value)`; `""` → `undefined`                            |
-| `textarea`     | `Textarea`                   | `string`                                                       |
-| `select`       | `Select`                     | `string` + `options`                                           |
-| `checkbox`     | `Checkbox`                   | `checked: boolean` / `onChange(e.target.checked)`              |
-| `switch`       | `Switch`                     | `checked: boolean` / `onCheckedChange`                         |
-| `radio`        | `RadioGroup`                 | `string` + `options`                                           |
-| `date`         | `DateInput`                  | `string` (`yyyy-mm-dd`; Zod `coerce.date`)                     |
-| `datetime`     | `Input[type=datetime-local]` | `string` (`yyyy-mm-ddThh:mm`, czas lokalny; Zod `coerce.date`) |
-| `relation`     | `Combobox`                   | `string`; opcje z `relationSource` (async z API)               |
+| `FieldControl` | Design-system component      | Value adapter                                                 |
+| -------------- | ---------------------------- | ------------------------------------------------------------- |
+| `text`         | `Input`                      | `value: string` / `onChange(e.target.value)`                  |
+| `number`       | `Input[number]`              | `Number(value)`; `""` → `undefined`                           |
+| `textarea`     | `Textarea`                   | `string`                                                      |
+| `select`       | `Select`                     | `string` + `options`                                          |
+| `checkbox`     | `Checkbox`                   | `checked: boolean` / `onChange(e.target.checked)`             |
+| `switch`       | `Switch`                     | `checked: boolean` / `onCheckedChange`                        |
+| `radio`        | `RadioGroup`                 | `string` + `options`                                          |
+| `date`         | `DateInput`                  | `string` (`yyyy-mm-dd`; Zod `coerce.date`)                    |
+| `datetime`     | `Input[type=datetime-local]` | `string` (`yyyy-mm-ddThh:mm`, local time; Zod `coerce.date`)  |
+| `relation`     | `Combobox`                   | `string`; options from `relationSource` (async, from the API) |
 
 ## API
 
-- **`deriveFields(entity)`** — z encji (`entity.fields` + `entity.schema`) → `FieldDef[]`
-  (kolejność schematu; `required` z Zod `!isOptional()`). **`emptyValues(entity)`** — puste wartości startowe.
-- **`FormFields({ fields, form, relationSource })`** — renderuje pola spięte ze stanem `@repo/forms`
-  (`useForm` lub `useWizard` — wspólny interfejs `FormLike`): `value`/`error`/`onChange` per pole.
-  Pole z `visibleWhen(values)` renderuje się tylko, gdy warunek spełniony (zależności/warunkowa widoczność).
-- **`FieldRenderer` / `Field`** — pojedyncze pole (wrapper: etykieta + `*` gdy wymagane +
-  podpowiedź z `FieldMeta.help` + błąd `role=alert`).
-- **`RelationSource`** — skorupa wstrzykuje źródło opcji pól relacji (dociąga z API: `options`/`onSearch`/`loading`).
+- **`deriveFields(entity)`** — from the entity (`entity.fields` + `entity.schema`) to `FieldDef[]`
+  (schema order; `required` from Zod's `!isOptional()`). **`emptyValues(entity)`** — the empty
+  starting values.
+- **`FormFields({ fields, form, relationSource })`** — renders the fields bound to `@repo/forms` state
+  (`useForm` or `useWizard`, which share the `FormLike` interface): `value`, `error` and `onChange`
+  per field. A field with `visibleWhen(values)` renders only when the condition holds (conditional
+  visibility and dependencies).
+- **`FieldRenderer` / `Field`** — a single field (the wrapper: label, `*` when required, the hint from
+  `FieldMeta.help`, and the error with `role=alert`).
+- **`Wizard` / `entityStep`** — the wizard chrome (stepper, navigation, the submit error) with steps
+  injected as `render` slots.
+- **`RelationSource`** — the shell injects the option source for relation fields (fetched from the
+  API: `options`/`onSearch`/`loading`).
 
 ```tsx
 const fields = deriveFields(projectEntity);
@@ -48,4 +56,9 @@ const form = useForm({
 </form>;
 ```
 
-Przepis: `docs/recipes/how-to-define-a-form.md` (Faza 7, etap C).
+## Related
+
+- [How to define a form](../../docs/recipes/how-to-define-a-form.md) — the recipe, including how to add a field type
+- [`packages/forms`](../forms/README.md) — the engine behind these renderers
+- [`packages/schemas`](../schemas/README.md) — the controls a field can declare
+- [`docs/ds-component-inventory.md`](../../docs/ds-component-inventory.md) — the design-system vocabulary
