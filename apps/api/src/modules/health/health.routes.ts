@@ -9,7 +9,7 @@ const HealthResponseSchema = z.object({
 
 /**
  * Liveness probe. Celowo poza `/api/v1` — to endpoint infrastrukturalny,
- * niepodlegający wersjonowaniu API.
+ * which is not subject to API versioning.
  */
 export const healthRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(

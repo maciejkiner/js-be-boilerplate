@@ -29,16 +29,17 @@ export interface BuildAppOptions {
 }
 
 /**
- * Składa instancję Fastify z konwencjami bootstrapu: walidacja/serializacja przez
- * Zod, structured logi, OpenAPI ze schematów, CORS (web + admin), auth (cookie/JWT),
- * globalny handler błędów, moduły domenowe z rejestru pod `/api/v1`. Nie startuje nasłuchu.
+ * Assembles the Fastify instance with the bootstrap conventions: validation and serialization
+ * through Zod, structured logs, OpenAPI from the schemas, CORS (web + admin), auth (cookie/JWT), the
+ * global error handler, and the domain modules from the registry under `/api/v1`. It does not
+ * start listening.
  */
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const { env, errorTracker, db, mailer } = options;
 
   const app = Fastify({
     logger: buildLoggerOptions(env),
-    // reqId = correlation_id: z nagłówka `x-request-id` (requestIdHeader) albo losowy.
+    // reqId is the correlation id: from the `x-request-id` header (requestIdHeader), or random.
     genReqId: () => randomUUID(),
     requestIdHeader: "x-request-id",
   }).withTypeProvider<ZodTypeProvider>();
@@ -46,7 +47,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  // CORS na dwa originy (web + admin) z ciasteczkami — admin na subdomenie od dnia pierwszego.
+  // CORS for two origins (web + admin) with cookies — the admin subdomain works from day one.
   await app.register(fastifyCors, {
     origin: [env.WEB_ORIGIN, env.ADMIN_ORIGIN],
     credentials: true,
@@ -58,7 +59,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   });
   app.decorate("authenticate", authenticate);
 
-  // OpenAPI budowany ze schematów Zod tras — nigdy pisany ręcznie (spec sekcja 8).
+  // OpenAPI is built from the routes' Zod schemas — never written by hand (specification, section 8).
   await app.register(fastifySwagger, {
     openapi: {
       openapi: "3.1.0",
@@ -71,7 +72,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   app.setErrorHandler(createErrorHandler(errorTracker));
   app.setNotFoundHandler(notFoundHandler);
 
-  // Odsyłamy correlation_id do klienta, by można było skorelować logi z requestem.
+  // We echo the correlation id back to the client so logs can be tied to a request.
   app.addHook("onSend", async (request, reply) => {
     reply.header("x-request-id", request.id);
   });

@@ -2,13 +2,13 @@ import { projectEntity } from "@repo/schemas";
 import { z } from "zod";
 import { PaginationQuerySchema, paginatedResponse } from "../../lib/http/pagination.js";
 
-/** Body tworzenia — pełny schemat encji z walidacją międzypolową (endDate ≥ startDate). */
+/** The create body — the full entity schema including cross-field validation (endDate ≥ startDate). */
 export const CreateProjectSchema = projectEntity.validation;
 
-/** Body aktualizacji — częściowy (bez walidacji międzypolowej na częściowych danych). */
+/** The update body — partial (no cross-field validation on partial data). */
 export const UpdateProjectSchema = projectEntity.schema.partial();
 
-/** Reprezentacja zwracana przez API: pola encji + id + pola audytowe. */
+/** The representation the API returns: the entity fields plus id and the audit columns. */
 export const ProjectResponseSchema = projectEntity.schema.extend({
   id: z.string().uuid(),
   createdAt: z.date(),
@@ -16,7 +16,7 @@ export const ProjectResponseSchema = projectEntity.schema.extend({
   createdBy: z.string().uuid().nullable(),
 });
 
-/** Query listy: paginacja + filtr po statusie + sort po dozwolonych kolumnach. */
+/** The list query: pagination plus a status filter and sorting by the allowed columns. */
 export const ProjectListQuerySchema = PaginationQuerySchema.extend({
   status: z.enum(["active", "archived"]).optional(),
   sort: z.enum(["name", "startDate", "endDate", "createdAt"]).default("createdAt"),
@@ -27,7 +27,7 @@ export const ProjectListResponseSchema = paginatedResponse(ProjectResponseSchema
 
 export const IdParamSchema = z.object({ id: z.string().uuid() });
 
-/** Zaproszenia członków — maile idą do mailera, NIE do bazy (dowód separacji w wizardzie). */
+/** Member invitations — the addresses go to the mailer, NOT to the database (the wizard's proof of separation). */
 export const InviteMembersSchema = z.object({
   emails: z.array(z.string().email()).min(1),
 });

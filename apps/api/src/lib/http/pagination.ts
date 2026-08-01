@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Paginacja offset-based — konwencja core (prostsza, wystarczająca dla admina).
- * Cursor-based jest przepisem dla publicznych list (Faza 9). Używane od Fazy 4.
+ * Offset-based pagination — the core convention (simpler, and enough for the admin panel).
+ * Cursor-based pagination exists as a recipe for public lists.
  */
 export const PaginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -18,7 +18,7 @@ export const PaginationMetaSchema = z.object({
   totalPages: z.number().int(),
 });
 
-/** Owija schemat elementu w kształt odpowiedzi listy: `{ items, meta }`. */
+/** Wraps an item schema in the list response shape: `{ items, meta }`. */
 export function paginatedResponse<Item extends z.ZodTypeAny>(item: Item) {
   return z.object({
     items: z.array(item),
@@ -26,7 +26,7 @@ export function paginatedResponse<Item extends z.ZodTypeAny>(item: Item) {
   });
 }
 
-/** Buduje ciało odpowiedzi listy z pozycji, sumy i parametrów paginacji. */
+/** Builds the list response body from the rows, the total and the pagination parameters. */
 export function paginate<Item>(
   items: Item[],
   total: number,

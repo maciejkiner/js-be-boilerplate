@@ -10,7 +10,7 @@ import { tasksRepository } from "./tasks.repository.js";
 type CreateInput = z.infer<typeof CreateTaskSchema>;
 type UpdateInput = z.infer<typeof UpdateTaskSchema>;
 
-/** Sprawdza istnienie encji powiązanych — czytelniej niż mapowanie surowych błędów FK. */
+/** Checks that the related entities exist — clearer than mapping raw foreign-key errors. */
 async function assertRelations(db: Db, input: { projectId?: string; assigneeId?: string | null }) {
   if (input.projectId) {
     const project = await projectsRepository.findById(db, input.projectId);

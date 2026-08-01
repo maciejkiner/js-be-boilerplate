@@ -1,15 +1,15 @@
 /**
- * Granica modularności auth: metoda logowania. Email+hasło to pierwsza implementacja;
- * social login i inni providerzy to kolejne implementacje dokładane w projektach
- * (patrz docs/recipes/how-to-add-an-identity-provider.md).
+ * The modularity boundary in auth: the login method. Email + password is the first implementation;
+ * social login and other providers are further implementations added in projects
+ * (see docs/recipes/how-to-add-an-identity-provider.md).
  */
 export interface IdentityResult {
   userId: string;
 }
 
 export interface IdentityProvider {
-  /** Stabilny identyfikator providera, np. "password". */
+  /** A stable provider identifier, "password" for example. */
   readonly id: string;
-  /** Weryfikuje poświadczenia. Zwraca userId albo null (bez ujawniania powodu). */
+  /** Verifies the credentials. Returns the userId, or null without revealing why. */
   verify(credentials: unknown): Promise<IdentityResult | null>;
 }

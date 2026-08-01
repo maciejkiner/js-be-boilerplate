@@ -1,7 +1,7 @@
 import { ApiError } from "@repo/api-client";
 
 /**
- * Rozpakowuje wynik openapi-fetch (`{ data, error }`): zwraca dane albo RZUCA `ApiError`,
+ * Unwraps an openapi-fetch result (`{ data, error }`): it returns the data or THROWS `ApiError`,
  * so that React Query treats it as an `error`. We never swallow errors silently.
  *
  * We throw a **real `Error`**, not the raw problem+json body — otherwise `error instanceof Error`

@@ -241,7 +241,7 @@ export const f = {
   text: () => new TextFieldBuilder(initialState(z.string(), simpleMeta("text"))),
   textarea: () => new TextFieldBuilder(initialState(z.string(), simpleMeta("textarea"))),
   number: () => new NumberFieldBuilder(initialState(z.number(), simpleMeta("number"))),
-  /** Sama data (bez godziny) — `<input type="date">`. */
+  /** A date only, without the time — `<input type="date">`. */
   date: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("date"))),
   /** A date with time — `<input type="datetime-local">`; the same `timestamptz` column in the database. */
   datetime: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("datetime"))),
@@ -272,7 +272,7 @@ export const f = {
     ),
 
   /**
-   * Relacja do innej encji. `entity` = nazwa encji-celu w liczbie pojedynczej,
+   * A relation to another entity. `entity` is the singular name of the target entity,
    * `displayField` is the target's field shown in the combobox and in the list.
    */
   relation: (entity: string, displayField: string) =>

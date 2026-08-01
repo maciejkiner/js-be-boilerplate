@@ -4,7 +4,7 @@ import prettier from "eslint-config-prettier";
 
 /**
  * Bazowa, współdzielona konfiguracja ESLint (flat config).
- * Rozszerzana przez `eslint-package` (pakiety `packages/*`) i `eslint-app` (skorupy `apps/*`).
+ * Extended by `eslint-package` (the `packages/*` packages) and `eslint-app` (the `apps/*` shells).
  */
 export default tseslint.config(
   { ignores: ["**/dist/**", "**/.turbo/**", "**/node_modules/**", "**/*.gen.ts"] },
@@ -12,7 +12,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
-      // Konwencja: argumenty/zmienne z prefiksem `_` są celowo nieużywane.
+      // Convention: arguments and variables prefixed with `_` are deliberately unused.
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

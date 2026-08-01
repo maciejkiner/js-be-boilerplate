@@ -1,7 +1,7 @@
 import { createDb } from "../client.js";
 import { runMigrations } from "../migrate.js";
 
-// CLI migracji potrzebuje wyłącznie DATABASE_URL (bez pełnej walidacji env aplikacji).
+// The migration CLI needs only DATABASE_URL (not the application's full env validation).
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   console.error("DATABASE_URL jest wymagane.");

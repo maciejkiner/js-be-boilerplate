@@ -14,7 +14,7 @@ import { createAuthService } from "./auth.service.js";
 import { clearAuthCookies, readRefreshCookie, setAuthCookies } from "./cookies.js";
 import { requireRoles } from "./rbac.js";
 
-/** Trasy auth montowane pod /api/v1/auth. Wymagają zarejestrowanych @fastify/jwt i @fastify/cookie. */
+/** The auth routes mounted under /api/v1/auth. They need @fastify/jwt and @fastify/cookie registered. */
 export function authRoutes(deps: { db: Db; env: Env; mailer: Mailer }): FastifyPluginAsyncZod {
   return async (app) => {
     const service = createAuthService({
@@ -113,7 +113,7 @@ export function authRoutes(deps: { db: Db; env: Env; mailer: Mailer }): FastifyP
       },
     );
 
-    // Przykład trasy chronionej rolą — wzorzec RBAC (i cel testów).
+    // An example of a role-protected route — the RBAC pattern (and a test target).
     app.get(
       "/admin/ping",
       {

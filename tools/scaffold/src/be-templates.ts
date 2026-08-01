@@ -352,7 +352,7 @@ export function beTest(d: EntityDescriptor): string {
   const manualRelations = requiredRelations.filter(
     (f) => f.relation!.entity !== "project" && f.relation!.entity !== "user",
   );
-  // TRUNCATE to SQL — potrzebne nazwy TABEL (snake_case), nie identyfikatory z kodu.
+  // TRUNCATE is SQL — it needs TABLE names (snake_case), not the identifiers from the code.
   const truncate = [
     ...new Set([
       "users",
@@ -390,7 +390,7 @@ export function beTest(d: EntityDescriptor): string {
       if (f.relation) {
         if (!f.required) return null;
         const value = relationValue(f);
-        // shorthand, gdy nazwa pola == nazwa zmiennej (unika object-shorthand w lincie)
+        // shorthand when the field name equals the variable name (avoids the object-shorthand lint)
         return value === f.name ? `      ${f.name},` : `      ${f.name}: ${value},`;
       }
       return `      ${f.name}: ${sampleValue(f)},`;

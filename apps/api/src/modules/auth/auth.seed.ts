@@ -3,8 +3,8 @@ import { authRepository } from "./auth.repository.js";
 import { hashPassword } from "./password.js";
 
 /**
- * Domyślny admin dla dev/testów. Idempotentny (pomija, gdy istnieje).
- * Zmień/uszczegółów w projekcie — to tylko wygodny start.
+ * The default admin for development and tests. Idempotent (it skips when the account exists).
+ * Change or refine it in your project — this is only a convenient start.
  */
 export const adminSeeder: Seeder = {
   name: "admin-user",

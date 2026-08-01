@@ -1,2 +1,2 @@
-// packages/* — obowiązuje granica: bez routera i import.meta.env.
+// packages/* — the boundary applies: no router and no import.meta.env.
 export { default } from "@repo/config/eslint-package";

@@ -2,7 +2,7 @@ import { createTransport, type Transporter } from "nodemailer";
 import type { Env } from "../../config/env.js";
 import type { Mailer, MailMessage } from "./index.js";
 
-/** Adapter SMTP (nodemailer). Dev: mailhog (bez auth). Prod: realny serwer z env. */
+/** The SMTP adapter (nodemailer). Dev: mailhog (no auth). Production: a real server from the env. */
 export class SmtpMailer implements Mailer {
   private readonly transporter: Transporter;
   private readonly from: string;

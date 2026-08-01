@@ -1,8 +1,8 @@
 import type { ErrorTracker } from "./index.js";
 
 /**
- * Adapter dev/test bez zewnętrznego vendora. Błąd jest i tak logowany przez
- * globalny handler (pino) — tu celowo nie robimy nic więcej.
+ * The dev/test adapter, with no external vendor. The error is logged by the global handler (pino)
+ * anyway — here we deliberately do nothing more.
  */
 export class NoopErrorTracker implements ErrorTracker {
   captureException(): void {

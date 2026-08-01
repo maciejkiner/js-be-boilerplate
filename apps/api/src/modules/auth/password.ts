@@ -1,6 +1,6 @@
 import { hash, verify } from "@node-rs/argon2";
 
-/** Hashowanie haseł (argon2id). Parametry domyślne biblioteki są bezpieczne. */
+/** Password hashing (argon2id). The library's defaults are safe. */
 export function hashPassword(plain: string): Promise<string> {
   return hash(plain);
 }
@@ -9,7 +9,7 @@ export async function verifyPassword(hashed: string, plain: string): Promise<boo
   try {
     return await verify(hashed, plain);
   } catch {
-    // uszkodzony/niekompatybilny hash — traktujemy jak niezgodność, nie wyciekamy błędu
+    // a corrupted or incompatible hash — treated as a mismatch; we do not leak the error
     return false;
   }
 }

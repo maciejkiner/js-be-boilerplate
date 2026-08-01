@@ -38,7 +38,7 @@ describe("Wizard (the reusable structure)", () => {
   it("next is gated by the step validation; when valid it advances", () => {
     render(<Wizard steps={makeSteps()} defaultValues={{ name: "" }} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
-    expect(screen.queryByText("Ostatni krok")).toBeNull(); // puste `name` → nie przechodzi
+    expect(screen.queryByText("Ostatni krok")).toBeNull(); // an empty `name` → it does not advance
 
     fireEvent.change(screen.getByLabelText("name"), { target: { value: "Ala" } });
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));

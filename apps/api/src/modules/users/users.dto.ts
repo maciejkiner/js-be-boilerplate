@@ -2,12 +2,12 @@ import { z } from "zod";
 import { PaginationQuerySchema, paginatedResponse } from "../../lib/http/pagination.js";
 import { APP_ROLES } from "../auth/rbac.js";
 
-/** Role przypisywalne przez admina — z jednego źródła prawdy (`APP_ROLES`). */
+/** The roles an admin can assign — from one source of truth (`APP_ROLES`). */
 export const RolesSchema = z.array(z.enum(APP_ROLES)).min(1);
 
 /**
- * Widok usera dla panelu admina. `active` = pochodne od soft-delete (`deletedAt === null`).
- * Zawiera `id`/`email`, więc pola relacji (`assignee`) używają tego samego endpointu listy.
+ * The user view for the admin panel. `active` is derived from soft delete (`deletedAt === null`).
+ * It carries `id` and `email`, so relation fields (`assignee`) reuse the same list endpoint.
  */
 export const UserAdminSchema = z.object({
   id: z.string().uuid(),

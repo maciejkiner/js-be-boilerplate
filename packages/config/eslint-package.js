@@ -2,15 +2,15 @@ import tseslint from "typescript-eslint";
 import base from "./eslint-base.js";
 
 /**
- * Konfiguracja dla pakietów `packages/*`.
+ * The configuration for the `packages/*` packages.
  *
- * Egzekwuje granicę wymienialności skorupy FE (spec sekcja 4):
- * w `packages/` NIE wolno importować routera ani używać bundler-specyfiki.
- * React jest dozwolony; TanStack Query jest dozwolony. Env wstrzykiwany jawnie
- * przez inicjalizację skorupy — nigdy przez `import.meta.env` w pakiecie.
+ * It enforces the frontend shell replaceability boundary (specification, section 4): inside
+ * `packages/` you must NOT import a router or use bundler specifics. React is allowed; TanStack
+ * Query is allowed. The environment is injected explicitly when the shell initialises — never
+ * through `import.meta.env` inside a package.
  *
- * Każdy pakiet konsumuje ten config w swoim `eslint.config.js`, więc reguła
- * działa przy lintowaniu z katalogu pakietu (turbo run lint) niezależnie od CWD.
+ * Every package consumes this config from its own `eslint.config.js`, so the rule
+ * applies when linting from the package directory (turbo run lint) regardless of the CWD.
  */
 export default tseslint.config(...base, {
   files: ["**/*.{ts,tsx}"],

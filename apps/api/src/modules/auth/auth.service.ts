@@ -77,7 +77,7 @@ export function createAuthService(deps: AuthServiceDeps) {
       if (!user) {
         throw new UnauthorizedError("Sesja wygasła lub jest nieprawidłowa.");
       }
-      // Rotacja: stary refresh unieważniony, nowy wydany.
+      // Rotation: the old refresh token is invalidated and a new one is issued.
       await authRepository.deleteSession(db, tokenHash);
       return issueTokens(user);
     },
@@ -98,7 +98,7 @@ export function createAuthService(deps: AuthServiceDeps) {
 
     async requestPasswordReset(email: string): Promise<void> {
       const user = await authRepository.findActiveUserByEmail(db, email);
-      // Nie ujawniamy, czy konto istnieje — zawsze kończymy sukcesem.
+      // We never reveal whether the account exists — the call always succeeds.
       if (!user) {
         return;
       }
@@ -125,7 +125,7 @@ export function createAuthService(deps: AuthServiceDeps) {
         await hashPassword(newPassword),
       );
       await authRepository.markResetTokenUsed(db, resetToken.id);
-      // Bezpieczeństwo: po zmianie hasła unieważniamy wszystkie sesje.
+      // Security: after a password change we invalidate every session.
       await authRepository.deleteAllUserSessions(db, resetToken.userId);
     },
   };

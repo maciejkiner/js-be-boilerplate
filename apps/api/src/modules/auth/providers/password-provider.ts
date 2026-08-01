@@ -4,7 +4,7 @@ import { CredentialsSchema } from "../auth.dto.js";
 import { verifyPassword } from "../password.js";
 import type { IdentityProvider } from "./identity-provider.js";
 
-/** Provider email+hasło — pierwsza implementacja interfejsu providera tożsamości. */
+/** The email + password provider — the first implementation of the identity provider interface. */
 export function createPasswordProvider(db: Db): IdentityProvider {
   return {
     id: "password",

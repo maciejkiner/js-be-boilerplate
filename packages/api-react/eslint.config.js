@@ -1,2 +1,2 @@
-// packages/* — obowiązuje granica: bez routera i import.meta.env (React i TanStack Query OK).
+// packages/* — the boundary applies: no router and no import.meta.env (React and TanStack Query are fine).
 export { default } from "@repo/config/eslint-package";

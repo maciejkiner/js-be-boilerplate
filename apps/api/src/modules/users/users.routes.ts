@@ -16,9 +16,9 @@ import {
 import { createUsersService } from "./users.service.js";
 
 /**
- * Zarządzanie użytkownikami pod /api/v1/users — WYŁĄCZNIE admin (`requireRoles("admin")`).
- * Lista/detal + zaproszenie, zmiana ról, dez-/reaktywacja i wyzwolenie resetu hasła.
- * Lista (status=active) jest też źródłem pól relacji (`assignee`).
+ * User management under /api/v1/users — ADMIN ONLY (`requireRoles("admin")`).
+ * List and detail plus inviting, changing roles, deactivating and reactivating, and triggering a
+ * password reset. The list (status=active) is also the source for relation fields (`assignee`).
  */
 export function usersRoutes(deps: { db: Db; env: Env; mailer: Mailer }): FastifyPluginAsyncZod {
   return async (app) => {

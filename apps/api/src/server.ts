@@ -12,7 +12,7 @@ async function main(): Promise<void> {
   try {
     env = parseEnv();
   } catch (error) {
-    // Logger jeszcze nie istnieje — fail-fast prosto na stderr.
+    // The logger does not exist yet — fail fast straight to stderr.
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
@@ -35,8 +35,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Discoverability: przy pustej tabeli users login pada bez czytelnego powodu. Osobny try/catch —
-  // to tylko wskazówka, nigdy nie może wywalić startu.
+  // Discoverability: with an empty users table, login fails with no readable reason. A separate try/catch —
+  // this is only a hint and must never break the startup.
   try {
     const [row] = await db.select({ value: count() }).from(users);
     if ((row?.value ?? 0) === 0) {
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
       );
     }
   } catch (err) {
-    app.log.debug({ err }, "Nie udało się sprawdzić liczby użytkowników przy starcie.");
+    app.log.debug({ err }, "Could not check the user count at startup.");
   }
 }
 

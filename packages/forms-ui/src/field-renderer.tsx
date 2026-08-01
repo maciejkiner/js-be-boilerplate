@@ -51,7 +51,7 @@ export interface FieldRendererProps {
  * A relation field: options are fetched asynchronously through the injected `relationSource` (one
  * `useQuery` per field, which keeps the rules of hooks). The label comes from
  * `relation.displayField`. `onSearch` refreshes the query
- * (server-side `?q` tam, gdzie wspierane), a wynik jest dodatkowo filtrowany lokalnie po label
+ * (a server-side `?q` where supported), and the result is additionally filtered locally by label
  * (so typing filters even for entities whose endpoint has no `?q`).
  */
 function RelationControl({
@@ -93,7 +93,7 @@ function RelationControl({
 }
 
 /**
- * JAWNE mapowanie „typ pola (control) → komponent DS". Jedyne miejsce, gdzie decydujemy, czym
+ * The EXPLICIT "field control → DS component" mapping. The only place where we decide how to
  * render a given type. A new field type means a new `case` plus an entry in the recipe/inventory.
  */
 function Control({ field, value, onChange, relationSource, disabled }: FieldRendererProps) {
@@ -234,7 +234,7 @@ export function Field({
   );
 }
 
-/** Renderuje pojedyncze pole: wrapper `Field` + kontrolka z mapowania. */
+/** Renders a single field: the `Field` wrapper plus the control from the mapping. */
 export function FieldRenderer(props: FieldRendererProps) {
   return (
     <Field field={props.field} error={props.error}>

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Kontrakt zmiennych środowiskowych. Walidowany raz, przy starcie (fail-fast).
- * Nowe zmienne dodajemy tutaj — to jedyne miejsce, które czyta `process.env`.
+ * The environment variable contract. Validated once, at startup (fail-fast).
+ * New variables go here — this is the only place that reads `process.env`.
  */
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -21,13 +21,13 @@ export const EnvSchema = z.object({
   JWT_SECRET: z.string().min(32),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
-  // Cookies auth. COOKIE_DOMAIN np. ".example.com" dla współdzielenia admin↔api na subdomenach.
+  // Auth cookies. COOKIE_DOMAIN, ".example.com" say, shares them between admin and api subdomains.
   COOKIE_DOMAIN: z.string().optional(),
   COOKIE_SECURE: z
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
-  // Baza linku resetu hasła (FE); token doklejany jako ?token=...
+  // The base of the password reset link (frontend); the token is appended as ?token=...
   PASSWORD_RESET_URL: z.string().url().default("http://localhost:5173/reset-password"),
 });
 
@@ -38,14 +38,14 @@ export class EnvValidationError extends Error {
     const summary = issues
       .map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`)
       .join("\n");
-    super(`Nieprawidłowa konfiguracja środowiska:\n${summary}`);
+    super(`Invalid environment configuration:\n${summary}`);
     this.name = "EnvValidationError";
   }
 }
 
 /**
- * Parsuje i waliduje env. Rzuca `EnvValidationError` przy pierwszym problemie —
- * wołane przy starcie serwera, żeby proces nie wstał z niepoprawną konfiguracją.
+ * Parses and validates the environment. It throws `EnvValidationError` on the first problem —
+ * called when the server starts, so the process never comes up with an invalid configuration.
  */
 export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const result = EnvSchema.safeParse(source);

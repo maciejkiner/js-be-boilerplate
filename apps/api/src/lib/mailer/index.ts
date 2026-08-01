@@ -9,14 +9,14 @@ export interface MailMessage {
 }
 
 /**
- * Abstrakcja wysyłki maili (implikowana przez reset hasła). Vendor wymienny:
- * projekt może podmienić adapter (SES, Postmark…) bez ruszania logiki auth.
+ * The mail-sending abstraction (implied by password reset). The vendor is replaceable: a project
+ * can swap the adapter (SES, Postmark, …) without touching the auth logic.
  */
 export interface Mailer {
   send(message: MailMessage): Promise<void>;
 }
 
-/** Adapter dev/prod: SMTP (mailhog lokalnie, realny serwer na produkcji). */
+/** The dev/production adapter: SMTP (mailhog locally, a real server in production). */
 export function createMailer(env: Env): Mailer {
   return new SmtpMailer(env);
 }

@@ -25,7 +25,7 @@ export function emptyValues<Shape extends z.ZodRawShape>(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [name, meta] of Object.entries(entity.fields)) {
-    // number/relation → undefined (puste ""/uuid nie przejdzie walidacji), bool → false, reszta → "".
+    // number/relation → undefined (an empty ""/uuid would fail validation), bool → false, rest → "".
     out[name] =
       meta.control === "checkbox" || meta.control === "switch"
         ? false

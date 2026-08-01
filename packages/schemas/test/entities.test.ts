@@ -7,7 +7,7 @@ describe("definicje encji", () => {
   // assignments below are deliberate and marked with a tsc directive; the runtime part only
   // confirms that the consts exist.
   it("FieldMeta enforces the control-dependent members (type-level)", () => {
-    const simple: FieldMeta = { label: "Name", control: "text" }; // bez options/relation — OK
+    const simple: FieldMeta = { label: "Name", control: "text" }; // no options or relation — fine
     const choice: FieldMeta = { label: "Status", control: "select", options: [] }; // OK
     const relation: FieldMeta = {
       label: "Project",

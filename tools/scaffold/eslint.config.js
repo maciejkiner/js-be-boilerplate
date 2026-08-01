@@ -1,2 +1,2 @@
-// Narzędzie node (scaffolder) — bazowa konfiguracja (bez granicy packages).
+// A Node tool (the scaffolder) — the base configuration (without the packages boundary).
 export { default } from "@repo/config/eslint-base";

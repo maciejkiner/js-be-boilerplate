@@ -2,8 +2,8 @@ import type { FastifyServerOptions } from "fastify";
 import type { Env } from "../config/env.js";
 
 /**
- * Opcje structured loggera (pino, JSON). Wrażliwe nagłówki są usuwane z logów —
- * nigdy nie logujemy tokenów ani ciasteczek.
+ * Options for the structured logger (pino, JSON). Sensitive headers are redacted — we never log
+ * tokens or cookies.
  */
 export function buildLoggerOptions(env: Env): FastifyServerOptions["logger"] {
   return {

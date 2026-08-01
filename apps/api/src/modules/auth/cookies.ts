@@ -3,7 +3,7 @@ import type { Env } from "../../config/env.js";
 
 const ACCESS_COOKIE = "access_token";
 const REFRESH_COOKIE = "refresh_token";
-// Refresh cookie tylko dla tras auth — nie wędruje z każdym żądaniem.
+// The refresh cookie is scoped to the auth routes — it does not travel with every request.
 const REFRESH_PATH = "/api/v1/auth";
 
 function baseCookieOptions(env: Env) {

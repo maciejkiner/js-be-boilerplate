@@ -2,14 +2,14 @@ import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createdBy, softDelete, timestamps } from "../../db/columns.js";
 
 /**
- * Tabela projektów — encja referencyjna (kod wzorcowy). Typy kolumn odzwierciedlają
- * schemat Zod z @repo/schemas; enumy trzymamy jako text (walidację robi Zod).
+ * The projects table — the reference entity (model code). The column types mirror the Zod schema
+ * from @repo/schemas; enums are stored as text (Zod does the validation).
  */
 export const projects = pgTable("projects", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  // Enum trzymany jako text; `.$type<>()` spina typ wiersza z enumem Zod (@repo/schemas).
+  // The enum is stored as text; `.$type<>()` ties the row type to the Zod enum (@repo/schemas).
   status: text("status").$type<"active" | "archived">().notNull(),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),

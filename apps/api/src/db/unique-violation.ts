@@ -1,12 +1,12 @@
 import { ConflictError, type ProblemFieldError } from "../lib/http/problem.js";
 
-/** Kod błędu Postgresa dla naruszenia ograniczenia unikalności. */
+/** The Postgres error code for a unique constraint violation. */
 const UNIQUE_VIOLATION = "23505";
 
 /**
- * Zwraca nazwę naruszonego ograniczenia unikalności albo `undefined`, gdy błąd jest innego rodzaju.
- * Nazwy indeksów unikalnych generuje scaffolder deterministycznie, więc moduł potrafi po nich
- * rozpoznać, KTÓRE pola się powtórzyły, i zwrócić 409 z konkretnym komunikatem.
+ * Returns the name of the violated unique constraint, or `undefined` for any other kind of error.
+ * The scaffolder generates unique index names deterministically, so a module can tell from the name
+ * WHICH fields collided and answer with a specific 409.
  */
 export function uniqueViolationConstraint(error: unknown): string | undefined {
   if (typeof error !== "object" || error === null) {
@@ -20,10 +20,11 @@ export function uniqueViolationConstraint(error: unknown): string | undefined {
 }
 
 /**
- * Konflikt unikalności → 409 z rozszerzeniem `errors`, czyli listą PÓL, które się powtórzyły.
+ * A uniqueness conflict → a 409 with the `errors` extension, that is the list of FIELDS that
+ * collided.
  *
- * `detail` czyta człowiek, `errors` czyta formularz: bez tej listy klient zna nazwę pola wyłącznie
- * ze zdania w `detail` i nie ma jak podświetlić kontrolki, którą trzeba poprawić.
+ * A human reads `detail`, a form reads `errors`: without that list the client knows the field name
+ * only from the sentence in `detail` and has no way to highlight the control that needs fixing.
  */
 export function uniqueConflictError(label: string, fields: string[]): ConflictError {
   const detail = `${label}: wartości (${fields.join(", ")}) muszą być unikalne.`;

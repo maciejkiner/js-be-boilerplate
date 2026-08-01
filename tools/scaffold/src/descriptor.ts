@@ -14,7 +14,7 @@ export interface FieldDescriptor {
     targetIdent: string;
     /** The target entity's directory and file name (`talk-speakers`). */
     targetFile: string;
-    /** Nazwa tabeli encji-celu (`talk_speakers`) — do SQL-a w testach. */
+    /** The target entity's table name (`talk_speakers`) — for the SQL in the tests. */
     targetTable: string;
     core: boolean;
   };
@@ -100,7 +100,7 @@ function kebab(value: string): string {
 /** Postgres truncates identifiers to 63 bytes — we truncate ourselves so the name is predictable. */
 const PG_IDENTIFIER_MAX = 63;
 
-/** Naiwna liczba mnoga (wystarcza dla konwencji encji). `user` → auth (encja core). */
+/** A naive plural (enough for the entity convention). `user` → auth (a core entity). */
 function pluralize(entity: string): string {
   return entity === "user" ? "users" : `${entity}s`;
 }
@@ -114,7 +114,7 @@ const RESERVED_FIELDS = new Set(["id", "createdAt", "updatedAt", "deletedAt", "c
 
 /**
  * The entity name must be a valid camelCase identifier, because the scaffolder builds the
- * eksportu w `@repo/schemas` (`<name>Entity`) oraz typy (`<Pascal>ResponseSchema`).
+ * export name in `@repo/schemas` (`<name>Entity`) and the types (`<Pascal>ResponseSchema`) from it.
  */
 function assertEntityName(name: string): void {
   if (!/^[a-z][A-Za-z0-9]*$/.test(name)) {

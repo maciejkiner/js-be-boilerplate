@@ -10,8 +10,8 @@ const DEFAULT_MIGRATIONS_FOLDER = path.resolve(
 );
 
 /**
- * Aplikuje wygenerowane migracje. Dopóki nie ma żadnej (pierwsza powstaje w Fazie 3
- * z tabelą `users`), działa jak no-op — dzięki temu pipeline jest wpięty i wołalny
+ * Applies the generated migrations. While there are none it behaves as a no-op — which keeps the
+ * pipeline wired up and callable
  * (skrypt `db:migrate`, CI, testy, start aplikacji) od teraz.
  */
 export async function runMigrations(

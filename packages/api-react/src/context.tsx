@@ -10,7 +10,7 @@ export interface ApiProviderProps {
 }
 
 /**
- * Wstrzykuje klienta API w drzewo React. Env/baseURL podaje skorupa przy inicjalizacji —
+ * Injects the API client into the React tree. The shell supplies the environment and base URL at
  * the package never reaches for `import.meta.env`. Mount it INSIDE `QueryClientProvider`.
  */
 export function ApiProvider({ client, children }: ApiProviderProps) {

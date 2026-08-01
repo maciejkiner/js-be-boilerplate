@@ -1,7 +1,7 @@
 import { createDb } from "../client.js";
 import { runSeeds } from "../seed.js";
 
-// CLI seedów potrzebuje wyłącznie DATABASE_URL.
+// The seed CLI needs only DATABASE_URL.
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   console.error("DATABASE_URL jest wymagane.");

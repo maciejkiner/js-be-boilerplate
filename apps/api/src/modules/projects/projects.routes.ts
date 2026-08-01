@@ -15,8 +15,8 @@ import {
 import { projectsService } from "./projects.service.js";
 
 /**
- * CRUD projektów pod /api/v1/projects. Wzorzec modułu domenowego: kontroler (trasy) →
- * service → repository. Wszystkie operacje wymagają uwierzytelnienia; `createdBy` z sesji.
+ * CRUD for projects under /api/v1/projects. The domain module pattern: controller (routes) →
+ * service → repository. Every operation requires authentication; `createdBy` comes from the session.
  */
 export function projectsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginAsyncZod {
   return async (app) => {
@@ -94,7 +94,7 @@ export function projectsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginA
       },
     );
 
-    // Zaproszenia → mailer (bez zapisu do bazy). Wizard używa tego jako osobnego handlera.
+    // Invitations → the mailer (nothing persisted). The wizard uses this as a separate handler.
     app.post(
       "/:id/invitations",
       {

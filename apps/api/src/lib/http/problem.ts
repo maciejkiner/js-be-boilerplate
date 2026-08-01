@@ -1,38 +1,38 @@
 /**
- * RFC 7807 (problem+json). Jeden spójny kształt odpowiedzi błędu w całym API.
+ * RFC 7807 (problem+json). One consistent error response shape across the whole API.
  */
 export const PROBLEM_CONTENT_TYPE = "application/problem+json";
 
 export interface ProblemDetails {
-  /** URI identyfikujący typ problemu; `about:blank` gdy wystarcza sam status. */
+  /** A URI identifying the problem type; `about:blank` when the status alone is enough. */
   type: string;
   title: string;
   status: number;
   detail?: string;
-  /** Ścieżka żądania, którego dotyczy błąd. */
+  /** The path of the request the error concerns. */
   instance?: string;
-  /** Członkowie rozszerzeń (np. `errors` przy walidacji). */
+  /** Extension members (`errors` on validation, for example). */
   [key: string]: unknown;
 }
 
 /**
- * Element rozszerzenia `errors`: błąd przypisany do konkretnego POLA żądania.
+ * An entry of the `errors` extension: an error attached to a specific request FIELD.
  *
- * Ten sam kształt dla walidacji schematu (400) i konfliktu unikalności (409) — dzięki temu klient ma
- * jedną ścieżkę mapowania odpowiedzi błędu na pola formularza (`serverErrorToFieldErrors`
- * w `@repo/forms`). Bez tego `detail` niesie nazwę pola tylko w zdaniu, którego UI nie umie
- * rozłożyć, więc użytkownik dostaje komunikat globalny i sam musi szukać, co poprawić.
+ * The same shape for schema validation (400) and a uniqueness conflict (409), which gives the client
+ * one path for mapping an error response onto form fields (`serverErrorToFieldErrors` in
+ * `@repo/forms`). Without it, `detail` carries the field name only inside a sentence the UI cannot
+ * decompose, so the user gets a global message and has to work out what to fix.
  */
 export interface ProblemFieldError {
-  /** Ścieżka pola zgodna z `issue.path` Zoda (`"slug"`, `"address.city"`); pusta = błąd całości. */
+  /** The field path following Zod's `issue.path` (`"slug"`, `"address.city"`); empty = the whole body. */
   path: string;
   message: string;
   code?: string;
 }
 
 /**
- * Bazowy błąd domenowy mapowany na problem+json przez globalny handler.
- * Rzucaj podklasy z warstwy service — nigdy nie formatuj odpowiedzi błędu ręcznie.
+ * The base domain error, mapped to problem+json by the global handler.
+ * Throw its subclasses from the service layer — never format an error response by hand.
  */
 export class AppError extends Error {
   readonly status: number;

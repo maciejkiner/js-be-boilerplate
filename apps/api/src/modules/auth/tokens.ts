@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 
 /**
- * Payload access tokena (JWT). `sub` = userId. Współdzielony przez podpis i weryfikację
- * (patrz augmentacja `@fastify/jwt` w authenticate.ts).
+ * The access token (JWT) payload. `sub` is the userId. Shared by signing and verification
+ * (see the `@fastify/jwt` augmentation in authenticate.ts).
  */
 export interface AccessTokenPayload {
   sub: string;
@@ -11,15 +11,15 @@ export interface AccessTokenPayload {
 }
 
 /**
- * Opaque token: losowy sekret (do cookie/linku) + jego hash (do bazy). Używany dla
- * refresh tokenów i tokenów resetu hasła — jawnie trzymamy tylko hash.
+ * An opaque token: a random secret (for the cookie or link) plus its hash (for the database). Used
+ * for refresh tokens and password reset tokens — we store the hash and nothing else.
  */
 export function generateOpaqueToken(): { token: string; tokenHash: string } {
   const token = randomBytes(32).toString("hex");
   return { token, tokenHash: hashToken(token) };
 }
 
-/** Hash tokena (sha256). Tokeny mają wysoką entropię, więc szybki hash wystarcza. */
+/** The token hash (sha256). The tokens have high entropy, so a fast hash is enough. */
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }

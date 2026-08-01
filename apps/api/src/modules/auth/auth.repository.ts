@@ -4,7 +4,7 @@ import { passwordCredentials, passwordResetTokens, sessions, users } from "./aut
 
 type NewUser = { email: string; roles?: string[] };
 
-/** Dostęp do danych auth. Bez logiki biznesowej — tylko zapytania. */
+/** Auth data access. No business logic — queries only. */
 export const authRepository = {
   findActiveUserByEmail(db: Db, email: string) {
     return db.query.users
@@ -20,19 +20,19 @@ export const authRepository = {
       .execute();
   },
 
-  /** Detal usera niezależnie od stanu (także dezaktywowanego) — zarządzanie w panelu admina. */
+  /** A user's details regardless of state (including deactivated) — for the admin panel. */
   findUserByIdAny(db: Db, id: string) {
     return db.query.users.findFirst({ where: eq(users.id, id) }).execute();
   },
 
-  /** Sprawdzenie unikalności e-maila przy zaproszeniu — łapie też konta dezaktywowane. */
+  /** Checks e-mail uniqueness when inviting — it also catches deactivated accounts. */
   findUserByEmailAny(db: Db, email: string) {
     return db.query.users.findFirst({ where: eq(users.email, email) }).execute();
   },
 
   /**
-   * Lista userów (id, email, roles, createdAt, deletedAt). Offset + filtr po e-mailu + status.
-   * `active` (domyślnie) = nieusunięci; pola relacji (`assignee`) korzystają z tego domyślnego widoku.
+   * The user list (id, email, roles, createdAt, deletedAt). Offset plus an e-mail filter and a
+   * status. `active` (the default) means not deleted; relation fields (`assignee`) use that view.
    */
   async listUsers(db: Db, query: { page: number; pageSize: number; q?: string; status?: string }) {
     const status = query.status ?? "active";
@@ -77,7 +77,7 @@ export const authRepository = {
     return row;
   },
 
-  /** Dezaktywacja = soft delete (egzekwowane przez auth: login/me filtrują `deletedAt`). */
+  /** Deactivation is a soft delete (enforced by auth: login and me filter on `deletedAt`). */
   async deactivateUser(db: Db, id: string) {
     const [row] = await db
       .update(users)

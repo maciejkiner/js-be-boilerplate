@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export interface EmptyStateProps {
   title: string;
   description?: string;
-  /** Akcja (np. przycisk „Dodaj") — komponowana przez konsumenta. */
+  /** The action (an "Add" button, say) — composed by the consumer. */
   action?: ReactNode;
 }
 

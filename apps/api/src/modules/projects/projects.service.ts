@@ -13,7 +13,7 @@ import { projectsRepository } from "./projects.repository.js";
 type CreateInput = z.infer<typeof CreateProjectSchema>;
 type UpdateInput = z.infer<typeof UpdateProjectSchema>;
 
-/** Logika biznesowa projektów. Warstwa między trasami a repozytorium. */
+/** Business logic for projects. The layer between the routes and the repository. */
 export const projectsService = {
   async list(db: Db, query: ProjectListQuery) {
     const { items, total } = await projectsRepository.list(db, query);
@@ -48,8 +48,9 @@ export const projectsService = {
   },
 
   /**
-   * Wysyła zaproszenia mailem (mailer), BEZ zapisu do bazy. Świadomie inny handler niż CRUD —
-   * dowód separacji silnika formularzy od persystencji (wizard: część danych → baza, część → mailer).
+   * Sends the invitations by e-mail (the mailer), with NOTHING persisted. Deliberately a different
+   * handler from CRUD — the proof that the form engine is separate from persistence (the wizard
+   * sends some data to the database and some to the mailer).
    */
   async inviteMembers(db: Db, projectId: string, emails: string[], mailer: Mailer) {
     const project = await projectsRepository.findById(db, projectId);

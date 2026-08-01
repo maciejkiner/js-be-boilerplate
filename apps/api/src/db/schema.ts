@@ -1,9 +1,9 @@
 /**
- * Agreguje schematy Drizzle wszystkich modułów domenowych — dla drizzle-kit
- * (generowanie migracji) oraz typowania klienta. Scaffolder dopisuje re-eksport
- * schematu modułu przy kotwicy. Pierwsza tabela: `users` (Faza 3).
+ * Aggregates the Drizzle schemas of every domain module — for drizzle-kit
+ * (migration generation) and for typing the client. The scaffolder appends the re-export of
+ * a module's schema at the anchor. The first table is `users`.
  *
- * Wzorzec:
+ * The pattern:
  *   export * from "../modules/products/products.schema.js";
  */
 

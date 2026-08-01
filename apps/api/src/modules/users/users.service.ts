@@ -20,7 +20,7 @@ type UserRow = {
   deletedAt: Date | null;
 };
 
-/** Widok API — `active` wywiedzione z soft-delete; nie wystawiamy `deletedAt`/`isActive`. */
+/** The API view — `active` derived from soft delete; we never expose `deletedAt`/`isActive`. */
 function toAdminView(row: UserRow) {
   return {
     id: row.id,
@@ -31,15 +31,15 @@ function toAdminView(row: UserRow) {
   };
 }
 
-/** Zarządzanie użytkownikami (panel admina). Reużywa auth (reset-token + mailer) — nie duplikuje. */
+/** User management (the admin panel). It reuses auth (reset tokens + the mailer) rather than duplicating it. */
 export function createUsersService({ db, env, mailer }: UsersServiceDeps) {
-  /** Wysyła link do ustawienia hasła (zaproszenie / reset) — reużywa tokenów resetu hasła. */
+  /** Sends the set-password link (an invitation or a reset) — it reuses the password reset tokens. */
   async function sendSetPasswordEmail(
     user: { id: string; email: string },
     kind: "invite" | "reset",
   ) {
     const { token, tokenHash } = generateOpaqueToken();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1h — jak w reset flow
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1h — same as the reset flow
     await authRepository.createPasswordResetToken(db, user.id, tokenHash, expiresAt);
     const link = `${env.PASSWORD_RESET_URL}?token=${token}`;
     await mailer.send({
@@ -69,7 +69,7 @@ export function createUsersService({ db, env, mailer }: UsersServiceDeps) {
     async invite(input: InviteUserInput) {
       const existing = await authRepository.findUserByEmailAny(db, input.email);
       if (existing) {
-        // `errors` wskazuje pole formularza — inaczej UI potrafi tylko zgadywać („e-mail zajęty?").
+        // `errors` names the form field — otherwise the UI can only guess ("e-mail taken?").
         throw new ConflictError("Użytkownik z tym adresem e-mail już istnieje.", {
           errors: [{ path: "email", message: "Ten adres jest już zajęty." }],
         });
@@ -80,7 +80,7 @@ export function createUsersService({ db, env, mailer }: UsersServiceDeps) {
     },
 
     async updateRoles(actingUserId: string, id: string, input: UpdateRolesInput) {
-      // Zabezpieczenie przed samo-wylockowaniem: admin nie odbierze sobie roli admina.
+      // A guard against self-lockout: an admin cannot strip their own admin role.
       if (id === actingUserId && !input.roles.includes("admin")) {
         throw new BadRequestError("Nie możesz odebrać sobie roli admina.");
       }
@@ -99,7 +99,7 @@ export function createUsersService({ db, env, mailer }: UsersServiceDeps) {
       if (!row) {
         throw new NotFoundError("Użytkownik nie istnieje lub jest już nieaktywny.");
       }
-      // Dezaktywacja wylogowuje wszędzie (unieważnienie sesji).
+      // Deactivation signs the user out everywhere (every session is invalidated).
       await authRepository.deleteAllUserSessions(db, id);
       return toAdminView(row);
     },

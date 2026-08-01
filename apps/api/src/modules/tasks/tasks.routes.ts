@@ -11,7 +11,7 @@ import {
 } from "./tasks.dto.js";
 import { tasksService } from "./tasks.service.js";
 
-/** CRUD zadań pod /api/v1/tasks. Wzorzec: trasy → service → repository; auth wymagany. */
+/** CRUD for tasks under /api/v1/tasks. The pattern: routes → service → repository; auth required. */
 export function tasksRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

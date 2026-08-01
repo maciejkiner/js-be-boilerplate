@@ -17,7 +17,7 @@ export const taskEntity = defineEntity({
     dueDate: f.date().optional().sortable(),
     estimate: f.number().int().nonnegative().optional(),
     isBlocked: f.switch().label("Blocked").filterable(),
-    // Relacja do encji scaffoldowanej (generator → generator).
+    // A relation to a scaffolded entity (generated → generated).
     projectId: f.relation("project", "name").filterable(),
     // A relation to a core entity (User) — an async combobox and the intersection with auth.
     assigneeId: f.relation("user", "email").optional(),

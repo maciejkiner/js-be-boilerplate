@@ -11,7 +11,7 @@ const SORT_COLUMNS = {
 type CommentInsert = typeof comments.$inferInsert;
 type CommentUpdate = Partial<Omit<CommentInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych comments — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for comments — queries only (soft-delete aware). Generated. */
 export const commentsRepository = {
   async list(db: Db, query: CommentListQuery) {
     const conditions: SQL[] = [isNull(comments.deletedAt)];

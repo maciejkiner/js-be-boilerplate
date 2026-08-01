@@ -1,8 +1,8 @@
-// packages/* — obowiązuje granica: bez routera i import.meta.env.
+// packages/* — the boundary applies: no router and no import.meta.env.
 import pkg from "@repo/config/eslint-package";
 
 export default [
-  // Kod generowany z OpenAPI — nie lintujemy.
+  // Code generated from OpenAPI — not linted.
   { ignores: ["src/generated/**"] },
   ...pkg,
 ];

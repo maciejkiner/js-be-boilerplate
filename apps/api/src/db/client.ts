@@ -10,8 +10,8 @@ export interface DbHandle {
 }
 
 /**
- * Tworzy klienta Drizzle nad pulą pg. Zamknij pulę (`pool.end()`) po zakończeniu
- * pracy (skrypty CLI, testy). W aplikacji pula żyje przez cały czas działania procesu.
+ * Creates a Drizzle client over a pg pool. Close the pool (`pool.end()`) when the work is done
+ * (CLI scripts, tests). In the application the pool lives for the whole process.
  */
 export function createDb(databaseUrl: string): DbHandle {
   const pool = new Pool({ connectionString: databaseUrl });

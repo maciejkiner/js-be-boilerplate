@@ -54,7 +54,7 @@ function main(): void {
     console.log(`  + ${path.replace(ROOT, "")}`);
   }
 
-  // --- Rejestracja przy kotwicach (bez AST) ---
+  // --- Registration at the anchors (no AST) ---
   insertBeforeAnchor(
     join(ROOT, "apps/api/src/db/schema.ts"),
     "scaffolder:schema-export",

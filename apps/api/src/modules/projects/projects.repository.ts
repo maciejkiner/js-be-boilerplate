@@ -4,7 +4,7 @@ import { notDeleted } from "../../db/query.js";
 import type { ProjectListQuery } from "./projects.dto.js";
 import { projects } from "./projects.schema.js";
 
-// Allowlista kolumn sortowania — chroni przed sortowaniem po dowolnej kolumnie.
+// The sort column allowlist — it prevents sorting by an arbitrary column.
 const SORT_COLUMNS = {
   name: projects.name,
   startDate: projects.startDate,
@@ -15,7 +15,7 @@ const SORT_COLUMNS = {
 type ProjectInsert = typeof projects.$inferInsert;
 type ProjectUpdate = Partial<Omit<ProjectInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych projektów. Bez logiki biznesowej — tylko zapytania (soft-delete-aware). */
+/** Data access for projects. No business logic — queries only (soft-delete aware). */
 export const projectsRepository = {
   async list(db: Db, query: ProjectListQuery) {
     const conditions: SQL[] = [isNull(projects.deletedAt)];

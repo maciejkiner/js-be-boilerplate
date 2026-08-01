@@ -16,12 +16,12 @@ import { talkSpeakersRoutes } from "./talk-speakers/talk-speakers.routes.js";
 // scaffolder:entities-import — do not remove
 
 /**
- * Rejestr modułów domenowych montowanych pod `/api/v1`.
+ * The registry of domain modules mounted under `/api/v1`.
  *
- * Scaffolder dopisuje rejestracje przy kotwicy poniżej — konwencja + kotwica
- * zamiast parsowania AST (spec sekcja 6).
+ * The scaffolder appends registrations at the anchor below — convention plus anchor
+ * instead of AST parsing (specification, section 6).
  *
- * Wzorzec dodania modułu:
+ * The pattern for adding a module:
  *   await app.register(productsRoutes({ db }), { prefix: "/products" });
  */
 export function apiV1Routes(deps: { db: Db; mailer: Mailer; env: Env }): FastifyPluginAsyncZod {

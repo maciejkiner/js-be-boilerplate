@@ -17,7 +17,7 @@ describe("deriveFields", () => {
     expect(name.control).toBe("text");
     expect(name.required).toBe(true);
 
-    // description jest nullish() → opcjonalne
+    // description is nullish() → optional
     expect(fields.find((f) => f.name === "description")!.required).toBe(false);
     expect(fields.find((f) => f.name === "status")!.options).toHaveLength(2);
   });

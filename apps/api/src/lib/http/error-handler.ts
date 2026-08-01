@@ -9,12 +9,12 @@ import { AppError, PROBLEM_CONTENT_TYPE, type ProblemDetails } from "./problem.j
 type ErrorHandler = (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => void;
 
 /**
- * Globalny handler błędów → RFC 7807. Mapuje w kolejności:
- * 1) walidacja żądania (Zod) → 400 z listą `errors`,
- * 2) błąd serializacji odpowiedzi = bug serwera → 500 (bez ujawniania kontraktu),
- * 3) błędy domenowe (`AppError`) → ich status/tytuł,
- * 4) błędy HTTP z `statusCode` < 500 → problem z tym statusem,
- * 5) reszta → 500 bez wycieku detali; zawsze log + raport do trackera dla 5xx.
+ * The global error handler → RFC 7807. It maps, in order:
+ * 1) request validation (Zod) → 400 with an `errors` list,
+ * 2) a response serialization error, meaning a server bug → 500 (without leaking the contract),
+ * 3) domain errors (`AppError`) → their status and title,
+ * 4) HTTP errors with `statusCode` < 500 → a problem with that status,
+ * 5) everything else → 500 without leaking details; 5xx is always logged and reported to the tracker.
  */
 export function createErrorHandler(errorTracker: ErrorTracker): ErrorHandler {
   return function errorHandler(error, request, reply) {
@@ -77,7 +77,7 @@ export function createErrorHandler(errorTracker: ErrorTracker): ErrorHandler {
   };
 }
 
-/** Handler nieznanych tras → 404 problem+json (spójnie z resztą). */
+/** The handler for unknown routes → a 404 problem+json (consistent with the rest). */
 export function notFoundHandler(request: FastifyRequest, reply: FastifyReply): void {
   sendProblem(reply, {
     type: "about:blank",

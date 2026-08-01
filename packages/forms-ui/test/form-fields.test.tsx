@@ -69,7 +69,7 @@ describe("FormFields (mapowanie typ→komponent)", () => {
       />,
     );
     fireEvent.click(screen.getByRole("combobox"));
-    // label pochodzi z pola `name` (displayField relacji), nie z hardkodu
+    // the label comes from the `name` field (the relation's displayField), not from a hardcoded value
     expect(await screen.findByText("Alpha")).toBeTruthy();
   });
 

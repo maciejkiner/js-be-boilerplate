@@ -18,7 +18,7 @@ export const projectKeys = {
   detail: (id: string) => ["projects", "detail", id] as const,
 };
 
-// Query-option factories — logika pobierania testowalna bez React (mock transport).
+// Query-option factories — the fetching logic is testable without React (a mock transport).
 
 export function projectListQuery(client: ApiClient, query?: ProjectListQuery) {
   return {

@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createdBy, softDelete, timestamps } from "../../db/columns.js";
 
-/** Userzy. `roles` = proste RBAC na poziomie usera (domyślnie ["user"]). */
+/** Users. `roles` is the simple per-user RBAC (defaults to ["user"]). */
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
@@ -17,8 +17,8 @@ export const users = pgTable("users", {
 });
 
 /**
- * Poświadczenia providera email+hasło. Osobna tabela = granica providera tożsamości:
- * kolejny provider (np. social login) dokłada własną tabelę, nie ruszając `users`.
+ * The credentials of the email + password provider. A separate table is the identity provider
+ * boundary: another provider (social login, say) adds its own table without touching `users`.
  */
 export const passwordCredentials = pgTable("password_credentials", {
   userId: uuid("user_id")
@@ -28,7 +28,7 @@ export const passwordCredentials = pgTable("password_credentials", {
   ...timestamps,
 });
 
-/** Sesje = refresh tokeny (hashowane). Rotowane przy każdym odświeżeniu. */
+/** Sessions are refresh tokens (hashed). Rotated on every refresh. */
 export const sessions = pgTable("sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -39,7 +39,7 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Tokeny resetu hasła (hashowane, jednorazowe, wygasające). */
+/** Password reset tokens (hashed, single-use, expiring). */
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
