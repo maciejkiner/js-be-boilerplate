@@ -3,14 +3,14 @@ import type { FieldBuilder } from "./field-builder.js";
 import { isFieldBuilder, isLabelFromKey, labelFromKey } from "./field-builder.js";
 
 /**
- * Typ pola. Steruje komponentem DS (mapowanie w `packages/forms-ui`) oraz typem kolumny Drizzle
- * w scaffolderze. **Paruj z odpowiednim typem Zod** w schemacie encji:
+ * The field type. It drives the DS component (mapped in `packages/forms-ui`) and the Drizzle column
+ * type in the scaffolder. **Pair it with the matching Zod type** in the entity schema:
  * - `text` / `textarea` → `z.string()`
  * - `number` → `z.number()`
- * - `date` / `datetime` → `z.coerce.date()` (`datetime` niesie też godzinę)
- * - `select` / `radio` → `z.enum([...])` — wymaga `options` w metadanych pola
+ * - `date` / `datetime` → `z.coerce.date()` (`datetime` also carries the time)
+ * - `select` / `radio` → `z.enum([...])` — requires `options` in the field metadata
  * - `checkbox` / `switch` → `z.boolean()`
- * - `relation` → `z.string().uuid()` — wymaga `relation` w metadanych pola
+ * - `relation` → `z.string().uuid()` — requires `relation` in the field metadata
  */
 export type FieldControl =
   | "text"
@@ -30,34 +30,34 @@ export interface FieldOption {
 }
 
 export interface RelationMeta {
-  /** Nazwa encji docelowej (np. "project", "user"). */
+  /** The name of the target entity (for example "project", "user"). */
   entity: string;
-  /** Pole encji docelowej pokazywane w comboboxie / jako etykieta. */
+  /** The target entity's field shown in the combobox and used as the label. */
   displayField: string;
 }
 
-/** Konfiguracja kolumny w DataTable admina. */
+/** The configuration of a column in the admin DataTable. */
 export interface ListColumnMeta {
-  /** Domyślnie true. */
+  /** Defaults to true. */
   visible?: boolean;
   sortable?: boolean;
   filterable?: boolean;
 }
 
-/** Pola wspólne dla KAŻDEGO typu kontrolki. Prezentacja — walidacja wynika z Zoda. */
+/** Fields shared by EVERY control type. Presentation only — validation comes from Zod. */
 interface FieldMetaBase {
-  /** Etykieta pola (formularz + nagłówek kolumny). */
+  /** The field label (the form and the column header). */
   label: string;
-  /** Opcjonalna podpowiedź renderowana pod polem w formularzu (`forms-ui`). */
+  /** An optional hint rendered under the field in the form (`forms-ui`). */
   help?: string;
-  /** Opcjonalna konfiguracja kolumny w DataTable admina (widoczność/sort/filtr). */
+  /** Optional column configuration for the admin DataTable (visibility, sorting, filtering). */
   list?: ListColumnMeta;
 }
 
 /**
- * Pola proste — bez dodatkowych metadanych.
- * Paruj z: `text`/`textarea`→`z.string()`, `number`→`z.number()`, `date`/`datetime`→`z.coerce.date()`,
- * `checkbox`/`switch`→`z.boolean()`.
+ * Simple fields — no extra metadata.
+ * Pair with: `text`/`textarea`→`z.string()`, `number`→`z.number()`,
+ * `date`/`datetime`→`z.coerce.date()`, `checkbox`/`switch`→`z.boolean()`.
  */
 export interface SimpleFieldMeta extends FieldMetaBase {
   control: "text" | "textarea" | "number" | "date" | "datetime" | "checkbox" | "switch";
@@ -65,14 +65,14 @@ export interface SimpleFieldMeta extends FieldMetaBase {
   relation?: never;
 }
 
-/** Wybór z zamkniętej listy — WYMAGA `options`. Paruj z `z.enum([...])`. */
+/** A choice from a closed list — REQUIRES `options`. Pair with `z.enum([...])`. */
 export interface ChoiceFieldMeta extends FieldMetaBase {
   control: "select" | "radio";
   options: FieldOption[];
   relation?: never;
 }
 
-/** Relacja do innej encji — WYMAGA `relation`. Paruj z `z.string().uuid()`. */
+/** A relation to another entity — REQUIRES `relation`. Pair with `z.string().uuid()`. */
 export interface RelationFieldMeta extends FieldMetaBase {
   control: "relation";
   relation: RelationMeta;
@@ -80,99 +80,102 @@ export interface RelationFieldMeta extends FieldMetaBase {
 }
 
 /**
- * Metadane pola — WYŁĄCZNIE prezentacja (walidacja wynika z Zoda; międzypolowa przez `refine`).
+ * Field metadata — presentation ONLY (validation comes from Zod; cross-field rules from `refine`).
  *
- * **Unia dyskryminowana po `control`** — dostępne pola zależą od typu kontrolki, a kompilator
- * wymusza komplet (`select` bez `options` = błąd; `text` z `options` = błąd). Warianty:
+ * **A union discriminated by `control`** — which fields are available depends on the control type,
+ * and the compiler enforces the full set (`select` without `options` is an error; `text` with
+ * `options` is an error). The variants:
  * - {@link SimpleFieldMeta} — `text` `textarea` `number` `date` `datetime` `checkbox` `switch`
- * - {@link ChoiceFieldMeta} — `select` `radio` (wymaga `options`)
- * - {@link RelationFieldMeta} — `relation` (wymaga `relation`)
+ * - {@link ChoiceFieldMeta} — `select` `radio` (requires `options`)
+ * - {@link RelationFieldMeta} — `relation` (requires `relation`)
  *
- * Wspólne opcjonalne: `help` (podpowiedź) i `list` (kolumna admina) — patrz {@link FieldMetaBase}.
+ * Shared optional members: `help` (the hint) and `list` (the admin column) — see
+ * {@link FieldMetaBase}.
  */
 export type FieldMeta = SimpleFieldMeta | ChoiceFieldMeta | RelationFieldMeta;
 
 export interface EntityDefinition<Shape extends z.ZodRawShape> {
-  /** Nazwa encji w liczbie pojedynczej (np. `project`). Scaffolder tworzy z niej `PascalCase`. */
+  /** The singular entity name (for example `project`). The scaffolder derives `PascalCase` from it. */
   name: string;
-  /** Liczba mnoga — napędza ścieżkę API (`/api/v1/<plural>`) i nazwę tabeli Drizzle. */
+  /** The plural — it drives the API path (`/api/v1/<plural>`) and the Drizzle table name. */
   plural: string;
-  /** Etykieta pojedyncza (UI / detal / nagłówek formularza). */
+  /** The singular label (UI, the detail page, the form heading). */
   label: string;
-  /** Etykieta mnoga (menu i tytuł listy w adminie). */
+  /** The plural label (the admin menu and the list title). */
   labelPlural: string;
-  /** Pole używane jako etykieta encji (np. w comboboxach relacji do niej). */
+  /** The field used as the entity's label (in comboboxes of relations pointing at it). */
   displayField: keyof Shape & string;
   schema: z.ZodObject<Shape>;
-  /** Metadane muszą pokryć DOKŁADNIE klucze schematu — drift łapie TS. */
+  /** The metadata must cover EXACTLY the schema keys — TypeScript catches any drift. */
   fields: { [K in keyof Shape]: FieldMeta };
-  /** Walidacje międzypolowe — zwraca pełny schemat walidacji (np. z `.refine`). */
+  /** Cross-field validation — returns the full validation schema (with `.refine`, for example). */
   refine?: (schema: z.ZodObject<Shape>) => z.ZodTypeAny;
   /**
-   * Ograniczenia unikalności — każda pozycja to grupa pól unikalna łącznie
-   * (`[["slug"]]` = jedno pole, `[["talkId", "speakerId"]]` = para). Scaffolder wystawia z tego
-   * **częściowy** indeks unikalny (`where deleted_at is null`), a konflikt wraca jako 409.
+   * Uniqueness constraints — each entry is a group of fields unique together (`[["slug"]]` is a
+   * single field, `[["talkId", "speakerId"]]` a pair). The scaffolder turns each into a **partial**
+   * unique index (`where deleted_at is null`), and a conflict comes back as a 409.
    */
   unique?: (keyof Shape & string)[][];
 }
 
 export interface Entity<Shape extends z.ZodRawShape> extends EntityDefinition<Shape> {
-  /** Pełny schemat walidacji (z walidacjami międzypolowymi, jeśli podano `refine`). */
+  /** The full validation schema (including cross-field rules when `refine` is given). */
   validation: z.ZodTypeAny;
 }
 
-/** Mapa pól zadeklarowanych builderami (`f.*`). */
+/** A map of fields declared with the builders (`f.*`). */
 export type FieldBuilderMap = Record<string, FieldBuilder>;
 
-/** Kształt schematu wywiedziony z builderów — każde pole wnosi swój `_out`. */
+/** The schema shape derived from the builders — each field contributes its `_out`. */
 export type ShapeOfBuilders<M extends FieldBuilderMap> = { [K in keyof M]: M[K]["_out"] };
 
 /**
- * Definicja encji na builderach: `schema` nie jest podawany, bo wynika z pól. Brak `schema`
- * dyskryminuje ten wariant od surowego {@link EntityDefinition}.
+ * A builder-based entity definition: `schema` is not supplied, because it follows from the fields.
+ * The absence of `schema` is what distinguishes this from the raw {@link EntityDefinition}.
  */
 export interface BuilderEntityDefinition<M extends FieldBuilderMap> {
-  /** Nazwa encji w liczbie pojedynczej (np. `project`). Scaffolder tworzy z niej `PascalCase`. */
+  /** The singular entity name (for example `project`). The scaffolder derives `PascalCase` from it. */
   name: string;
-  /** Liczba mnoga — napędza ścieżkę API (`/api/v1/<plural>`) i nazwę tabeli Drizzle. */
+  /** The plural — it drives the API path (`/api/v1/<plural>`) and the Drizzle table name. */
   plural: string;
-  /** Etykieta pojedyncza (UI / detal / nagłówek formularza). */
+  /** The singular label (UI, the detail page, the form heading). */
   label: string;
-  /** Etykieta mnoga (menu i tytuł listy w adminie). */
+  /** The plural label (the admin menu and the list title). */
   labelPlural: string;
-  /** Pole używane jako etykieta encji (np. w comboboxach relacji do niej). */
+  /** The field used as the entity's label (in comboboxes of relations pointing at it). */
   displayField: keyof M & string;
-  /** Pola encji zbudowane fabrykami `f.*`. */
+  /** The entity's fields, built with the `f.*` factories. */
   fields: M;
-  /** Walidacje międzypolowe — zwraca pełny schemat walidacji (np. z `.refine`). */
+  /** Cross-field validation — returns the full validation schema (with `.refine`, for example). */
   refine?: (schema: z.ZodObject<ShapeOfBuilders<M>>) => z.ZodTypeAny;
   /**
-   * Unikalność **złożona** — grupy pól unikalne łącznie, np. `[["talkId", "speakerId"]]`.
-   * Unikalność jednopolową deklaruj na polu (`f.text().unique()`); obie trafiają do `entity.unique`.
+   * **Composite** uniqueness — groups of fields unique together, `[["talkId", "speakerId"]]` say.
+   * Declare single-field uniqueness on the field (`f.text().unique()`); both end up in
+   * `entity.unique`.
    */
   unique?: (keyof M & string)[][];
 }
 
 /**
- * Definiuje encję z pól zbudowanych fabrykami `f.*` — **jedno źródło prawdy** dla bazy
- * (typ Zod → kolumna Drizzle), walidacji BE/FE, OpenAPI, kolumn admina i formularzy. Zwraca też
- * `entity.validation` (schemat z `refine`, albo `schema` gdy `refine` nieustawione), używany jako
- * body tworzenia w API i przez silnik formularzy.
+ * Defines an entity from fields built with the `f.*` factories — the **single source of truth** for
+ * the database (Zod type → Drizzle column), backend and frontend validation, OpenAPI, admin columns
+ * and forms. It also returns `entity.validation` (the schema with `refine`, or `schema` when
+ * `refine` is unset), used as the create body in the API and by the form engine.
  *
- * Schemat Zod i metadane powstają z jednej deklaracji, więc `control` nie może rozjechać się
- * z typem Zod. Etykieta pominięta w `.label()` wywodzi się z nazwy pola (`dueDate` → „Due date",
- * `venueId` → „Venue").
+ * The Zod schema and the metadata come from one declaration, so `control` cannot drift away from the
+ * Zod type. A label omitted from `.label()` is derived from the field name (`dueDate` → "Due date",
+ * `venueId` → "Venue").
  *
- * Kształty, których buildery nie wyrażają: {@link defineEntityRaw} (escape hatch).
+ * For shapes the builders cannot express: {@link defineEntityRaw} (the escape hatch).
  *
- * Mapowanie `control` → komponent DS: `packages/forms-ui/README.md`. Pełny proces dodania encji
- * (scaffolder): `docs/recipes/how-to-add-an-entity.md`.
+ * The `control` → DS component mapping: `packages/forms-ui/README.md`. The full process of adding an
+ * entity (the scaffolder): `docs/recipes/how-to-add-an-entity.md`.
  *
  * @example
  * export const ticketEntity = defineEntity({
  *   name: "ticket", plural: "tickets", label: "Ticket", labelPlural: "Tickets",
  *   displayField: "title",
- *   // opcjonalna walidacja MIĘDZYPOLOWA:
+ *   // optional CROSS-FIELD validation:
  *   refine: (s) => s.refine((v) => !v.dueDate || v.dueDate > new Date(), { path: ["dueDate"], message: "…" }),
  *   fields: {
  *     title: f.text().min(1).sortable().filterable(),
@@ -190,13 +193,13 @@ export function defineEntity<M extends FieldBuilderMap>(
   for (const [key, builder] of Object.entries(definition.fields)) {
     if (!isFieldBuilder(builder)) {
       throw new Error(
-        `Pole \`${definition.name}.${key}\` nie jest builderem. Użyj fabryki \`f.*\` ` +
-          `(np. \`f.text()\`) albo podaj własny \`schema\` i surowe metadane pól.`,
+        `Field \`${definition.name}.${key}\` is not a builder. Use an \`f.*\` factory ` +
+          `(\`f.text()\`, say), or pass your own \`schema\` and raw field metadata to defineEntityRaw.`,
       );
     }
     const built = builder.build();
     shape[key] = built.zod;
-    // Etykieta pominięta w builderze — wywodzimy ją z nazwy pola (nazwa jest znana dopiero tutaj).
+    // The label was omitted in the builder — we derive it from the field name (only known here).
     fields[key] = isLabelFromKey(built.meta.label)
       ? ({ ...built.meta, label: labelFromKey(key) } as FieldMeta)
       : built.meta;
@@ -205,12 +208,13 @@ export function defineEntity<M extends FieldBuilderMap>(
     }
   }
 
-  // Schemat i metadane składamy dynamicznie z builderów, więc ich typ wynika z konstrukcji, a nie
-  // z inferencji — stąd asercje. Parytet kluczy gwarantuje pętla powyżej (jedno przejście po `fields`).
+  // The schema and the metadata are assembled dynamically from the builders, so their type follows
+  // from the construction rather than from inference — hence the assertions. Key parity is
+  // guaranteed by the loop above (a single pass over `fields`).
   const schema = z.object(shape) as z.ZodObject<ShapeOfBuilders<M>>;
   const { name, plural, label, labelPlural, displayField, refine } = definition;
-  // `.unique()` na polach + grupy złożone z encji; pusta lista zostaje `undefined`, żeby encje
-  // bez ograniczeń miały dokładnie taki kształt jak przed wprowadzeniem `unique`.
+  // `.unique()` on the fields plus the composite groups from the entity; an empty list stays
+  // `undefined`, so entities without constraints keep exactly the shape they had before `unique`.
   const unique = [...singleFieldUnique, ...(definition.unique ?? [])];
   return {
     name,
@@ -227,12 +231,12 @@ export function defineEntity<M extends FieldBuilderMap>(
 }
 
 /**
- * Definiuje encję z **własnego schematu Zod** + companion-mapy metadanych — escape hatch dla
- * kształtów, których buildery `f.*` nie wyrażają. Parytet kluczy `fields` ↔ schemat wymusza
- * TypeScript, ale parowanie `control` ↔ typ Zod pilnujesz sam (tabela w README pakietu).
+ * Defines an entity from **your own Zod schema** plus a companion metadata map — the escape hatch for
+ * shapes the `f.*` builders cannot express. TypeScript enforces key parity between `fields` and the
+ * schema, but pairing `control` with the Zod type is up to you (see the table in the package README).
  *
- * Domyślną drogą jest {@link defineEntity} — używaj tej funkcji tylko wtedy, gdy buildery nie
- * wystarczają.
+ * {@link defineEntity} is the default path — reach for this function only when the builders are not
+ * enough.
  *
  * @example
  * const shape = z.object({ title: z.string().min(1) });

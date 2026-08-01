@@ -26,7 +26,7 @@ function makeSteps(): WizardStepConfig<Record<string, unknown>>[] {
   ];
 }
 
-describe("Wizard (reużywalna struktura)", () => {
+describe("Wizard (the reusable structure)", () => {
   it("renderuje Stepper i pierwszy krok", () => {
     render(<Wizard steps={makeSteps()} defaultValues={{ name: "" }} onComplete={vi.fn()} />);
     expect(screen.getByText("Krok A")).toBeTruthy();
@@ -35,7 +35,7 @@ describe("Wizard (reużywalna struktura)", () => {
     expect(screen.getByRole("button", { name: "Dalej" })).toBeTruthy();
   });
 
-  it("next jest bramkowany walidacją kroku; poprawny → przechodzi dalej", () => {
+  it("next is gated by the step validation; when valid it advances", () => {
     render(<Wizard steps={makeSteps()} defaultValues={{ name: "" }} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
     expect(screen.queryByText("Ostatni krok")).toBeNull(); // puste `name` → nie przechodzi
@@ -45,14 +45,14 @@ describe("Wizard (reużywalna struktura)", () => {
     expect(screen.getByText("Ostatni krok")).toBeTruthy();
   });
 
-  it("submit na ostatnim kroku woła onComplete z zebranymi wartościami; prev cofa", () => {
+  it("submit on the last step calls onComplete with the collected values; prev goes back", () => {
     const onComplete = vi.fn();
     render(<Wizard steps={makeSteps()} defaultValues={{ name: "" }} onComplete={onComplete} />);
     fireEvent.change(screen.getByLabelText("name"), { target: { value: "Ala" } });
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
 
     fireEvent.click(screen.getByRole("button", { name: "Wstecz" }));
-    expect(screen.getByLabelText("name")).toBeTruthy(); // wróciliśmy na krok A
+    expect(screen.getByLabelText("name")).toBeTruthy(); // we are back on step A
 
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
     fireEvent.click(screen.getByRole("button", { name: "Zakończ" }));

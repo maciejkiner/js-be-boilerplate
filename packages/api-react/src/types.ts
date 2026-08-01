@@ -1,6 +1,6 @@
 import type { paths } from "@repo/api-client";
 
-// Typy wywiedzione z OpenAPI (jedno źródło prawdy) — req/res encji referencyjnych.
+// Types derived from OpenAPI (a single source of truth) — req/res of the reference entities.
 
 export type ProjectListQuery = NonNullable<
   paths["/api/v1/projects/"]["get"]["parameters"]["query"]

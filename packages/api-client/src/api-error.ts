@@ -1,9 +1,9 @@
 /**
- * Błąd API jako prawdziwy `Error`. Bez tego konsumenci dostawali surowy obiekt problem+json,
- * więc `error instanceof Error` było fałszem, a `error.message` — `undefined`. Efekt: każdy widok
- * pokazywał ogólny komunikat zastępczy zamiast tego, co odpowiedziało API.
+ * An API error as a real `Error`. Without this, consumers received the raw problem+json object, so
+ * `error instanceof Error` was false and `error.message` was `undefined`. The effect: every view
+ * showed a generic stand-in message instead of what the API had actually answered.
  *
- * Kształt ciała: RFC 7807 (`type`, `title`, `status`, `detail`, `instance`) — patrz
+ * The body shape is RFC 7807 (`type`, `title`, `status`, `detail`, `instance`) — see
  * `apps/api/src/lib/http/problem.ts`.
  */
 export class ApiError extends Error {
@@ -12,17 +12,17 @@ export class ApiError extends Error {
   readonly detail?: string;
   readonly instance?: string;
   /**
-   * Rozszerzenie `errors` — błędy przypisane do PÓL żądania (walidacja 400, konflikt unikalności
-   * 409, 422). Konsument formularzy mapuje je na pola przez `serverErrorToFieldErrors`
-   * z `@repo/forms`; bez nich zostaje wyłącznie komunikat globalny.
+   * The `errors` extension — errors attached to request FIELDS (validation 400, a uniqueness
+   * conflict 409, 422). A form consumer maps them onto its fields through `serverErrorToFieldErrors`
+   * from `@repo/forms`; without them only a global message is left.
    */
   readonly errors?: ApiFieldError[];
-  /** Surowe ciało odpowiedzi — dla przypadków spoza RFC 7807. */
+  /** The raw response body — for cases outside RFC 7807. */
   readonly body: unknown;
 
   constructor(body: unknown) {
     const problem = isProblem(body) ? body : undefined;
-    // `detail` niesie treść dla użytkownika („Sala jest zajęta…"), `title` to nazwa klasy błędu.
+    // `detail` carries the text for the user ("Sala jest zajęta…"); `title` names the error class.
     super(problem?.detail ?? problem?.title ?? "Żądanie do API nie powiodło się.");
     this.name = "ApiError";
     this.status = problem?.status;
@@ -35,12 +35,13 @@ export class ApiError extends Error {
 }
 
 /**
- * Treść błędu dla użytkownika: `detail` z problem+json, a gdy go nie ma (np. zerwana sieć) —
- * `fallback`. Do akcji BEZ formularza (usuwanie, akcje na detalu), gdzie jedynym miejscem na błąd
- * jest toast: `toast(errorMessage(error, "Nie udało się usunąć."), "error")`.
+ * The error text for the user: `detail` from problem+json, or `fallback` when there is none (a
+ * dropped network, say). For actions WITHOUT a form (delete, actions on a detail page), where a
+ * toast is the only place an error can go:
+ * `toast(errorMessage(error, "Nie udało się usunąć."), "error")`.
  *
- * `@repo/forms` ma własną, identyczną funkcję — świadomie, bo silnik formularzy nie zależy od
- * klienta HTTP (patrz `packages/forms/src/server-errors.ts`).
+ * `@repo/forms` has its own, identical function — deliberately, because the form engine does not
+ * depend on the HTTP client (see `packages/forms/src/server-errors.ts`).
  */
 export function errorMessage(
   error: unknown,
@@ -49,7 +50,7 @@ export function errorMessage(
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
-/** Błąd pojedynczego pola z problem+json (`path` zgodne ze ścieżką pola w schemacie Zod). */
+/** A single field error from problem+json (`path` matches the field path in the Zod schema). */
 export interface ApiFieldError {
   path: string;
   message: string;
@@ -65,7 +66,7 @@ interface Problem {
   errors?: unknown;
 }
 
-/** Odsiewa wpisy o obcym kształcie — `errors` to rozszerzenie, więc nie ufamy mu na słowo. */
+/** Filters out foreign-shaped entries — `errors` is an extension, so we do not take it on trust. */
 function fieldErrorsOf(problem: Problem | undefined): ApiFieldError[] | undefined {
   if (!Array.isArray(problem?.errors)) {
     return undefined;

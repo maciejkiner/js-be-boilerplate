@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createApiClient } from "../src/index.js";
 
-/** Mock transportu: nagrywa żądania i zwraca zadaną odpowiedź JSON. */
+/** A transport mock: records the requests and returns the given JSON response. */
 function mockTransport(body: unknown, status = 200) {
   const calls: Request[] = [];
   const fetch: typeof globalThis.fetch = async (input) => {
@@ -15,7 +15,7 @@ function mockTransport(body: unknown, status = 200) {
 }
 
 describe("createApiClient", () => {
-  it("GET listy buduje URL z parametrami query i zwraca typowane dane", async () => {
+  it("a list GET builds the URL with query parameters and returns typed data", async () => {
     const { calls, fetch } = mockTransport({
       items: [{ id: "1", name: "Alpha", status: "active" }],
       meta: { page: 2, pageSize: 10, total: 1, totalPages: 1 },
@@ -35,11 +35,11 @@ describe("createApiClient", () => {
     expect(url.searchParams.get("status")).toBe("active");
     expect(url.searchParams.get("page")).toBe("2");
     expect(calls[0]!.method).toBe("GET");
-    // Cookies auth wysyłane cross-origin (web/admin ↔ api).
+    // Auth cookies are sent cross-origin (web/admin ↔ api).
     expect(calls[0]!.credentials).toBe("include");
   });
 
-  it("POST create wysyła body JSON", async () => {
+  it("a create POST sends a JSON body", async () => {
     const created = { id: "abc", name: "Beta", status: "active" };
     const { calls, fetch } = mockTransport(created, 201);
     const client = createApiClient({ baseUrl: "http://api.test", fetch });
@@ -59,7 +59,7 @@ describe("createApiClient", () => {
     expect(sentBody).toMatchObject({ name: "Beta", status: "active" });
   });
 
-  it("interpoluje parametry ścieżki (:id)", async () => {
+  it("interpolates path parameters (:id)", async () => {
     const { calls, fetch } = mockTransport({ id: "42", name: "X", status: "active" });
     const client = createApiClient({ baseUrl: "http://api.test", fetch });
 

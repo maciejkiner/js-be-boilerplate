@@ -7,8 +7,8 @@ export const taskEntity = defineEntity({
   label: "Task",
   labelPlural: "Tasks",
   displayField: "title",
-  // Etykiety pominięte tam, gdzie wywiodą się z nazwy pola (`dueDate` → „Due date",
-  // `projectId` → „Project"); podane jawnie tylko tam, gdzie mają brzmieć inaczej.
+  // Labels omitted wherever they follow from the field name (`dueDate` → "Due date",
+  // `projectId` → "Project"); given explicitly only where they should read differently.
   fields: {
     title: f.text().min(1).max(200).sortable().filterable(),
     description: f.textarea().max(2000).optional().hidden(),
@@ -19,7 +19,7 @@ export const taskEntity = defineEntity({
     isBlocked: f.switch().label("Blocked").filterable(),
     // Relacja do encji scaffoldowanej (generator → generator).
     projectId: f.relation("project", "name").filterable(),
-    // Relacja do encji core (User) — async-combobox + przecięcie z auth.
+    // A relation to a core entity (User) — an async combobox and the intersection with auth.
     assigneeId: f.relation("user", "email").optional(),
   },
 });

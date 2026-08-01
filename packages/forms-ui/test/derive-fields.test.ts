@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { deriveFields, emptyValues } from "../src/index.js";
 
 describe("deriveFields", () => {
-  it("wywodzi pola z encji w kolejności schematu, z control i required (z Zod)", () => {
+  it("derives the fields in schema order, with control and required (from Zod)", () => {
     const fields = deriveFields(projectEntity);
     expect(fields.map((f) => f.name)).toEqual([
       "name",
@@ -31,7 +31,7 @@ describe("deriveFields", () => {
 });
 
 describe("emptyValues", () => {
-  it("ustawia sensowne puste wartości wg typu kontrolki", () => {
+  it("sets sensible empty values per control type", () => {
     const values = emptyValues(taskEntity);
     expect(values.isBlocked).toBe(false); // switch
     expect(values.estimate).toBeUndefined(); // number

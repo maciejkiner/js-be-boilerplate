@@ -87,7 +87,7 @@ type InviteSpeakersBody =
 type CreateEventTalksBody =
   paths["/api/v1/events/{id}/talks"]["post"]["requestBody"]["content"]["application/json"];
 
-/** Agenda hurtem: jedno żądanie na całą paczkę, „wszystko albo nic". Używane w kreatorze. */
+/** The agenda in bulk: one request for the whole batch, all-or-nothing. Used by the wizard. */
 export function useCreateEventTalks() {
   const client = useApiClient();
   const queryClient = useQueryClient();
@@ -99,12 +99,12 @@ export function useCreateEventTalks() {
           body: { talks: vars.talks },
         }),
       ),
-    // Nowe prelekcje unieważniają listy prelekcji, nie wydarzeń.
+    // New talks invalidate the talk lists, not the event ones.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["talks"] }),
   });
 }
 
-/** Zaproszenia prelegentów → mailer (bez zapisu). Osobny handler — używany w kreatorze. */
+/** Speaker invitations → the mailer (nothing persisted). A separate handler, used by the wizard. */
 export function useInviteEventSpeakers() {
   const client = useApiClient();
   return useMutation({

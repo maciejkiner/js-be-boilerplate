@@ -1,9 +1,9 @@
 import { type FieldDef, FieldRenderer, type RelationSource } from "./field-renderer.js";
 
 /**
- * Minimalny interfejs stanu formularza konsumowany przez `FormFields`. Spełniają go zarówno
- * `useForm` (`FormApi`) jak i `useWizard` (`WizardApi`) z `@repo/forms` — dzięki temu ten sam
- * renderer pól działa w formularzach i w krokach wizarda.
+ * The minimal form-state interface consumed by `FormFields`. Both `useForm` (`FormApi`) and
+ * `useWizard` (`WizardApi`) from `@repo/forms` satisfy it — which is what lets the same field
+ * renderer work in forms and in wizard steps.
  */
 export interface FormLike {
   values: Record<string, unknown>;
@@ -19,7 +19,7 @@ export interface FormFieldsProps {
   disabled?: boolean;
 }
 
-/** Renderuje listę pól spiętą ze stanem silnika (`@repo/forms`): value/error/onChange per pole. */
+/** Renders a list of fields bound to the engine state (`@repo/forms`): value/error/onChange each. */
 export function FormFields({ fields, form, relationSource, disabled }: FormFieldsProps) {
   const visible = fields.filter((field) => !field.visibleWhen || field.visibleWhen(form.values));
   return (

@@ -11,7 +11,7 @@ import type {
 } from "./types.js";
 import { unwrap } from "./unwrap.js";
 
-/** Klucze cache — stabilne, hierarchiczne (invalidacja `all` czyści listy i detale). */
+/** Cache keys — stable and hierarchical (invalidating `all` clears both lists and details). */
 export const projectKeys = {
   all: ["projects"] as const,
   list: (query?: ProjectListQuery) => ["projects", "list", query ?? {}] as const,
@@ -83,7 +83,7 @@ export function useDeleteProject() {
   });
 }
 
-/** Zaproszenia członków → mailer (bez zapisu). Osobny handler — używany w wizardzie. */
+/** Member invitations → the mailer (nothing persisted). A separate handler, used by the wizard. */
 export function useInviteProjectMembers() {
   const client = useApiClient();
   return useMutation({

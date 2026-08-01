@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { defineEntity, defineEntityRaw, f, labelFromKey } from "../src/index.js";
 
-describe("buildery pól (f.*)", () => {
-  it("każda fabryka paruje kontrolkę z właściwym typem Zod", () => {
+describe("field builders (f.*)", () => {
+  it("every factory pairs its control with the right Zod type", () => {
     const cases = [
       { built: f.text().build(), control: "text", type: z.ZodString },
       { built: f.textarea().build(), control: "textarea", type: z.ZodString },
@@ -23,7 +23,7 @@ describe("buildery pól (f.*)", () => {
     }
   });
 
-  it("pola są wymagane domyślnie, `.optional()` daje nullish", () => {
+  it("fields are required by default, `.optional()` makes them nullish", () => {
     expect(f.text().build().zod.isOptional()).toBe(false);
 
     const optional = f.text().optional().build().zod;
@@ -32,18 +32,18 @@ describe("buildery pól (f.*)", () => {
     expect(optional.safeParse(null).success).toBe(true);
   });
 
-  it("`.optional()` działa niezależnie od miejsca w chainie", () => {
+  it("`.optional()` works regardless of its position in the chain", () => {
     const before = f.text().optional().max(5).build().zod;
     const after = f.text().max(5).optional().build().zod;
 
     for (const schema of [before, after]) {
       expect(schema.isOptional()).toBe(true);
       expect(schema.safeParse("ok").success).toBe(true);
-      expect(schema.safeParse("za długie").success).toBe(false);
+      expect(schema.safeParse("too long").success).toBe(false);
     }
   });
 
-  it("select: mapa niesie wartości enuma i options w kolejności deklaracji", () => {
+  it("select: the map carries the enum values and options in declaration order", () => {
     const built = f.select({ todo: "To do", in_progress: "In progress", done: "Done" }).build();
 
     expect(built.meta.options).toEqual([
@@ -59,7 +59,7 @@ describe("buildery pól (f.*)", () => {
     expect(() => f.select({})).toThrow(/co najmniej jednej opcji/);
   });
 
-  it("relation: metadane wskazują encję docelową i jej pole etykiety", () => {
+  it("relation: the metadata names the target entity and its label field", () => {
     const built = f.relation("venue", "name").build();
 
     expect(built.meta.relation).toEqual({ entity: "venue", displayField: "name" });
@@ -67,7 +67,7 @@ describe("buildery pól (f.*)", () => {
     expect(built.zod.safeParse("6f1a2f4e-6b7d-4b1e-9c2a-2f5b8d3e7a10").success).toBe(true);
   });
 
-  it("flagi listy składają się w konfigurację kolumny", () => {
+  it("the list flags combine into the column configuration", () => {
     expect(f.text().sortable().filterable().build().meta.list).toEqual({
       sortable: true,
       filterable: true,
@@ -75,7 +75,7 @@ describe("buildery pól (f.*)", () => {
     expect(f.textarea().hidden().build().meta.list).toEqual({ visible: false });
   });
 
-  it("`.zod()` nakłada dowolną walidację, nie gubiąc metadanych", () => {
+  it("`.zod()` applies any validation without losing the metadata", () => {
     const built = f
       .text()
       .label("Slug")
@@ -90,12 +90,12 @@ describe("buildery pól (f.*)", () => {
     expect(built.zod.safeParse("Moja Konferencja").success).toBe(false);
   });
 
-  it("buildery są niemutowalne — bazowa definicja nadaje się do współdzielenia", () => {
+  it("builders are immutable — a base definition is safe to share", () => {
     const base = f.text().label("Name");
     const extended = base.max(3);
 
-    expect(base.build().zod.safeParse("długie").success).toBe(true);
-    expect(extended.build().zod.safeParse("długie").success).toBe(false);
+    expect(base.build().zod.safeParse("longer").success).toBe(true);
+    expect(extended.build().zod.safeParse("longer").success).toBe(false);
   });
 
   it("`.unique()` nie zmienia schematu ani metadanych pola", () => {
@@ -108,7 +108,7 @@ describe("buildery pól (f.*)", () => {
     expect(unique.zod.safeParse("ok").success).toBe(true);
   });
 
-  it("etykieta wywodzi się z nazwy pola, gdy nie podano `.label()`", () => {
+  it("the label is derived from the field name when `.label()` is omitted", () => {
     expect(labelFromKey("fullName")).toBe("Full name");
     expect(labelFromKey("venueId")).toBe("Venue");
     expect(labelFromKey("name")).toBe("Name");
@@ -128,8 +128,8 @@ describe("buildery pól (f.*)", () => {
 });
 
 describe("defineEntity na builderach", () => {
-  // Ta sama encja zadeklarowana dwiema drogami — dowód, że builder jest liftem 1:1 i konsumenci
-  // (scaffolder, forms-ui) nie odróżnią jednej od drugiej.
+  // The same entity declared both ways — proof that the builder is a 1:1 lift and that consumers
+  // (the scaffolder, forms-ui) cannot tell one from the other.
   const built = defineEntity({
     name: "ticket",
     plural: "tickets",
@@ -192,22 +192,22 @@ describe("defineEntity na builderach", () => {
     },
   });
 
-  it("metadane pól są identyczne jak przy deklaracji ręcznej", () => {
+  it("the field metadata is identical to the hand-written declaration", () => {
     expect(built.fields).toEqual(manual.fields);
   });
 
-  it("klucze schematu i ich kolejność są identyczne", () => {
+  it("the schema keys and their order are identical", () => {
     expect(Object.keys(built.schema.shape)).toEqual(Object.keys(manual.schema.shape));
   });
 
-  it("wymagalność pól jest identyczna (źródło `required` dla scaffoldera i formularzy)", () => {
+  it("field requiredness is identical (the source of `required` for the scaffolder and forms)", () => {
     const fromBuilder: Record<string, z.ZodTypeAny> = built.schema.shape;
     for (const [key, fromManual] of Object.entries<z.ZodTypeAny>(manual.schema.shape)) {
       expect(fromBuilder[key]?.isOptional()).toBe(fromManual.isOptional());
     }
   });
 
-  it("walidacja (z refine międzypolowym) zachowuje się identycznie", () => {
+  it("validation (including the cross-field refine) behaves identically", () => {
     const samples: unknown[] = [
       {
         title: "A",
@@ -246,17 +246,17 @@ describe("defineEntity na builderach", () => {
     }
   });
 
-  it("metadane pokrywają dokładnie klucze schematu", () => {
+  it("the metadata covers exactly the schema keys", () => {
     expect(Object.keys(built.fields).sort()).toEqual(Object.keys(built.schema.shape).sort());
   });
 
-  it("encja bez unikalności nie dostaje pola `unique` (kształt jak przed jego wprowadzeniem)", () => {
+  it("an entity without uniqueness gets no `unique` member (the shape it had before)", () => {
     expect("unique" in built).toBe(false);
   });
 });
 
-describe("unikalność na encji", () => {
-  it("zbiera `.unique()` z pól i grupy złożone z encji", () => {
+describe("uniqueness on the entity", () => {
+  it("collects `.unique()` from the fields and the composite groups from the entity", () => {
     const entity = defineEntity({
       name: "registration",
       plural: "registrations",

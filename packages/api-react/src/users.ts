@@ -16,7 +16,7 @@ export const userKeys = {
   detail: (id: string) => ["users", "detail", id] as const,
 };
 
-/** Query-option factory listy userów (pola relacji `assignee` + lista w panelu admina). */
+/** The query-option factory for the user list (`assignee` relation fields + the admin list). */
 export function userListQuery(client: ApiClient, query?: UserListQuery) {
   return {
     queryKey: userKeys.list(query),

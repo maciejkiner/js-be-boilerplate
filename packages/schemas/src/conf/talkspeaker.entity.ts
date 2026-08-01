@@ -6,7 +6,7 @@ export const talkSpeakerEntity = defineEntity({
   plural: "talkSpeakers",
   label: "Talk speaker",
   labelPlural: "Talk speakers",
-  // Etykieta encji widziana z zewnątrz — `talkId` pokazywałby uuid.
+  // The entity label as seen from outside — `talkId` would show a uuid.
   displayField: "role",
   unique: [["talkId", "speakerId"]],
   fields: {

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { ApiProvider, useApiClient, useCreateProject, useProjects } from "../src/index.js";
 
-/** Wrapper: prawdziwy klient z mock-fetch + QueryClientProvider + ApiProvider (pełny stack). */
+/** Wrapper: a real client over a mock fetch + QueryClientProvider + ApiProvider (the full stack). */
 function makeWrapper(fetchImpl: typeof globalThis.fetch) {
   const client = createApiClient({ baseUrl: "http://api.test", fetch: fetchImpl });
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -26,7 +26,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 describe("hooki api-react (mock transport)", () => {
-  it("useProjects pobiera listę i zwraca typowane dane", async () => {
+  it("useProjects fetches the list and returns typed data", async () => {
     const wrapper = makeWrapper(async () =>
       jsonResponse({
         items: [{ id: "1", name: "Alpha", status: "active" }],
@@ -41,7 +41,7 @@ describe("hooki api-react (mock transport)", () => {
     expect(result.current.data?.meta.total).toBe(1);
   });
 
-  it("useCreateProject wysyła POST i rozpakowuje odpowiedź", async () => {
+  it("useCreateProject sends a POST and unwraps the response", async () => {
     const calls: Request[] = [];
     const wrapper = makeWrapper(async (input) => {
       calls.push(input as Request);
@@ -61,7 +61,7 @@ describe("hooki api-react (mock transport)", () => {
     expect(new URL(calls[0]!.url).pathname).toBe("/api/v1/projects/");
   });
 
-  it("błąd HTTP trafia do stanu error (unwrap rzuca)", async () => {
+  it("an HTTP error reaches the error state (unwrap throws)", async () => {
     const wrapper = makeWrapper(async () => jsonResponse({ title: "Not Found", status: 404 }, 404));
 
     const { result } = renderHook(() => useProjects(), { wrapper });

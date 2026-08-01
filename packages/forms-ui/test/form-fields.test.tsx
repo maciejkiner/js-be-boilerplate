@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { type FieldDef, FormFields } from "../src/index.js";
 
-/** Render z QueryClientProvider — pola relacji używają `useQuery` (async fetch opcji). */
+/** Rendering with a QueryClientProvider — relation fields use `useQuery` (async option fetching). */
 function renderWithClient(ui: ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
@@ -73,14 +73,14 @@ describe("FormFields (mapowanie typ→komponent)", () => {
     expect(await screen.findByText("Alpha")).toBeTruthy();
   });
 
-  it("wymagane pole ma znacznik, a błąd renderuje się jako alert", () => {
+  it("a required field carries the marker, and an error renders as an alert", () => {
     const { form } = makeForm({ name: "" }, { name: "wymagane" });
     renderWithClient(<FormFields fields={[fields[0]!]} form={form} />);
     expect(screen.getByText(/\*/)).toBeTruthy(); // required marker
     expect(screen.getByRole("alert").textContent).toContain("wymagane");
   });
 
-  it("renderuje podpowiedź z pola help pod kontrolką", () => {
+  it("renders the hint from the help field under the control", () => {
     const { form } = makeForm({ name: "" });
     renderWithClient(
       <FormFields
@@ -91,7 +91,7 @@ describe("FormFields (mapowanie typ→komponent)", () => {
     expect(screen.getByText("Widoczna publicznie")).toBeTruthy();
   });
 
-  it("warunkowa widoczność: pole z visibleWhen renderuje się tylko gdy warunek spełniony", () => {
+  it("conditional visibility: a field with visibleWhen renders only when the condition holds", () => {
     const conditional: FieldDef[] = [
       { name: "kind", label: "Rodzaj", control: "text" },
       { name: "extra", label: "Dodatkowe", control: "text", visibleWhen: (v) => v.kind === "b" },

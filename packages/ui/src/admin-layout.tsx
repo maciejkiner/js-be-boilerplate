@@ -2,19 +2,19 @@ import type { ReactNode } from "react";
 
 export interface AdminLayoutProps {
   brand: ReactNode;
-  /** Nawigacja — SKORUPA podaje linki routera (packages/ui nie zna routera). */
+  /** Navigation — the SHELL supplies the router links (packages/ui knows no router). */
   nav: ReactNode;
-  /** Akcje w nagłówku (np. e-mail zalogowanego, wyloguj). */
+  /** Header actions (the signed-in user's e-mail, sign out, …). */
   actions?: ReactNode;
-  /** Stopka panelu — miejsce na informacje techniczne (build time, flagi debug). Skorupa wstrzykuje
-   * treść, bo dane pochodzą z `import.meta.env`/`define` (packages/ui ich nie zna). */
+  /** The panel footer — a place for technical information (build time, debug flags). The shell
+   * injects the content, because the data comes from `import.meta.env`/`define` (unknown here). */
   footer?: ReactNode;
   children: ReactNode;
 }
 
 /**
- * Szkielet panelu admina (sidebar + header + main). Router-agnostyczny: `nav`/`actions` to sloty,
- * do których skorupa wstrzykuje `<Link>`i. Dzięki temu granica „router tylko w apps/*" trzyma.
+ * The admin panel skeleton (sidebar + header + main). Router-agnostic: `nav` and `actions` are slots
+ * into which the shell injects its `<Link>`s. That is what keeps the "router only in apps/*" boundary.
  */
 export function AdminLayout({ brand, nav, actions, footer, children }: AdminLayoutProps) {
   return (

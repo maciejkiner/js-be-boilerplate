@@ -21,7 +21,7 @@ export const registrationEntity = defineEntity({
       .select({ standard: "Standard", student: "Student", speaker: "Speaker" })
       .filterable(),
     needsCatering: f.checkbox(),
-    // Zgoda jest warunkiem zapisu (patrz `refine`), nie informacją do przeglądania na liście.
+    // Consent is a precondition for signing up (see `refine`), not something to browse in the list.
     acceptsTerms: f.checkbox().hidden(),
     status: f
       .select({ pending: "Pending", confirmed: "Confirmed", cancelled: "Cancelled" })

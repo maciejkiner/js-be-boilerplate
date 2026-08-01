@@ -2,34 +2,34 @@ import { z } from "zod";
 import type { FieldMeta, FieldOption, ListColumnMeta } from "./define-entity.js";
 
 /**
- * Rozpakowany builder — strony tej samej deklaracji pola. Czyta go `defineEntity`.
+ * An unpacked builder — both sides of the same field declaration. Read by `defineEntity`.
  */
 export interface BuiltField {
   zod: z.ZodTypeAny;
   meta: FieldMeta;
-  /** Czy pole ma być unikalne (jednopolowe ograniczenie; złożone deklaruje encja). */
+  /** Whether the field is unique (a single-field constraint; composite ones live on the entity). */
   isUnique: boolean;
 }
 
 /**
- * Builder pola encji. **Jedna deklaracja produkuje schemat Zod i metadane prezentacji**, więc
- * `control` nie może rozjechać się z typem Zod (przy ręcznym `FieldMeta` to inwariant pilnowany
- * wyłącznie przez człowieka — patrz tabela parowania w README pakietu).
+ * A builder for an entity field. **One declaration produces both the Zod schema and the presentation
+ * metadata**, so `control` cannot drift away from the Zod type (with a hand-written `FieldMeta` that
+ * invariant is guarded by the author alone — see the pairing table in the package README).
  *
- * `_out` istnieje tylko w fazie typów: mówi, jaki schemat pole wniesie do encji (z uwzględnieniem
- * `.optional()`). W runtime tej właściwości nie ma.
+ * `_out` exists only at the type level: it says what schema the field contributes to the entity
+ * (taking `.optional()` into account). The property does not exist at runtime.
  */
 export interface FieldBuilder<TOut extends z.ZodTypeAny = z.ZodTypeAny> {
   readonly _out: TOut;
   build(): BuiltField;
 }
 
-/** Schemat po uwzględnieniu `.optional()` — `nullish()`, spójnie z konwencją encji. */
+/** The schema after `.optional()` is applied — `nullish()`, per the entity convention. */
 type Out<TBase extends z.ZodTypeAny, Opt extends boolean> = Opt extends true
   ? z.ZodOptional<z.ZodNullable<TBase>>
   : TBase;
 
-/** Fragment metadanych wspólny dla każdej kontrolki (reszta zależy od `control`). */
+/** The metadata fragment shared by every control (the rest depends on `control`). */
 interface MetaPatch {
   label?: string;
   help?: string;
@@ -37,14 +37,14 @@ interface MetaPatch {
 }
 
 /**
- * Spread na unii dyskryminowanej gubi zawężenie po `control`, a `patch` dotyka wyłącznie pól
- * wspólnych — wariant unii pozostaje ten sam, więc asercja jest bezpieczna.
+ * Spreading a discriminated union loses the narrowing by `control`, and `patch` only touches the
+ * shared members — the union variant stays the same, so the assertion is safe.
  */
 function patchMeta(meta: FieldMeta, patch: MetaPatch): FieldMeta {
   return { ...meta, ...patch } as FieldMeta;
 }
 
-/** Stan buildera. Trzymany w jednym obiekcie, żeby chain nie gubił flag przy klonowaniu. */
+/** The builder state. Kept in one object so the chain does not lose flags when cloning. */
 interface FieldState<TBase extends z.ZodTypeAny> {
   schema: TBase;
   meta: FieldMeta;
@@ -60,8 +60,8 @@ function initialState<TBase extends z.ZodTypeAny>(
 }
 
 /**
- * Wspólny chain każdej kontrolki. Metody są niemutujące — każda zwraca nowy builder, więc
- * definicje pól można bezpiecznie współdzielić i rozszerzać.
+ * The chain shared by every control. The methods are non-mutating — each returns a new builder, so
+ * field definitions can be shared and extended safely.
  */
 abstract class BaseFieldBuilder<
   TBase extends z.ZodTypeAny,
@@ -71,7 +71,7 @@ abstract class BaseFieldBuilder<
 
   constructor(protected readonly state: FieldState<TBase>) {}
 
-  /** Klon zachowujący konkretną klasę buildera — chain nie gubi metod specyficznych dla typu. */
+  /** A clone preserving the concrete builder class — the chain keeps its type-specific methods. */
   protected clone(patch: Partial<FieldState<TBase>>): this {
     const Ctor = this.constructor as new (state: FieldState<TBase>) => this;
     return new Ctor({ ...this.state, ...patch });
@@ -83,43 +83,45 @@ abstract class BaseFieldBuilder<
     });
   }
 
-  /** Etykieta pola. Pominięta — `defineEntity` wywiedzie ją z nazwy pola (`dueDate` → „Due date"). */
+  /** The field label. Omit it and `defineEntity` derives it from the field name (`dueDate` → "Due date"). */
   label(value: string): this {
     return this.clone({ meta: patchMeta(this.state.meta, { label: value }) });
   }
 
-  /** Podpowiedź renderowana pod polem w `forms-ui`. */
+  /** The hint rendered under the field by `forms-ui`. */
   help(value: string): this {
     return this.clone({ meta: patchMeta(this.state.meta, { help: value }) });
   }
 
   /**
-   * Wartość unikalna w tabeli. Scaffolder wystawia **częściowy** indeks unikalny
-   * (`where deleted_at is null`), więc soft delete zwalnia wartość; konflikt wraca jako 409.
-   * Unikalność złożoną (para/trójka pól) deklaruje encja przez `unique: [["a", "b"]]`.
+   * The value is unique in the table. The scaffolder emits a **partial** unique index
+   * (`where deleted_at is null`), so a soft delete releases the value; a conflict returns a 409.
+   * Composite uniqueness (a pair or triple of fields) is declared on the entity through
+   * `unique: [["a", "b"]]`.
    */
   unique(): this {
     return this.clone({ isUnique: true });
   }
 
-  /** Kolumna sortowalna w adminie (wchodzi do allowlisty sortu w module API). */
+  /** A sortable column in the admin panel (it enters the sort allowlist in the API module). */
   sortable(): this {
     return this.patchList({ sortable: true });
   }
 
-  /** Kolumna filtrowalna w adminie (wchodzi do allowlisty filtrów w module API). */
+  /** A filterable column in the admin panel (it enters the filter allowlist in the API module). */
   filterable(): this {
     return this.patchList({ filterable: true });
   }
 
-  /** Ukrywa kolumnę na liście admina (pole nadal jest w formularzu i na detalu). */
+  /** Hides the column in the admin list (the field stays in the form and on the detail page). */
   hidden(): this {
     return this.patchList({ visible: false });
   }
 
   /**
-   * Escape hatch: dowolna transformacja schematu Zod pola (regex, `refine`, `transform`).
-   * Zwraca builder bez metod specyficznych dla typu — wołaj po sugarze (`.max().zod(…)`).
+   * Escape hatch: any transformation of the field's Zod schema (regex, `refine`, `transform`).
+   * It returns a builder without the type-specific methods — call it after the sugar
+   * (`.max().zod(…)`).
    */
   zod<T2 extends z.ZodTypeAny>(refine: (schema: TBase) => T2): PlainFieldBuilder<T2, Opt> {
     return new PlainFieldBuilder({ ...this.state, schema: refine(this.state.schema) });
@@ -131,12 +133,12 @@ abstract class BaseFieldBuilder<
   }
 }
 
-/** Kontrolki bez własnego sugaru: `date`, `checkbox`, `switch`, `select`, `radio`, `relation`. */
+/** Controls with no sugar of their own: `date`, `checkbox`, `switch`, `select`, `radio`, `relation`. */
 export class PlainFieldBuilder<
   TBase extends z.ZodTypeAny,
   Opt extends boolean = false,
 > extends BaseFieldBuilder<TBase, Opt> {
-  /** Pole opcjonalne (`nullish`). Kolejność w chainie dowolna. */
+  /** Makes the field optional (`nullish`). Position in the chain does not matter. */
   optional(): PlainFieldBuilder<TBase, true> {
     return new PlainFieldBuilder({ ...this.state, isOptional: true });
   }
@@ -198,7 +200,7 @@ export class NumberFieldBuilder<Opt extends boolean = false> extends BaseFieldBu
   }
 }
 
-/** Etykieta uzupełniana przez `defineEntity` z nazwy pola, gdy `.label()` pominięto. */
+/** The placeholder label `defineEntity` fills from the field name when `.label()` was omitted. */
 const LABEL_FROM_KEY = "";
 
 function simpleMeta(
@@ -207,7 +209,7 @@ function simpleMeta(
   return { label: LABEL_FROM_KEY, control } satisfies FieldMeta;
 }
 
-/** Mapa `wartość → etykieta` niesie jednocześnie wartości enuma i `options` kontrolki. */
+/** A `value → label` map carries both the enum values and the control's `options`. */
 function choiceValues<M extends Record<string, string>>(
   options: M,
 ): [keyof M & string, ...(keyof M & string)[]] {
@@ -224,8 +226,8 @@ function choiceOptions(options: Record<string, string>): FieldOption[] {
 }
 
 /**
- * Fabryki pól encji. `f.` w edytorze wypisuje wszystkie dostępne kontrolki, a każda z nich
- * dobiera właściwy typ Zod — nie trzeba pamiętać parowania ani nazw kluczy metadanych.
+ * The entity field factories. Typing `f.` in the editor lists every available control, and each one
+ * picks the right Zod type — no need to memorise the pairing or the metadata key names.
  *
  * @example
  * fields: {
@@ -241,15 +243,15 @@ export const f = {
   number: () => new NumberFieldBuilder(initialState(z.number(), simpleMeta("number"))),
   /** Sama data (bez godziny) — `<input type="date">`. */
   date: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("date"))),
-  /** Data z godziną — `<input type="datetime-local">`; w bazie ta sama kolumna `timestamptz`. */
+  /** A date with time — `<input type="datetime-local">`; the same `timestamptz` column in the database. */
   datetime: () => new PlainFieldBuilder(initialState(z.coerce.date(), simpleMeta("datetime"))),
   checkbox: () => new PlainFieldBuilder(initialState(z.boolean(), simpleMeta("checkbox"))),
   switch: () => new PlainFieldBuilder(initialState(z.boolean(), simpleMeta("switch"))),
 
   /**
-   * Lista zamknięta jako mapa `wartość → etykieta` — jedno miejsce zamiast osobnego `z.enum`
-   * i `options`. Kolejność opcji = kolejność kluczy (nie używaj kluczy numerycznych: JS
-   * porządkuje je przed resztą).
+   * A closed list as a `value → label` map — one place instead of a separate `z.enum` and `options`.
+   * The option order is the key order (do not use numeric keys: JavaScript sorts them before the
+   * rest).
    */
   select: <const M extends Record<string, string>>(options: M) =>
     new PlainFieldBuilder(
@@ -271,7 +273,7 @@ export const f = {
 
   /**
    * Relacja do innej encji. `entity` = nazwa encji-celu w liczbie pojedynczej,
-   * `displayField` = jej pole pokazywane w comboboxie i na liście.
+   * `displayField` is the target's field shown in the combobox and in the list.
    */
   relation: (entity: string, displayField: string) =>
     new PlainFieldBuilder(
@@ -283,14 +285,14 @@ export const f = {
     ),
 };
 
-/** Czy wartość jest builderem pola (dyskryminacja wariantów `defineEntity`). */
+/** Whether a value is a field builder (used to discriminate the `defineEntity` variants). */
 export function isFieldBuilder(value: unknown): value is FieldBuilder {
   return typeof (value as FieldBuilder | undefined)?.build === "function";
 }
 
 /**
- * Domyślna etykieta z nazwy pola: `fullName` → „Full name", `venueId` → „Venue"
- * (sufiks `Id` relacji ucinamy). Etykiety encji są po angielsku — patrz CLAUDE.md.
+ * The default label derived from a field name: `fullName` → "Full name", `venueId` → "Venue" (the
+ * relation's `Id` suffix is dropped). Entity labels are in English — see CLAUDE.md.
  */
 export function labelFromKey(key: string): string {
   const withoutId = key.replace(/Id$/, "");
@@ -298,7 +300,7 @@ export function labelFromKey(key: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
-/** Czy etykieta wymaga uzupełnienia z nazwy pola. */
+/** Whether the label still has to be filled in from the field name. */
 export function isLabelFromKey(label: string): boolean {
   return label === LABEL_FROM_KEY;
 }

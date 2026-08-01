@@ -23,36 +23,36 @@ function setup(overrides: Partial<DataTableProps<Row>> = {}) {
 }
 
 describe("DataTable", () => {
-  it("renderuje wiersze", () => {
+  it("renders the rows", () => {
     setup();
     expect(screen.getByText("Alpha")).toBeTruthy();
     expect(screen.getByText("Beta")).toBeTruthy();
   });
 
-  it("stan loading pokazuje spinner", () => {
+  it("the loading state shows a spinner", () => {
     setup({ isLoading: true, rows: [] });
     expect(screen.getByRole("status")).toBeTruthy();
   });
 
-  it("stan error pokazuje alert (i nie renderuje wierszy)", () => {
+  it("the error state shows an alert (and renders no rows)", () => {
     setup({ error: new Error("x") });
     expect(screen.getByRole("alert")).toBeTruthy();
     expect(screen.queryByText("Alpha")).toBeNull();
   });
 
-  it("pusta lista pokazuje empty state", () => {
+  it("an empty list shows the empty state", () => {
     setup({ rows: [] });
     expect(screen.getByText("Brak danych")).toBeTruthy();
   });
 
-  it("klik sortowalnego nagłówka woła onSortChange z przełączonym kierunkiem", () => {
+  it("clicking a sortable header calls onSortChange with the flipped direction", () => {
     const onSortChange = vi.fn();
     setup({ sort: { column: "name", order: "asc" }, onSortChange });
     fireEvent.click(screen.getByRole("button", { name: /Nazwa/ }));
     expect(onSortChange).toHaveBeenCalledWith({ column: "name", order: "desc" });
   });
 
-  it("paginacja: Poprzednia wyłączona na 1. stronie, Następna woła onPageChange", () => {
+  it("pagination: previous is disabled on page 1, next calls onPageChange", () => {
     const onPageChange = vi.fn();
     setup({
       pagination: { page: 1, totalPages: 3, total: 5 },

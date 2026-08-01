@@ -1,10 +1,10 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  // Automatic JSX runtime (react/jsx-runtime) — spójnie z tsconfig "jsx": "react-jsx".
+  // Automatic JSX runtime (react/jsx-runtime) — consistent with tsconfig "jsx": "react-jsx".
   esbuild: { jsx: "automatic" },
   test: {
-    // Hooki React Query wymagają DOM — jsdom dla testów renderujących.
+    // React Query hooks need a DOM — jsdom for the rendering tests.
     environment: "jsdom",
     include: ["test/**/*.test.{ts,tsx}"],
   },

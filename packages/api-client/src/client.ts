@@ -1,22 +1,22 @@
 import createClient, { type Client } from "openapi-fetch";
 import type { paths } from "./generated/schema.js";
 
-/** Type-safe klient API (metody GET/POST/PATCH/DELETE typowane ścieżkami z OpenAPI). */
+/** The type-safe API client (GET/POST/PATCH/DELETE typed by the OpenAPI paths). */
 export type ApiClient = Client<paths>;
 
 export interface ApiClientOptions {
-  /** Bazowy URL API (np. "http://localhost:3000"). Wstrzykiwany JAWNIE przez skorupę. */
+  /** The API base URL (for example "http://localhost:3000"). Injected EXPLICITLY by the shell. */
   baseUrl: string;
-  /** Nadpisanie implementacji fetch (testy / SSR). Domyślnie globalny `fetch`. */
+  /** Overrides the fetch implementation (tests, SSR). Defaults to the global `fetch`. */
   fetch?: typeof globalThis.fetch;
-  /** Nagłówki domyślne dla każdego żądania. */
+  /** Default headers for every request. */
   headers?: Record<string, string>;
 }
 
 /**
- * Tworzy klienta z jednego źródła prawdy (OpenAPI → typy). Framework-agnostic (`fetch`),
- * bez `import.meta.env` — `baseUrl` podaje skorupa przy inicjalizacji. Uwierzytelnianie przez
- * cookies (access/refresh), więc `credentials: "include"` — spójnie z CORS na dwa originy.
+ * Creates a client from one source of truth (OpenAPI → types). Framework-agnostic (`fetch`), with no
+ * `import.meta.env` — the shell provides `baseUrl` at initialisation. Authentication goes through
+ * cookies (access/refresh), hence `credentials: "include"`, consistent with CORS for two origins.
  */
 export function createApiClient(options: ApiClientOptions): ApiClient {
   return createClient<paths>({

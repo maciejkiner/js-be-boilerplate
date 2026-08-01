@@ -3,8 +3,8 @@ import type { z } from "zod";
 import type { FieldDef } from "./field-renderer.js";
 
 /**
- * Wywodzi definicje pól formularza z encji (`entity.fields` + `entity.schema`). Kolejność =
- * kolejność kluczy schematu. `required` liczone z Zod (`!isOptional()`). Jedno źródło prawdy.
+ * Derives the form field definitions from an entity (`entity.fields` + `entity.schema`). The order
+ * is the schema's key order. `required` comes from Zod (`!isOptional()`). A single source of truth.
  */
 export function deriveFields<Shape extends z.ZodRawShape>(entity: Entity<Shape>): FieldDef[] {
   const shape = entity.schema.shape as Record<string, z.ZodTypeAny>;
@@ -19,7 +19,7 @@ export function deriveFields<Shape extends z.ZodRawShape>(entity: Entity<Shape>)
   }));
 }
 
-/** Puste wartości startowe dla create (checkbox/switch→false, number→undefined, reszta→""). */
+/** The empty starting values for create (checkbox/switch→false, number→undefined, rest→""). */
 export function emptyValues<Shape extends z.ZodRawShape>(
   entity: Entity<Shape>,
 ): Record<string, unknown> {

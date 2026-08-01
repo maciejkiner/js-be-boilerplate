@@ -9,10 +9,10 @@ export interface SortState {
 }
 
 export interface Column<T> {
-  /** Klucz kolumny (używany do sortowania i jako React key). */
+  /** The column key (used for sorting and as the React key). */
   key: string;
   header: ReactNode;
-  /** Render komórki; domyślnie surowa wartość `row[key]`. */
+  /** Renders the cell; defaults to the raw `row[key]` value. */
   render?: (row: T) => ReactNode;
   sortable?: boolean;
   align?: "left" | "right";
@@ -30,15 +30,15 @@ export interface DataTableProps<T> {
   getRowId: (row: T) => string;
   isLoading?: boolean;
   error?: unknown;
-  /** Aktualny sort; kliknięcie sortowalnego nagłówka woła `onSortChange` z przełączonym kierunkiem. */
+  /** The current sort; clicking a sortable header calls `onSortChange` with the flipped direction. */
   sort?: SortState;
   onSortChange?: (sort: SortState) => void;
   pagination?: DataTablePagination;
   onPageChange?: (page: number) => void;
   onRowClick?: (row: T) => void;
-  /** Slot na filtry kolumn (skorupa komponuje z DS Select/Input i steruje query). */
+  /** A slot for column filters (the shell composes them from the DS Select/Input and owns the query). */
   toolbar?: ReactNode;
-  /** Nadpisanie pustego stanu (domyślnie `EmptyState`). */
+  /** Overrides the empty state (defaults to `EmptyState`). */
   empty?: ReactNode;
 }
 
@@ -54,9 +54,9 @@ function sortIndicator(sort: SortState | undefined, key: string): string {
 }
 
 /**
- * Tabela danych: sortowanie (nagłówki), paginacja (stopka), stany loading/error/empty.
- * Sterowana propsami — stan (sort/strona/filtry) i pobieranie danych żyją w skorupie
- * (DataTable nie zna routera ani źródła danych). Filtry idą przez slot `toolbar`.
+ * The data table: sorting (headers), pagination (footer), and the loading/error/empty states.
+ * Fully controlled — the state (sort, page, filters) and the data fetching live in the shell
+ * (DataTable knows neither the router nor the data source). Filters go through the `toolbar` slot.
  */
 export function DataTable<T>({
   columns,

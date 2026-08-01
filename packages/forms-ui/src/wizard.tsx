@@ -7,7 +7,7 @@ import { deriveFields } from "./derive-fields.js";
 import type { RelationSource } from "./field-renderer.js";
 import { FormFields } from "./form-fields.js";
 
-/** Krok wizarda: metadane kroku (`useWizard`) + slot `render` na wstrzyknięty formularz/treść. */
+/** A wizard step: the step metadata (`useWizard`) plus a `render` slot for the injected content. */
 export interface WizardStepConfig<V extends Record<string, unknown>> extends WizardStep {
   render: (wizard: WizardApi<V>) => ReactNode;
 }
@@ -22,15 +22,15 @@ export interface WizardProps<V extends Record<string, unknown>> {
   steps: WizardStepConfig<V>[];
   defaultValues: V;
   onComplete: (values: V) => void | Promise<void>;
-  /** Etykiety przycisków — domyślnie Wstecz/Dalej/Zakończ. */
+  /** Button labels — by default Wstecz/Dalej/Zakończ. */
   labels?: WizardLabels;
 }
 
 /**
- * Reużywalny wizard: NARZUCA strukturę (Stepper + treść kroku + pasek nawigacji) oraz stan i
- * walidację-gating (przez `useWizard`). Wstrzykujesz tylko `steps[].render` (formularz/treść kroku)
- * i `onComplete` (logikę). `WizardApi` spełnia `FormLike`, więc krok może wprost renderować
- * `<FormFields form={wizard} … />`. Kroki/stan/struktura nie są wymyślane na nowo przy każdym wizardzie.
+ * A reusable wizard: it IMPOSES the structure (stepper + step content + a navigation bar) along with
+ * the state and validation gating (through `useWizard`). You inject only `steps[].render` (the step's
+ * form or content) and `onComplete` (the logic). `WizardApi` satisfies `FormLike`, so a step can
+ * render `<FormFields form={wizard} … />` directly. Steps, state and structure are never reinvented.
  */
 export function Wizard<V extends Record<string, unknown>>({
   steps,
@@ -47,8 +47,8 @@ export function Wizard<V extends Record<string, unknown>>({
       />
       {steps[wizard.stepIndex]!.render(wizard)}
       {wizard.submitError && (
-        // Błąd finalnej orkiestracji — dotyczy danych, nie pojedynczego pola, więc ma własne
-        // miejsce w chrome wizarda. `WizardStepError` dodatkowo cofa do kroku, którego dotyczy.
+        // The final orchestration error concerns the data, not a single field, so it has its own
+        // place in the wizard chrome. `WizardStepError` additionally returns to the step it belongs to.
         <p
           role="alert"
           className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700"
@@ -74,8 +74,8 @@ export function Wizard<V extends Record<string, unknown>>({
 }
 
 /**
- * Helper: krok = formularz encji (najczęstszy przypadek). Pola i schemat wywiedzione z encji
- * (jedno źródło prawdy) — zero boilerplate'u. `relationSource` wstrzykuje skorupa (pola relacji).
+ * Helper: a step that is an entity form (the most common case). The fields and schema are derived
+ * from the entity (a single source of truth) — zero boilerplate. The shell injects `relationSource`.
  */
 export function entityStep<Shape extends z.ZodRawShape>(
   entity: Entity<Shape>,

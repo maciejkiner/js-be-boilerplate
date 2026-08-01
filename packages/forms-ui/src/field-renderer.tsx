@@ -16,20 +16,21 @@ export interface FieldDef {
   name: string;
   label: string;
   control: FieldControl;
-  /** Tekst-podpowiedź renderowany pod polem (z `FieldMeta.help`). */
+  /** The hint text rendered under the field (from `FieldMeta.help`). */
   help?: string;
   options?: FieldOption[];
   relation?: RelationMeta;
   required?: boolean;
-  /** Warunkowa widoczność/zależności — pole renderowane tylko gdy zwróci `true` dla bieżących wartości. */
+  /** Conditional visibility — the field renders only when this returns `true` for the current values. */
   visibleWhen?: (values: Record<string, unknown>) => boolean;
 }
 
 /**
- * Źródło opcji pól relacji: generyczny, async fetcher wstrzykiwany przez skorupę. Dostaje `relation`
- * (encja docelowa + `displayField`) i frazę wyszukiwania; zwraca surowe wiersze encji (z `id`).
- * Label liczy `RelationControl` z `relation.displayField` — dzięki temu ta sama encja-cel może być
- * pokazywana różnymi polami (np. `task` po `title` w jednym miejscu, po `priority` w innym).
+ * The option source for relation fields: a generic async fetcher injected by the shell. It receives
+ * the `relation` (the target entity plus `displayField`) and the search phrase, and returns raw
+ * entity rows (with an `id`). `RelationControl` computes the label from `relation.displayField`,
+ * which lets the same target entity be shown through different fields (`task` by `title` in one
+ * place, by `priority` in another).
  */
 export type RelationSource = (
   relation: RelationMeta,
@@ -47,10 +48,11 @@ export interface FieldRendererProps {
 }
 
 /**
- * Pole relacji: async-fetch opcji przez wstrzyknięty `relationSource` (jeden `useQuery` na pole →
- * zgodne z rules-of-hooks). Label liczony z `relation.displayField`. `onSearch` odświeża zapytanie
+ * A relation field: options are fetched asynchronously through the injected `relationSource` (one
+ * `useQuery` per field, which keeps the rules of hooks). The label comes from
+ * `relation.displayField`. `onSearch` refreshes the query
  * (server-side `?q` tam, gdzie wspierane), a wynik jest dodatkowo filtrowany lokalnie po label
- * (filtr-po-wpisaniu działa też dla encji bez `?q`).
+ * (so typing filters even for entities whose endpoint has no `?q`).
  */
 function RelationControl({
   relation,
@@ -92,7 +94,7 @@ function RelationControl({
 
 /**
  * JAWNE mapowanie „typ pola (control) → komponent DS". Jedyne miejsce, gdzie decydujemy, czym
- * renderować dany typ. Nowy typ pola = nowy `case` + wpis w przepisie/inwentarzu.
+ * render a given type. A new field type means a new `case` plus an entry in the recipe/inventory.
  */
 function Control({ field, value, onChange, relationSource, disabled }: FieldRendererProps) {
   const id = `field-${field.name}`;
@@ -137,9 +139,9 @@ function Control({ field, value, onChange, relationSource, disabled }: FieldRend
           onChange={(event) => onChange(event.target.value)}
         />
       );
-    // DS (read-only) nie ma osobnej kontrolki daty z godziną — składamy ją z prymitywu `Input`,
-    // tak samo jak `text` i `number`. Wartość to `YYYY-MM-DDTHH:mm` w czasie LOKALNYM przeglądarki;
-    // `z.coerce.date()` na granicy API interpretuje ją jako czas lokalny serwera.
+    // The DS (read-only) has no separate date-with-time control — we build it from the `Input`
+    // primitive, exactly as for `text` and `number`. The value is `YYYY-MM-DDTHH:mm` in the browser's
+    // LOCAL time; `z.coerce.date()` at the API boundary reads it as the server's local time.
     case "datetime":
       return (
         <Input
@@ -197,7 +199,7 @@ function Control({ field, value, onChange, relationSource, disabled }: FieldRend
   }
 }
 
-/** Pole = etykieta (+ `*` gdy wymagane) + kontrolka DS + podpowiedź (`help`) + komunikat błędu. */
+/** A field = label (+ `*` when required) + the DS control + the hint (`help`) + the error message. */
 export function Field({
   field,
   error,
