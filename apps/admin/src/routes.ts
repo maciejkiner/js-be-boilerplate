@@ -48,7 +48,7 @@ const entityRoutes: AnyRoute[] = entityRegistry.flatMap((entity) => {
       component: entity.Detail,
     }),
   ];
-  // Statyczne (`/new`) i bardziej szczegółowe (`/$id/edit`) mają pierwszeństwo nad `/$id`.
+  // Static (`/new`) and more specific (`/$id/edit`) routes take precedence over `/$id`.
   if (entity.Create) {
     routes.push(
       createRoute({

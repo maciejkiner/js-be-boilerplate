@@ -1,2 +1,2 @@
-// apps/* to skorupy — mogą używać routera i import.meta.env (env wstrzykiwany do packages/).
+// apps/* are the shells — they may use a router and import.meta.env (injected into packages/).
 export { default } from "@repo/config/eslint-app";

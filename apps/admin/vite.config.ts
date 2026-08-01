@@ -2,8 +2,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// Admin na osobnym origin (subdomena) — domyślny port 5174 = ADMIN_ORIGIN w API.
-// Port nadpisywalny przez PORT (kolizje dev / e2e na alternatywnych portach).
+// Admin lives on its own origin (a subdomain) — the default port 5174 is ADMIN_ORIGIN in the API.
+// The port can be overridden with PORT (dev collisions, e2e on alternative ports).
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   // Informacje techniczne wstrzykiwane w czasie budowania/startu dev (stopka panelu).
@@ -13,9 +13,9 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT ?? "5174"),
     strictPort: true,
-    // host: nasłuch 0.0.0.0 — dostępność w kontenerze (bezpieczne też natywnie).
+    // host: listen on 0.0.0.0 — reachable from a container (and safe natively too).
     host: true,
-    // W kontenerze (bind-mount na macOS/Windows) fs-events bywają zawodne → polling na żądanie.
+    // In a container (a bind mount on macOS/Windows) fs events are unreliable → polling on demand.
     watch: process.env.VITE_USE_POLLING ? { usePolling: true } : undefined,
   },
 });

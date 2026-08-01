@@ -11,7 +11,7 @@ import {
 } from "./comments.dto.js";
 import { commentsService } from "./comments.service.js";
 
-/** CRUD comments pod /api/v1/comments. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for comments under /api/v1/comments. Generated: routes → service → repository; auth required. */
 export function commentsRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

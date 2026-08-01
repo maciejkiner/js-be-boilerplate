@@ -13,7 +13,7 @@ if (!rootElement) {
   throw new Error("Brak elementu #root w index.html");
 }
 
-// Kolejność providerów: Query (cache) → Api (klient) → Toast (powiadomienia) → Router (widoki).
+// Provider order: Query (cache) → Api (the client) → Toast (notifications) → Router (the views).
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

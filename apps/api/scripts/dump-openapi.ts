@@ -7,10 +7,11 @@ import { NoopErrorTracker } from "../src/lib/error-tracking/noop.js";
 import { MemoryMailer } from "../src/lib/mailer/memory.js";
 
 /**
- * Zrzuca specyfikację OpenAPI (budowaną ze schematów Zod tras) do `apps/api/openapi.json`.
- * To jedyne źródło prawdy dla generatora klienta (`packages/api-client`) — pliku nie edytujemy
- * ręcznie. Działa offline: `createDb` tworzy leniwy pool, a `buildApp` nie odpytuje bazy,
- * więc zrzut nie wymaga Postgresa (env to wartości-zaślepki tylko do złożenia aplikacji).
+ * Dumps the OpenAPI specification (built from the routes' Zod schemas) to `apps/api/openapi.json`.
+ * This is the only source of truth for the client generator (`packages/api-client`) — the file is
+ * never edited by hand. It works offline: `createDb` creates a lazy pool and `buildApp` never
+ * queries the database, so the dump needs no Postgres (the env values are stubs used only to
+ * assemble the application).
  */
 async function main(): Promise<void> {
   const env = parseEnv({

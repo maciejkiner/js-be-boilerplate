@@ -32,7 +32,7 @@ async function assertRelations(
   }
 }
 
-/** Logika biznesowa comments. Wygenerowane. */
+/** Business logic for comments. Generated. */
 export const commentsService = {
   async list(db: Db, query: CommentListQuery) {
     const { items, total } = await commentsRepository.list(db, query);
