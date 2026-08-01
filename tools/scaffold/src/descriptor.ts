@@ -22,6 +22,12 @@ export interface FieldDescriptor {
   sortable: boolean;
   filterable: boolean;
   visible: boolean;
+  /**
+   * The field's Zod schema. Templates validate the sample values they generate against it, so
+   * refinements invisible in `control` (`.email()`, `.url()`, `.regex()`, lengths) are respected —
+   * otherwise an entity with a format constraint gets a CRUD test that fails on its first run.
+   */
+  zod?: z.ZodTypeAny;
 }
 
 /** A uniqueness constraint translated into a database index. */
@@ -178,7 +184,7 @@ export function buildDescriptor(entity: Entity<z.ZodRawShape>): EntityDescriptor
   const reserved = Object.keys(entity.fields).filter((name) => RESERVED_FIELDS.has(name));
   if (reserved.length > 0) {
     throw new Error(
-      `Encja \`${entity.name}\` deklaruje pole(a) audytowe: ${reserved.join(", ")}. ` +
+      `Entity \`${entity.name}\` declares audit field(s): ${reserved.join(", ")}. ` +
         `These fields (id, createdAt, updatedAt, deletedAt, createdBy) are added automatically ` +
         `from db/columns.ts — remove them from the entity schema and metadata in packages/schemas.`,
     );
@@ -201,6 +207,7 @@ export function buildDescriptor(entity: Entity<z.ZodRawShape>): EntityDescriptor
         }
       : undefined,
     required: shape[name] ? !shape[name].isOptional() : true,
+    zod: shape[name],
     sortable: Boolean(meta.list?.sortable),
     filterable: Boolean(meta.list?.filterable),
     visible: meta.list?.visible !== false,

@@ -159,6 +159,35 @@ describe("radio treated like select (a closed list)", () => {
     expect(generated).toContain(`level: z.enum(["intro", "advanced"]).optional()`);
   });
 
+  it("the CRUD test satisfies validation invisible in `control` (email, url, regex)", () => {
+    const speaker = buildDescriptor(
+      defineEntity({
+        name: "speaker",
+        plural: "speakers",
+        label: "Speaker",
+        labelPlural: "Speakers",
+        displayField: "fullName",
+        fields: {
+          fullName: f.text().min(1),
+          email: f.text().email(),
+          website: f.text().url().optional(),
+          slug: f
+            .text()
+            .max(80)
+            .zod((schema) => schema.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)),
+        },
+      }),
+    );
+    const generated = beTest(speaker);
+
+    // The stub `"test-<field>"` is not an e-mail or a URL, so the generated test used to be rejected
+    // with a 400 on the very first run. Candidates are now validated against the field schema.
+    expect(generated).toContain(`fullName: "test-fullName"`);
+    expect(generated).toContain(`email: "test@example.com"`);
+    expect(generated).toContain(`website: "https://example.com"`);
+    expect(generated).toContain(`slug: "test-slug"`); // already matches the regex
+  });
+
   it("the CRUD test sends a valid enum value, not a text stub", () => {
     const generated = beTest(talk);
 

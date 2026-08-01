@@ -323,23 +323,49 @@ ${hasRelations ? "    await assertRelations(db, input);\n" : ""}${updateBody}
 
 // --- Test (Vitest, CRUD integracyjny) --------------------------------------
 
-function sampleValue(f: FieldDescriptor): string {
+/**
+ * Candidate sample values for one field, most specific first. `control` alone is not enough: a
+ * `text` field may carry `.email()`, `.url()` or a `.regex()`, and the payload has to satisfy the
+ * schema, not just the control type.
+ */
+function sampleCandidates(f: FieldDescriptor): unknown[] {
   switch (f.control) {
     case "number":
-      return "1";
+      return [1, 10, 100, 0];
     case "select":
     case "radio":
-      return `"${(f.options ?? [])[0]?.value ?? ""}"`;
+      return [(f.options ?? [])[0]?.value ?? ""];
     case "checkbox":
     case "switch":
-      return "true";
+      return [true, false];
     case "date":
-      return `"2026-01-01"`;
+      return ["2026-01-01"];
     case "datetime":
-      return `"2026-01-01T10:00:00.000Z"`;
+      return ["2026-01-01T10:00:00.000Z"];
     default:
-      return `"test-${f.name}"`;
+      return [
+        `test-${f.name}`,
+        "test@example.com",
+        "https://example.com",
+        "00000000-0000-4000-8000-000000000000",
+        "test",
+        `test-${f.name}`.padEnd(64, "x"),
+      ];
   }
+}
+
+/**
+ * The sample value used by the generated CRUD test. Every candidate is verified against the field's
+ * Zod schema, so the generated test passes on its first run even for fields whose validation is
+ * invisible in `control` (`Speaker.email`, `Speaker.website`, `Event.slug`). Without this check the
+ * stub `"test-<field>"` was rejected with a 400 and the whole suite failed out of the box.
+ */
+function sampleValue(f: FieldDescriptor): string {
+  const candidates = sampleCandidates(f);
+  const accepted = f.zod
+    ? (candidates.find((candidate) => f.zod!.safeParse(candidate).success) ?? candidates[0])
+    : candidates[0];
+  return JSON.stringify(accepted);
 }
 
 export function beTest(d: EntityDescriptor): string {

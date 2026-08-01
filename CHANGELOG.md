@@ -40,6 +40,26 @@ already drifted away from the bootstrap.
 
 <!-- Add new entries ABOVE this comment, newest first. -->
 
+## 2026-08-01 — The generated CRUD test respects validation invisible in `control`
+
+- **What:** the sample values in the generated CRUD test are now verified against the field's Zod
+  schema. `FieldDescriptor` carries the field schema (`zod`), and `sampleValue` picks the first
+  candidate that `safeParse`s successfully instead of always emitting `"test-<field>"`.
+- **Why:** an entity with a format constraint got a test that failed on its very first run. The
+  `Speaker` entity (`email: f.text().email()`, `website: f.text().url()`) produced a payload with
+  `"test-email"` and `"test-website"`, which the API rejected with a 400 — three red tests straight
+  out of the generator. The stub was derived from `control` alone, and `control` says nothing about
+  `.email()`, `.url()`, `.regex()` or length limits.
+- **How to find it in your project:** `tools/scaffold/src/be-templates.ts` (the `sampleValue`
+  function), `tools/scaffold/src/descriptor.ts` (`FieldDescriptor`); in the generated tests look for
+  payloads like `email: "test-email"` in `apps/api/test/<entity>.test.ts`.
+- **What to do:** add `zod?: z.ZodTypeAny` to `FieldDescriptor` and set it from
+  `entity.schema.shape[name]`; replace `sampleValue` with a candidate list (`sampleCandidates`) plus
+  a `safeParse` check. In already generated tests, fix the payloads by hand —
+  `"test@example.com"` for an e-mail, `"https://example.com"` for a URL.
+- **Risk/rollback:** the change only affects code the generator emits; existing modules are
+  untouched. Rollback means returning to the fixed `"test-<field>"` stub.
+
 ## 2026-07-31 — An API error points at the form FIELD (the `errors` extension)
 
 - **What:** (1) API: a uniqueness conflict is built by `uniqueConflictError(label, fields)`, so the

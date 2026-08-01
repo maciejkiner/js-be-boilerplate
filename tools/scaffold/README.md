@@ -81,7 +81,9 @@ message.
   **not** produce nested routes (`/talks/:id/speakers`) or an assignment widget on the parent's detail
   page; add those by hand if that is the UX you need.
 - The generated CRUD test creates prerequisites for relations to `project`/`user`; for more exotic
-  relations, adjust the test manually.
+  relations, adjust the test manually. Its sample values are validated against each field's Zod
+  schema, so constraints invisible in `control` (`.email()`, `.url()`, `.regex()`, lengths) do not
+  produce a payload the API rejects with a 400.
 
 ## Related
 
