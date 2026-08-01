@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-/** Zapisuje nowy plik; NIE nadpisuje istniejącego (bez inteligentnego mergowania). */
+/** Writes a new file; it does NOT overwrite an existing one (no clever merging). */
 export function writeNew(path: string, content: string): void {
   if (existsSync(path)) {
     throw new Error(
-      `Plik już istnieje: ${path} — scaffolder nie nadpisuje. Usuń go, by wygenerować ponownie.`,
+      `File already exists: ${path} — the scaffolder never overwrites. Delete it to regenerate.`,
     );
   }
   mkdirSync(dirname(path), { recursive: true });
@@ -13,9 +13,9 @@ export function writeNew(path: string, content: string): void {
 }
 
 /**
- * Wstawia `line` bezpośrednio przed linią z kotwicą `anchor`. Idempotentnie: pomija, gdy plik już
- * zawiera `dedupeKey` (stabilny token odporny na reformatowanie Prettiera — np. ścieżka importu).
- * Bez `dedupeKey` porównuje po treści linii.
+ * Inserts `line` directly above the line holding the `anchor`. Idempotent: it skips when the file
+ * already contains `dedupeKey` (a stable token that survives Prettier reformatting — an import path,
+ * for example). Without `dedupeKey` it compares the line content.
  */
 export function insertBeforeAnchor(
   path: string,
@@ -34,7 +34,7 @@ export function insertBeforeAnchor(
   const lineStart = src.lastIndexOf("\n", idx) + 1;
   const anchorLineEnd = src.indexOf("\n", idx);
   const anchorLine = src.slice(lineStart, anchorLineEnd === -1 ? undefined : anchorLineEnd);
-  const indent = anchorLine.match(/^\s*/)?.[0] ?? ""; // samo wcięcie, bez `// ` kotwicy
+  const indent = anchorLine.match(/^\s*/)?.[0] ?? ""; // the indent alone, without the `// ` anchor
   const updated = `${src.slice(0, lineStart)}${indent}${line}\n${src.slice(lineStart)}`;
   writeFileSync(path, updated);
 }

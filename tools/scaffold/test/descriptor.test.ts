@@ -2,7 +2,7 @@ import { defineEntity, f } from "@repo/schemas";
 import { describe, expect, it } from "vitest";
 import { buildDescriptor } from "../src/descriptor.js";
 
-/** Encja wielowyrazowa z unikalnością złożoną — przypadek, który wcześniej rozsypywał generator. */
+/** A multi-word entity with composite uniqueness — the case that used to break the generator. */
 const talkSpeaker = defineEntity({
   name: "talkSpeaker",
   plural: "talkSpeakers",
@@ -28,18 +28,18 @@ const project = defineEntity({
 });
 
 describe("formy nazwy encji", () => {
-  it("encja wielowyrazowa dostaje osobną formę dla kodu, tabeli i ścieżki", () => {
+  it("a multi-word entity gets a separate form for code, table and path", () => {
     const d = buildDescriptor(talkSpeaker);
 
     expect(d.plural).toBe("talkSpeakers"); // identyfikatory w kodzie
-    expect(d.table).toBe("talk_speakers"); // nazwa tabeli (spójna z snake_case kolumn)
-    expect(d.path).toBe("talk-speakers"); // ścieżka API i admina
-    expect(d.file).toBe("talk-speakers"); // katalog i nazwy plików
+    expect(d.table).toBe("talk_speakers"); // the table name (consistent with the snake_case columns)
+    expect(d.path).toBe("talk-speakers"); // the API and admin path
+    expect(d.file).toBe("talk-speakers"); // the directory and file names
     expect(d.Pascal).toBe("TalkSpeaker");
     expect(d.PascalPlural).toBe("TalkSpeakers");
   });
 
-  it("liczbę mnogą przyjmuje w dowolnym zapisie i normalizuje do tych samych form", () => {
+  it("accepts the plural in any spelling and normalises it to the same forms", () => {
     const forms = ["talkSpeakers", "talk-speakers", "talk_speakers"].map((plural) =>
       buildDescriptor({ ...talkSpeaker, plural }),
     );
@@ -53,7 +53,7 @@ describe("formy nazwy encji", () => {
     }
   });
 
-  it("encja jednowyrazowa ma wszystkie formy identyczne (brak zmiany dla istniejących encji)", () => {
+  it("a single-word entity has all four forms identical (no change for existing entities)", () => {
     const d = buildDescriptor(project);
 
     expect([d.plural, d.table, d.path, d.file]).toEqual([
@@ -76,21 +76,21 @@ describe("formy nazwy encji", () => {
     });
   });
 
-  it("odrzuca nazwę encji, która nie jest identyfikatorem camelCase", () => {
+  it("rejects an entity name that is not a camelCase identifier", () => {
     expect(() => buildDescriptor({ ...project, name: "talk-speaker" })).toThrow(
-      /musi być identyfikatorem camelCase/,
+      /must be a camelCase identifier/,
     );
   });
 
-  it("odrzuca liczbę mnogą ze znakami spoza identyfikatora", () => {
+  it("rejects a plural containing characters outside an identifier", () => {
     expect(() => buildDescriptor({ ...project, plural: "talk speakers!" })).toThrow(
-      /tylko litery, cyfry i separatory/,
+      /may contain only letters, digits and separators/,
     );
   });
 });
 
-describe("ograniczenia unikalności", () => {
-  it("grupa złożona dostaje deterministyczną nazwę indeksu", () => {
+describe("uniqueness constraints", () => {
+  it("a composite group gets a deterministic index name", () => {
     expect(buildDescriptor(talkSpeaker).unique).toEqual([
       { indexName: "talk_speakers_talk_id_speaker_id_key", fields: ["talkId", "speakerId"] },
     ]);
@@ -111,7 +111,7 @@ describe("ograniczenia unikalności", () => {
     ]);
   });
 
-  it("duplikaty grup są pomijane", () => {
+  it("duplicate groups are skipped", () => {
     const duplicated = defineEntity({
       name: "event",
       plural: "events",
@@ -125,11 +125,11 @@ describe("ograniczenia unikalności", () => {
     expect(buildDescriptor(duplicated).unique).toHaveLength(1);
   });
 
-  it("encja bez unikalności ma pustą listę", () => {
+  it("an entity without uniqueness has an empty list", () => {
     expect(buildDescriptor(project).unique).toEqual([]);
   });
 
-  it("odrzuca `unique` wskazujące nieistniejące pole", () => {
+  it("rejects a `unique` naming a field that does not exist", () => {
     const broken = defineEntity({
       name: "event",
       plural: "events",
@@ -140,6 +140,6 @@ describe("ograniczenia unikalności", () => {
       fields: { slug: f.text() },
     });
 
-    expect(() => buildDescriptor(broken)).toThrow(/nieistniejące pole\(a\): missing/);
+    expect(() => buildDescriptor(broken)).toThrow(/field\(s\) that do not exist: missing/);
   });
 });

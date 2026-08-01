@@ -31,8 +31,8 @@ const project = buildDescriptor(
   }),
 );
 
-// `select` i `radio` to ta sama lista zamknięta — różni je wyłącznie komponent na FE.
-// Encja z OBIEMA kontrolkami pilnuje, żeby żaden szablon nie obsłużył tylko jednej z nich.
+// `select` and `radio` are the same closed list — only the frontend component differs.
+// An entity with BOTH controls guards against a template handling only one of them.
 const talk = buildDescriptor(
   defineEntity({
     name: "talk",
@@ -48,26 +48,26 @@ const talk = buildDescriptor(
   }),
 );
 
-describe("schemat Drizzle", () => {
+describe("the Drizzle schema", () => {
   const generated = drizzleSchema(talkSpeaker);
 
-  it("nazwa tabeli jest snake_case, a stała camelCase", () => {
+  it("the table name is snake_case while the constant is camelCase", () => {
     expect(generated).toContain('export const talkSpeakers = pgTable("talk_speakers"');
   });
 
-  it("importy relacji idą do katalogów kebab-case pod nazwą stałej", () => {
+  it("relation imports point at kebab-case directories under the constant name", () => {
     expect(generated).toContain('import { talks } from "../talks/talks.schema.js"');
     expect(generated).toContain('import { speakers } from "../speakers/speakers.schema.js"');
   });
 
-  it("unikalność złożona to CZĘŚCIOWY indeks (soft delete zwalnia wartość)", () => {
+  it("composite uniqueness is a PARTIAL index (a soft delete releases the value)", () => {
     expect(generated).toContain('uniqueIndex("talk_speakers_talk_id_speaker_id_key")');
     expect(generated).toContain(".on(table.talkId, table.speakerId)");
     expect(generated).toContain("where(sql`${table.deletedAt} is null`)");
     expect(generated).toContain('import { sql } from "drizzle-orm"');
   });
 
-  it("encja bez unikalności nie dostaje trzeciego argumentu ani importu `sql`", () => {
+  it("an entity without uniqueness gets neither the third argument nor the `sql` import", () => {
     const plain = drizzleSchema(project);
 
     expect(plain).toContain('export const projects = pgTable("projects", {');
@@ -76,20 +76,20 @@ describe("schemat Drizzle", () => {
   });
 });
 
-describe("moduł API", () => {
-  it("importy modułu wskazują pliki kebab-case", () => {
+describe("the API module", () => {
+  it("the module imports point at kebab-case files", () => {
     expect(repository(talkSpeaker)).toContain('from "./talk-speakers.schema.js"');
     expect(service(talkSpeaker)).toContain('from "./talk-speakers.dto.js"');
     expect(routes(talkSpeaker)).toContain('from "./talk-speakers.service.js"');
   });
 
-  it("repozytoria relacji importują się z katalogów kebab-case", () => {
+  it("relation repositories are imported from kebab-case directories", () => {
     expect(service(talkSpeaker)).toContain(
       'import { talksRepository } from "../talks/talks.repository.js"',
     );
   });
 
-  it("ścieżki API i tagi OpenAPI są kebab-case", () => {
+  it("the API paths and OpenAPI tags are kebab-case", () => {
     const generated = routes(talkSpeaker);
 
     expect(generated).toContain("/api/v1/talk-speakers");
@@ -97,46 +97,46 @@ describe("moduł API", () => {
     expect(generated).not.toContain("talkSpeakers}");
   });
 
-  it("naruszenie unikalności mapuje się na 409 z listą pól (dla formularza)", () => {
+  it("a uniqueness violation maps to a 409 with the field list (for the form)", () => {
     const generated = service(talkSpeaker);
 
     expect(generated).toContain("uniqueConflictError");
     expect(generated).toContain("unique-violation.js");
-    // Lista, nie sklejone zdanie: `uniqueConflictError` robi z niej rozszerzenie `errors`,
-    // po którym formularz podświetla konkretne kontrolki.
+    // A list, not a glued sentence: `uniqueConflictError` turns it into the `errors` extension,
+    // which is what lets the form highlight the specific controls.
     expect(generated).toContain('"talk_speakers_talk_id_speaker_id_key": ["talkId", "speakerId"]');
     expect(generated).toContain('uniqueConflictError("Talk speaker", fields)');
     expect(generated).toContain(".catch(rethrowAsConflict)");
   });
 
-  it("widoki create/edit nie połykają błędu API (obsługuje go silnik formularza)", () => {
+  it("the create/edit views do not swallow the API error (the form engine handles it)", () => {
     const generated = adminEntity(talkSpeaker);
 
-    // Własny `catch` w widoku zamieniał `detail` z problem+json na komunikat zastępczy, więc
-    // użytkownik nie wiedział ani co jest nie tak, ani które pole poprawić.
+    // A local `catch` in the view replaced the `detail` from problem+json with a stand-in message,
+    // so the user learned neither what was wrong nor which field to fix.
     expect(generated).not.toContain("Nie udało się utworzyć.");
     expect(generated).not.toContain("Nie udało się zapisać.");
     expect(generated).toContain("const created = await create.mutateAsync(");
   });
 
-  it("toast przy usuwaniu niesie treść z API, a nie sam tekst zastępczy", () => {
+  it("the delete toast carries the text from the API, not just a stand-in", () => {
     const generated = adminEntity(talkSpeaker);
 
-    // Usuwanie nie ma formularza, więc toast jest JEDYNYM miejscem na powód odmowy.
+    // Deletion has no form, so the toast is the ONLY place the reason can appear.
     expect(generated).toContain(
       'onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error")',
     );
     expect(generated).toContain('import { errorMessage } from "@repo/api-client";');
   });
 
-  it("encja bez unikalności nie dostaje obsługi konfliktu", () => {
+  it("an entity without uniqueness gets no conflict handling", () => {
     const generated = service(project);
 
     expect(generated).not.toContain("uniqueConflictError");
     expect(generated).not.toContain("unique-violation");
   });
 
-  it("TRUNCATE w teście używa nazw TABEL, nie identyfikatorów", () => {
+  it("the TRUNCATE in the test uses TABLE names, not identifiers", () => {
     const generated = beTest(talkSpeaker);
 
     expect(generated).toContain("TRUNCATE TABLE users, talks, speakers, talk_speakers CASCADE");
@@ -144,29 +144,29 @@ describe("moduł API", () => {
   });
 });
 
-describe("radio traktowane jak select (lista zamknięta)", () => {
-  it("kolumna Drizzle dostaje `$type` i `notNull` tak samo jak select", () => {
+describe("radio treated like select (a closed list)", () => {
+  it("the Drizzle column gets `$type` and `notNull` exactly as for select", () => {
     const generated = drizzleSchema(talk);
 
     expect(generated).toContain(`track: text("track").$type<"product" | "design">().notNull()`);
     expect(generated).toContain(`level: text("level").$type<"intro" | "advanced">().notNull()`);
   });
 
-  it("filtr w DTO jest enumem, nie uuid-em", () => {
+  it("the DTO filter is an enum, not a uuid", () => {
     const generated = dto(talk);
 
     expect(generated).toContain(`track: z.enum(["product", "design"]).optional()`);
     expect(generated).toContain(`level: z.enum(["intro", "advanced"]).optional()`);
   });
 
-  it("test CRUD wysyła prawidłową wartość enuma, nie stub tekstowy", () => {
+  it("the CRUD test sends a valid enum value, not a text stub", () => {
     const generated = beTest(talk);
 
     expect(generated).toContain(`level: "intro"`);
     expect(generated).not.toContain(`level: "test-level"`);
   });
 
-  it("admin renderuje Badge i filtr dla obu kontrolek", () => {
+  it("the admin renders a Badge and a filter for both controls", () => {
     const generated = adminEntity(talk);
 
     expect(generated).toContain("<Badge>{row.track}</Badge>");
@@ -176,7 +176,7 @@ describe("radio traktowane jak select (lista zamknięta)", () => {
   });
 });
 
-describe("kontrolka datetime", () => {
+describe("the datetime control", () => {
   const agenda = buildDescriptor(
     defineEntity({
       name: "agendaItem",
@@ -191,7 +191,7 @@ describe("kontrolka datetime", () => {
     }),
   );
 
-  it("w bazie to ta sama kolumna co `date` (timestamptz)", () => {
+  it("in the database it is the same column as `date` (timestamptz)", () => {
     const generated = drizzleSchema(agenda);
 
     expect(generated).toContain(`day: timestamp("day", { withTimezone: true }).notNull()`);
@@ -200,7 +200,7 @@ describe("kontrolka datetime", () => {
     );
   });
 
-  it("admin formatuje datę i datę z godziną osobnymi helperami", () => {
+  it("the admin formats dates and date-times with separate helpers", () => {
     const generated = adminEntity(agenda);
 
     expect(generated).toContain('import { formatDate, formatDateTime, Page } from "../ui";');
@@ -208,21 +208,21 @@ describe("kontrolka datetime", () => {
     expect(generated).toContain("formatDateTime(row.startsAt)");
   });
 
-  it("test CRUD wysyła wartość z godziną", () => {
+  it("the CRUD test sends a value including the time", () => {
     expect(beTest(agenda)).toContain(`startsAt: "2026-01-01T10:00:00.000Z"`);
   });
 });
 
-describe("importy w widoku admina są warunkowe", () => {
-  // Nieużywany import to błąd `noUnusedLocals` — encja bez listy zamkniętej nie może dostać
-  // `Badge`, a encja bez filtrów nie może dostać `Select`.
-  it("encja bez listy zamkniętej nie importuje Badge ani Select", () => {
+describe("the admin view imports are conditional", () => {
+  // An unused import is a `noUnusedLocals` error — an entity without a closed list must not get
+  // `Badge`, and an entity without filters must not get `Select`.
+  it("an entity without a closed list imports neither Badge nor Select", () => {
     const generated = adminEntity(project);
 
     expect(generated).toContain('import { Button, Modal, useToast } from "@repo/design-system";');
   });
 
-  it("encja z listą zamkniętą bez filtra importuje Badge, ale nie Select", () => {
+  it("an entity with an unfiltered closed list imports Badge but not Select", () => {
     const generated = adminEntity(talkSpeaker);
 
     expect(generated).toContain(
@@ -230,7 +230,7 @@ describe("importy w widoku admina są warunkowe", () => {
     );
   });
 
-  it("encja z filtrowalną listą zamkniętą importuje oba", () => {
+  it("an entity with a filterable closed list imports both", () => {
     const generated = adminEntity(talk);
 
     expect(generated).toContain(
@@ -240,7 +240,7 @@ describe("importy w widoku admina są warunkowe", () => {
 });
 
 describe("warstwa FE", () => {
-  it("hooki uderzają w kebab-case ścieżkę, ale nazwy zostają camelCase", () => {
+  it("the hooks hit the kebab-case path while the names stay camelCase", () => {
     const generated = apiReactHooks(talkSpeaker);
 
     expect(generated).toContain('"/api/v1/talk-speakers/"');

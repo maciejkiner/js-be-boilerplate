@@ -10,9 +10,9 @@ export interface FieldDescriptor {
   relation?: {
     entity: string;
     displayField: string;
-    /** Identyfikator encji-celu w kodzie (`talkSpeakers`) — nazwa stałej Drizzle i repozytorium. */
+    /** The target entity's code identifier (`talkSpeakers`) — the Drizzle constant and repository name. */
     targetIdent: string;
-    /** Nazwa katalogu i plików encji-celu (`talk-speakers`). */
+    /** The target entity's directory and file name (`talk-speakers`). */
     targetFile: string;
     /** Nazwa tabeli encji-celu (`talk_speakers`) — do SQL-a w testach. */
     targetTable: string;
@@ -24,26 +24,26 @@ export interface FieldDescriptor {
   visible: boolean;
 }
 
-/** Ograniczenie unikalności przełożone na indeks w bazie. */
+/** A uniqueness constraint translated into a database index. */
 export interface UniqueDescriptor {
-  /** Nazwa indeksu (snake_case, prefiksowana nazwą tabeli). */
+  /** The index name (snake_case, prefixed with the table name). */
   indexName: string;
-  /** Pola encji (camelCase) wchodzące w ograniczenie — w kolejności deklaracji. */
+  /** The entity fields (camelCase) taking part in the constraint — in declaration order. */
   fields: string[];
 }
 
 export interface EntityDescriptor {
   name: string;
   /**
-   * Liczba mnoga jako **identyfikator** w kodzie (`talkSpeakers`): nazwa stałej Drizzle,
-   * repozytorium, service'u, hooków i kluczy cache.
+   * The plural as a code **identifier** (`talkSpeakers`): the name of the Drizzle constant, the
+   * repository, the service, the hooks and the cache keys.
    */
   plural: string;
-  /** Nazwa tabeli w bazie (`talk_speakers`) — spójna ze snake_case kolumn. */
+  /** The database table name (`talk_speakers`) — consistent with the snake_case columns. */
   table: string;
-  /** Ścieżka API i admina (`talk-speakers`) — kebab-case wg konwencji z CLAUDE.md. */
+  /** The API and admin path (`talk-speakers`) — kebab-case per the CLAUDE.md convention. */
   path: string;
-  /** Nazwa katalogu i plików modułu (`talk-speakers`). */
+  /** The module's directory and file name (`talk-speakers`). */
   file: string;
   Pascal: string;
   PascalPlural: string;
@@ -55,7 +55,7 @@ export interface EntityDescriptor {
 }
 
 /**
- * Rozbija nazwę na słowa niezależnie od zapisu na wejściu:
+ * Splits a name into words regardless of the input spelling:
  * `talkSpeakers`, `talk-speakers`, `talk_speakers` → `["talk", "speakers"]`.
  */
 function words(value: string): string[] {
@@ -75,9 +75,9 @@ export function pascal(value: string): string {
 }
 
 /**
- * Kontrolki listy zamkniętej. `select` i `radio` różnią się **wyłącznie** komponentem na FE —
- * w bazie, DTO, filtrach i kolumnach admina zachowują się identycznie (enum + `options`).
- * Szablony muszą pytać o to przez ten predykat, nie porównywać z `"select"`.
+ * The closed-list controls. `select` and `radio` differ **only** in the frontend component — in the
+ * database, the DTOs, the filters and the admin columns they behave identically (an enum plus
+ * `options`). Templates must ask through this predicate instead of comparing against `"select"`.
  */
 export function isChoiceField(field: FieldDescriptor): boolean {
   return field.control === "select" || field.control === "radio";
@@ -97,7 +97,7 @@ function kebab(value: string): string {
   return words(value).join("-");
 }
 
-/** Postgres obcina identyfikatory do 63 bajtów — obcinamy sami, żeby nazwa była przewidywalna. */
+/** Postgres truncates identifiers to 63 bytes — we truncate ourselves so the name is predictable. */
 const PG_IDENTIFIER_MAX = 63;
 
 /** Naiwna liczba mnoga (wystarcza dla konwencji encji). `user` → auth (encja core). */
@@ -106,21 +106,21 @@ function pluralize(entity: string): string {
 }
 
 /**
- * Pola zarządzane przez framework — dokładane do KAŻDEJ tabeli (`id` + helpery `timestamps`/
- * `softDelete`/`createdBy` z `db/columns.ts`). Encja domenowa nie może ich deklarować, bo w
- * wygenerowanym schemacie Drizzle kolidowałyby ze spreadem helperów.
+ * Framework-managed fields — added to EVERY table (`id` plus the `timestamps`/`softDelete`/
+ * `createdBy` helpers from `db/columns.ts`). A domain entity must not declare them, because in the
+ * generated Drizzle schema they would collide with the helper spreads.
  */
 const RESERVED_FIELDS = new Set(["id", "createdAt", "updatedAt", "deletedAt", "createdBy"]);
 
 /**
- * Nazwa encji musi być poprawnym identyfikatorem camelCase, bo scaffolder składa z niej nazwę
+ * The entity name must be a valid camelCase identifier, because the scaffolder builds the
  * eksportu w `@repo/schemas` (`<name>Entity`) oraz typy (`<Pascal>ResponseSchema`).
  */
 function assertEntityName(name: string): void {
   if (!/^[a-z][A-Za-z0-9]*$/.test(name)) {
     throw new Error(
-      `Nazwa encji \`${name}\` musi być identyfikatorem camelCase (np. \`talkSpeaker\`) — ` +
-        `scaffolder składa z niej nazwę eksportu \`${name}Entity\` w @repo/schemas.`,
+      `Entity name \`${name}\` must be a camelCase identifier (\`talkSpeaker\`, say) — the ` +
+        `scaffolder builds the export name \`${name}Entity\` in @repo/schemas from it.`,
     );
   }
 }
@@ -128,15 +128,15 @@ function assertEntityName(name: string): void {
 function assertPlural(plural: string, entityName: string): void {
   if (!/^[A-Za-z][A-Za-z0-9\-_]*$/.test(plural)) {
     throw new Error(
-      `Liczba mnoga \`${plural}\` encji \`${entityName}\` może zawierać tylko litery, cyfry ` +
-        `i separatory (\`-\`, \`_\`). Zapis dowolny: \`talkSpeakers\`, \`talk-speakers\`, \`talk_speakers\`.`,
+      `The plural \`${plural}\` of entity \`${entityName}\` may contain only letters, digits ` +
+        `and separators (\`-\`, \`_\`). Any spelling works: \`talkSpeakers\`, \`talk-speakers\`, \`talk_speakers\`.`,
     );
   }
 }
 
 /**
- * Przekłada `entity.unique` na indeksy: sprawdza, że pola istnieją, usuwa duplikaty grup
- * i nadaje deterministyczną nazwę indeksu.
+ * Translates `entity.unique` into indexes: it checks that the fields exist, removes duplicate groups
+ * and assigns a deterministic index name.
  */
 function buildUnique(entity: Entity<z.ZodRawShape>, table: string): UniqueDescriptor[] {
   const groups = entity.unique ?? [];
@@ -151,8 +151,8 @@ function buildUnique(entity: Entity<z.ZodRawShape>, table: string): UniqueDescri
     const unknown = group.filter((field) => !known.has(field));
     if (unknown.length > 0) {
       throw new Error(
-        `Encja \`${entity.name}\`: \`unique\` wskazuje nieistniejące pole(a): ${unknown.join(", ")}. ` +
-          `Dostępne pola: ${[...known].join(", ")}.`,
+        `Entity \`${entity.name}\`: \`unique\` names field(s) that do not exist: ${unknown.join(", ")}. ` +
+          `Available fields: ${[...known].join(", ")}.`,
       );
     }
     const key = group.join(",");
@@ -179,8 +179,8 @@ export function buildDescriptor(entity: Entity<z.ZodRawShape>): EntityDescriptor
   if (reserved.length > 0) {
     throw new Error(
       `Encja \`${entity.name}\` deklaruje pole(a) audytowe: ${reserved.join(", ")}. ` +
-        `Te pola (id, createdAt, updatedAt, deletedAt, createdBy) są dokładane automatycznie ` +
-        `z db/columns.ts — usuń je ze schematu i metadanych encji w packages/schemas.`,
+        `These fields (id, createdAt, updatedAt, deletedAt, createdBy) are added automatically ` +
+        `from db/columns.ts — remove them from the entity schema and metadata in packages/schemas.`,
     );
   }
 

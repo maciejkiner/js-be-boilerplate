@@ -16,9 +16,9 @@ const apiModule = (d: EntityDescriptor, file: string) =>
 function main(): void {
   const name = process.argv[2];
   if (!name) {
-    console.error("Użycie: pnpm scaffold <encja>  (np. `pnpm scaffold widget`)");
+    console.error("Usage: pnpm scaffold <entity>  (for example `pnpm scaffold widget`)");
     console.error(
-      "Najpierw utwórz encję w packages/schemas i wyeksportuj ją w src/index.ts (pakiet budowany jest automatycznie).",
+      "First create the entity in packages/schemas and export it from src/index.ts (the package is built automatically).",
     );
     process.exit(1);
   }
@@ -27,7 +27,7 @@ function main(): void {
     Entity<z.ZodRawShape> | undefined;
   if (!entity) {
     console.error(
-      `Nie znaleziono encji \`${name}Entity\` w @repo/schemas. Utwórz plik encji i wyeksportuj go w packages/schemas/src/index.ts (pakiet budowany jest automatycznie przed scaffoldingiem).`,
+      `Entity \`${name}Entity\` not found in @repo/schemas. Create the entity file and export it from packages/schemas/src/index.ts (the package is built automatically before scaffolding).`,
     );
     process.exit(1);
   }
@@ -41,7 +41,7 @@ function main(): void {
   }
   console.log(`Scaffolding encji: ${d.name} (${d.plural})`);
 
-  // --- BE: pliki modułu API + schemat Drizzle ---
+  // --- Backend: the API module files plus the Drizzle schema ---
   const files: Array<[string, string]> = [
     [apiModule(d, "schema.ts"), drizzleSchema(d)],
     [apiModule(d, "dto.ts"), dto(d)],
@@ -103,7 +103,7 @@ function main(): void {
   );
   console.log("  ~ zarejestrowano przy kotwicach (api-react/index.ts, admin/registry.ts)");
 
-  // Format generowanych plików + plików z wstawkami (Prettier), by były od razu zgodne z repo.
+  // Format the generated files and the files we edited (Prettier), so they match the repo at once.
   const touched = [
     apiModule(d, "schema.ts"),
     apiModule(d, "dto.ts"),
@@ -124,7 +124,7 @@ function main(): void {
   });
   console.log("  ~ sformatowano (prettier)");
 
-  console.log("\nKroki po (uruchom ręcznie):");
+  console.log("\nNext steps (run these yourself):");
   console.log("  pnpm --filter @repo/api db:generate   # migracja ze schematu");
   console.log("  pnpm generate:client                  # regeneracja klienta z OpenAPI");
 }

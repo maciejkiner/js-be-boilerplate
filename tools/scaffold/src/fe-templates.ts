@@ -131,9 +131,9 @@ function detailValue(f: FieldDescriptor): string {
 
 export function adminEntity(d: EntityDescriptor): string {
   const filterSelects = d.fields.filter((f) => f.filterable && isChoiceField(f));
-  // Importy DS i `ui` budujemy WARUNKOWO — nieużywany import to błąd typecheck/lint/build
-  // (`noUnusedLocals`). Każdy z tych symboli pojawia się w kodzie tylko dla części encji:
-  // `formatDate` przy polach `date`, `Badge` przy listach zamkniętych, `Select` przy ich filtrach.
+  // The DS and `ui` imports are built CONDITIONALLY — an unused import fails typecheck, lint and
+  // build (`noUnusedLocals`). Each of these symbols appears only for some entities: `formatDate` for
+  // `date` fields, `Badge` for closed lists, `Select` for their filters.
   const uiImports = [
     ...(d.fields.some((f) => f.control === "date") ? ["formatDate"] : []),
     ...(d.fields.some((f) => f.control === "datetime") ? ["formatDateTime"] : []),
@@ -318,8 +318,8 @@ ${detailRows}
                     toast("Usunięto.", "success");
                     navigate({ to: "/${d.path}" });
                   },
-                  // Akcja bez formularza — jedynym miejscem na błąd jest toast, więc niesie treść
-                  // z API (np. „rekord jest w użyciu"), a nie własny domysł.
+                  // An action without a form — the toast is the only place an error can go, so it
+                  // carries the text from the API ("the record is in use") rather than a guess.
                   onError: (error) => toast(errorMessage(error, "Nie udało się usunąć."), "error"),
                 })
               }
@@ -348,8 +348,8 @@ export function ${d.Pascal}Create() {
         defaultValues={emptyValues(${d.name}Entity)}
         submitLabel="Utwórz"
         relationSource={relationSource}
-        // Bez try/catch: błąd z API obsługuje silnik formularza — pola wskazane w problem+json
-        // (np. 409 o unikalności) podświetla przy kontrolkach, resztę pokazuje nad przyciskiem.
+        // No try/catch: the form engine handles the API error — the fields named in problem+json
+        // (a uniqueness 409, say) are highlighted at their controls, the rest above the button.
         onSubmit={async (values) => {
           const created = await create.mutateAsync(values as Create${d.Pascal}Body);
           toast("Utworzono.", "success");
