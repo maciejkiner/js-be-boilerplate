@@ -39,7 +39,7 @@ function main(): void {
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
-  console.log(`Scaffolding encji: ${d.name} (${d.plural})`);
+  console.log(`Scaffolding entity: ${d.name} (${d.plural})`);
 
   // --- Backend: the API module files plus the Drizzle schema ---
   const files: Array<[string, string]> = [
@@ -73,7 +73,7 @@ function main(): void {
     `await app.register(${d.plural}Routes({ db: deps.db }), { prefix: "/${d.path}" });`,
     `${d.plural}Routes(`,
   );
-  console.log("  ~ zarejestrowano przy kotwicach (db/schema.ts, modules/index.ts)");
+  console.log("  ~ registered at the anchors (db/schema.ts, modules/index.ts)");
 
   // --- FE: api-react hooki + widoki admina ---
   writeNew(join(ROOT, "packages/api-react/src", `${d.file}.ts`), apiReactHooks(d));
@@ -101,7 +101,7 @@ function main(): void {
     `{ name: "${d.name}", label: "${d.labelPlural}", path: "/${d.path}", List: ${d.PascalPlural}List, Detail: ${d.Pascal}Detail, Create: ${d.Pascal}Create, Edit: ${d.Pascal}Edit },`,
     `name: "${d.name}"`,
   );
-  console.log("  ~ zarejestrowano przy kotwicach (api-react/index.ts, admin/registry.ts)");
+  console.log("  ~ registered at the anchors (api-react/index.ts, admin/registry.ts)");
 
   // Format the generated files and the files we edited (Prettier), so they match the repo at once.
   const touched = [
@@ -122,11 +122,11 @@ function main(): void {
     cwd: ROOT,
     stdio: "ignore",
   });
-  console.log("  ~ sformatowano (prettier)");
+  console.log("  ~ formatted (prettier)");
 
   console.log("\nNext steps (run these yourself):");
-  console.log("  pnpm --filter @repo/api db:generate   # migracja ze schematu");
-  console.log("  pnpm generate:client                  # regeneracja klienta z OpenAPI");
+  console.log("  pnpm --filter @repo/api db:generate   # migration from the schema");
+  console.log("  pnpm generate:client                  # regenerate the client from OpenAPI");
 }
 
 main();
