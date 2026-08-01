@@ -12,7 +12,7 @@ const SORT_COLUMNS = {
 type RegistrationInsert = typeof registrations.$inferInsert;
 type RegistrationUpdate = Partial<Omit<RegistrationInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych registrations — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for registrations — queries only (soft-delete aware). Generated. */
 export const registrationsRepository = {
   async list(db: Db, query: RegistrationListQuery) {
     const conditions: SQL[] = [isNull(registrations.deletedAt)];

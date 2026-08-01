@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 
 /**
- * Bazowa, współdzielona konfiguracja ESLint (flat config).
+ * The shared base ESLint configuration (flat config).
  * Extended by `eslint-package` (the `packages/*` packages) and `eslint-app` (the `apps/*` shells).
  */
 export default tseslint.config(

@@ -7,8 +7,8 @@ import { runMigrations } from "../src/db/migrate.js";
 import { notDeleted } from "../src/db/query.js";
 import { type Seeder, runSeeds } from "../src/db/seed.js";
 
-// Testy integracyjne wymagają realnego Postgresa. Uruchamiają się tylko, gdy
-// ustawiony jest TEST_DATABASE_URL (docker compose lokalnie, service w CI).
+// The integration tests need a real Postgres. They run only when TEST_DATABASE_URL is set
+// (docker compose locally, a service in CI).
 const url = process.env.TEST_DATABASE_URL;
 const TABLE = "_probe_phase2";
 

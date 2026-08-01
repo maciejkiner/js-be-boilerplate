@@ -10,10 +10,10 @@ const url = process.env.TEST_DATABASE_URL;
 const CREDS = { email: "owner@example.com", password: "password123" };
 
 /**
- * Slice encji referencyjnej (Faza 4): dowodzi, że jedno źródło prawdy
- * (schemat + metadane @repo/schemas) daje działający CRUD z paginacją, filtrami,
- * sortem, walidacją (w tym międzypolową), soft delete, `createdBy` i relacjami
- * generator→generator (projectId) oraz generator→core (assigneeId → users).
+ * The reference entity slice: it proves that one source of truth (the schema plus the metadata in
+ * @repo/schemas) yields working CRUD with pagination, filters,
+ * sorting, validation (cross-field included), soft delete, `createdBy` and relations
+ * generated→generated (projectId) and generated→core (assigneeId → users).
  */
 describe.skipIf(!url)("encje referencyjne: projects + tasks", () => {
   let app: FastifyInstance;

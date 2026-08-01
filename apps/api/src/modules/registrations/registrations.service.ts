@@ -27,7 +27,7 @@ const UNIQUE_FIELDS: Record<string, string[]> = {
   registrations_event_id_email_key: ["eventId", "email"],
 };
 
-/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
+/** A uniqueness violation → a 409 naming the fields; any other error passes through. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
@@ -37,7 +37,7 @@ function rethrowAsConflict(error: unknown): never {
   throw error;
 }
 
-/** Logika biznesowa registrations. Wygenerowane. */
+/** Business logic for registrations. Generated. */
 export const registrationsService = {
   async list(db: Db, query: RegistrationListQuery) {
     const { items, total } = await registrationsRepository.list(db, query);

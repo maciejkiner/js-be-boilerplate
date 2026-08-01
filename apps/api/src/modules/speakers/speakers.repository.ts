@@ -12,7 +12,7 @@ const SORT_COLUMNS = {
 type SpeakerInsert = typeof speakers.$inferInsert;
 type SpeakerUpdate = Partial<Omit<SpeakerInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych speakers — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for speakers — queries only (soft-delete aware). Generated. */
 export const speakersRepository = {
   async list(db: Db, query: SpeakerListQuery) {
     const conditions: SQL[] = [isNull(speakers.deletedAt)];

@@ -11,7 +11,7 @@ import {
 } from "./talk-speakers.dto.js";
 import { talkSpeakersService } from "./talk-speakers.service.js";
 
-/** CRUD talkSpeakers pod /api/v1/talk-speakers. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for talkSpeakers under /api/v1/talk-speakers. Generated: routes → service → repository; auth required. */
 export function talkSpeakersRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

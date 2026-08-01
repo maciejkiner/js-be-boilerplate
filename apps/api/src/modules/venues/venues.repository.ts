@@ -13,7 +13,7 @@ const SORT_COLUMNS = {
 type VenueInsert = typeof venues.$inferInsert;
 type VenueUpdate = Partial<Omit<VenueInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych venues — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for venues — queries only (soft-delete aware). Generated. */
 export const venuesRepository = {
   async list(db: Db, query: VenueListQuery) {
     const conditions: SQL[] = [isNull(venues.deletedAt)];

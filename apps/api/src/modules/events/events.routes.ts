@@ -16,7 +16,7 @@ import {
 } from "./events.dto.js";
 import { eventsService } from "./events.service.js";
 
-/** CRUD events pod /api/v1/events. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for events under /api/v1/events. Generated: routes → service → repository; auth required. */
 export function eventsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db, mailer } = deps;
@@ -85,8 +85,8 @@ export function eventsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginAsy
       },
     );
     /**
-     * Agenda hurtem — krok 2 kreatora wydarzenia. `eventId` bierzemy ze ścieżki, więc ciało niesie
-     * same prelekcje. Semantyka „wszystko albo nic": kolizja w dowolnej pozycji odrzuca całą paczkę.
+     * The agenda in bulk — step 2 of the event wizard. `eventId` comes from the path, so the body
+     * carries the talks alone. All-or-nothing semantics: a clash anywhere rejects the whole batch.
      */
     app.post(
       "/:id/talks",
@@ -110,7 +110,7 @@ export function eventsRoutes(deps: { db: Db; mailer: Mailer }): FastifyPluginAsy
       },
     );
 
-    /** Zaproszenia prelegentów — wyłącznie mailer, żadnego zapisu (dowód separacji od CRUD). */
+    /** Speaker invitations — the mailer only, nothing persisted (the proof of separation from CRUD). */
     app.post(
       "/:id/invitations",
       {

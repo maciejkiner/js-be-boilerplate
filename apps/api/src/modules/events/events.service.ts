@@ -28,7 +28,7 @@ const UNIQUE_FIELDS: Record<string, string[]> = {
   events_slug_key: ["slug"],
 };
 
-/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
+/** A uniqueness violation → a 409 naming the fields; any other error passes through. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
@@ -38,7 +38,7 @@ function rethrowAsConflict(error: unknown): never {
   throw error;
 }
 
-/** Logika biznesowa events. Wygenerowane. */
+/** Business logic for events. Generated. */
 export const eventsService = {
   async list(db: Db, query: EventListQuery) {
     const { items, total } = await eventsRepository.list(db, query);
@@ -70,8 +70,8 @@ export const eventsService = {
   },
 
   /**
-   * Zaproszenia prelegentów: treść leci do mailera i NIGDZIE się nie zapisuje. Krok 3 kreatora —
-   * dowód, że silnik formularzy nie jest przywiązany do CRUD.
+   * Speaker invitations: the content goes to the mailer and is persisted NOWHERE. Step 3 of the
+   * wizard — the proof that the form engine is not tied to CRUD.
    */
   async inviteSpeakers(db: Db, eventId: string, emails: string[], mailer: Mailer) {
     const event = await eventsRepository.findById(db, eventId);

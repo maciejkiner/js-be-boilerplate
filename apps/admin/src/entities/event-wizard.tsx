@@ -18,7 +18,7 @@ import { Page } from "../ui";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** `unwrap` rzuca `ApiError`, więc `message` niesie `detail` z problem+json (treść dla użytkownika). */
+/** `unwrap` throws `ApiError`, so `message` carries the `detail` from problem+json (the user-facing text). */
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : "Żądanie do API nie powiodło się.";
 }
@@ -30,13 +30,13 @@ function parseEmails(text: string): string[] {
     .filter((value) => EMAIL_RE.test(value));
 }
 
-// Opcje bierzemy z ENCJI, nie z literałów — inaczej rozjadą się przy zmianie `talkEntity`.
-// `?? []` jest konieczne, bo `entity.fields` ma typ unii `FieldMeta`: kompilator nie wie, że akurat
-// te pola są listami zamkniętymi, choć builder to wiedział w momencie deklaracji.
+// The options come from the ENTITY, not from literals — otherwise they drift when `talkEntity`
+// changes. The `?? []` is required because `entity.fields` has the union type `FieldMeta`: the
+// compiler does not know these particular fields are closed lists, though the builder did.
 const TRACK_OPTIONS = talkEntity.fields.track.options ?? [];
 const LEVEL_OPTIONS = talkEntity.fields.level.options ?? [];
 
-/** Wiersz agendy w stanie kreatora — surowe wartości z pól, konwersja dopiero przy wysyłce. */
+/** An agenda row in the wizard state — raw field values, converted only when submitting. */
 interface AgendaRow {
   title: string;
   roomId: string;
@@ -56,9 +56,9 @@ const emptyRow = (): AgendaRow => ({
 });
 
 /**
- * Krok „agenda" trzyma listę wierszy w stanie lokalnym, bo `FormFields` renderuje POJEDYNCZY rekord
- * encji, a tutaj potrzebujemy N prelekcji naraz. To jest właśnie miejsce, w którym silnik formularzy
- * się kończy, a zaczyna widok pisany ręcznie.
+ * The "agenda" step keeps its rows in local state, because `FormFields` renders a SINGLE entity
+ * record while here we need N talks at once. This is exactly where the form engine ends and a
+ * hand-written view begins.
  */
 function AgendaStep({
   rows,
@@ -136,8 +136,8 @@ function AgendaStep({
 }
 
 /**
- * Kreator „utwórz wydarzenie" (P1). `onComplete` orkiestruje TRZY handlery o różnych celach:
- * wydarzenie → baza, agenda → jedno żądanie hurtowe, zaproszenia → mailer (bez zapisu).
+ * The "create an event" wizard (P1). `onComplete` orchestrates THREE handlers with different targets:
+ * the event → the database, the agenda → one bulk request, invitations → the mailer (not persisted).
  */
 export function CreateEventWizard() {
   const navigate = useNavigate();
@@ -148,9 +148,9 @@ export function CreateEventWizard() {
   const relationSource = useRelationSource();
 
   const [rows, setRows] = useState<AgendaRow[]>([emptyRow()]);
-  // Wydarzenie powstaje w pierwszej fazie orkiestracji. Gdy padnie faza późniejsza, ponowne
-  // „Utwórz" NIE może tworzyć go drugi raz — `slug` jest unikalny, więc druga próba dostałaby 409
-  // zamiast powtórzyć krok, który faktycznie zawiódł.
+  // The event is created in the first phase of the orchestration. If a later phase fails, pressing
+  // "Utwórz" again must NOT create it a second time — `slug` is unique, so the second attempt would
+  // get a 409 instead of retrying the step that actually failed.
   const createdEventId = useRef<string | null>(null);
   const roomsQuery = useRooms({ pageSize: 50 });
   const rooms = (roomsQuery.data?.items ?? []).map((room) => ({
@@ -174,8 +174,8 @@ export function CreateEventWizard() {
     {
       id: "agenda",
       label: "Agenda",
-      // Wiersze agendy żyją poza stanem wizarda, więc krok nie ma czego walidować schematem —
-      // komplet reguł (okno wydarzenia, kolizje sal) i tak weryfikuje API.
+      // The agenda rows live outside the wizard state, so this step has nothing to validate with a
+      // schema — the API verifies the full set of rules (the event window, room clashes) anyway.
       schema: z.object({}),
       render: () => <AgendaStep rows={rows} onChange={setRows} rooms={rooms} />,
     },
@@ -205,7 +205,7 @@ export function CreateEventWizard() {
           defaultValues={{ ...emptyValues(eventEntity), inviteEmailsText: "" }}
           labels={{ next: "Dalej", submit: "Utwórz" }}
           onComplete={async (values) => {
-            // 1) wydarzenie → baza (pomijane przy ponowieniu — patrz `createdEventId`)
+            // 1) the event → the database (skipped on a retry — see `createdEventId`)
             if (!createdEventId.current) {
               try {
                 const event = await createEvent.mutateAsync(values as unknown as CreateEventBody);
@@ -216,7 +216,7 @@ export function CreateEventWizard() {
             }
             const eventId = createdEventId.current;
 
-            // 2) agenda → JEDNO żądanie hurtowe („wszystko albo nic")
+            // 2) the agenda → ONE bulk request (all-or-nothing)
             const talks = rows
               .filter((row) => row.title && row.roomId && row.startsAt && row.endsAt)
               .map((row) => ({
@@ -235,13 +235,13 @@ export function CreateEventWizard() {
                   talks: talks as Parameters<typeof createTalks.mutateAsync>[0]["talks"],
                 });
               } catch (error) {
-                // Reguły domenowe (okno wydarzenia, kolizja sal) dotyczą danych z kroku „agenda",
-                // więc odsyłamy tam użytkownika razem z komunikatem serwera.
+                // The domain rules (the event window, room clashes) concern the "agenda" step's
+                // data, so we send the user back there together with the server's message.
                 throw new WizardStepError("agenda", messageOf(error));
               }
             }
 
-            // 3) zaproszenia → mailer (NIE do bazy)
+            // 3) invitations → the mailer (NOT the database)
             const emails = parseEmails((values.inviteEmailsText as string) ?? "");
             if (emails.length > 0) {
               try {

@@ -37,7 +37,7 @@ const UNIQUE_FIELDS: Record<string, string[]> = {
   talk_speakers_talk_id_speaker_id_key: ["talkId", "speakerId"],
 };
 
-/** Naruszenie unikalności → 409 wskazujące pola; każdy inny błąd przechodzi dalej. */
+/** A uniqueness violation → a 409 naming the fields; any other error passes through. */
 function rethrowAsConflict(error: unknown): never {
   const constraint = uniqueViolationConstraint(error);
   const fields = constraint ? UNIQUE_FIELDS[constraint] : undefined;
@@ -47,7 +47,7 @@ function rethrowAsConflict(error: unknown): never {
   throw error;
 }
 
-/** Logika biznesowa talkSpeakers. Wygenerowane. */
+/** Business logic for talkSpeakers. Generated. */
 export const talkSpeakersService = {
   async list(db: Db, query: TalkSpeakerListQuery) {
     const { items, total } = await talkSpeakersRepository.list(db, query);

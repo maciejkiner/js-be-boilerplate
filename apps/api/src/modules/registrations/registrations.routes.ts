@@ -11,7 +11,7 @@ import {
 } from "./registrations.dto.js";
 import { registrationsService } from "./registrations.service.js";
 
-/** CRUD registrations pod /api/v1/registrations. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for registrations under /api/v1/registrations. Generated: routes → service → repository; auth required. */
 export function registrationsRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

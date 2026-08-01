@@ -11,7 +11,7 @@ import {
 } from "./speakers.dto.js";
 import { speakersService } from "./speakers.service.js";
 
-/** CRUD speakers pod /api/v1/speakers. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for speakers under /api/v1/speakers. Generated: routes → service → repository; auth required. */
 export function speakersRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

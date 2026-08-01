@@ -11,7 +11,7 @@ import {
 } from "./rooms.dto.js";
 import { roomsService } from "./rooms.service.js";
 
-/** CRUD rooms pod /api/v1/rooms. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for rooms under /api/v1/rooms. Generated: routes → service → repository; auth required. */
 export function roomsRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

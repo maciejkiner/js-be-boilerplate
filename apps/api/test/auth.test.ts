@@ -110,7 +110,7 @@ describe.skipIf(!url)("auth (email+hasło, sesje, RBAC, reset)", () => {
     expect(rotated.refresh_token).toBeTruthy();
     expect(rotated.refresh_token).not.toBe(first.refresh_token);
 
-    // stary refresh unieważniony
+    // the old refresh token is invalidated
     const reuse = await app.inject({
       method: "POST",
       url: "/api/v1/auth/refresh",
@@ -129,7 +129,7 @@ describe.skipIf(!url)("auth (email+hasło, sesje, RBAC, reset)", () => {
     });
     expect(forbidden.statusCode).toBe(403);
 
-    // nadaj rolę admin i zaloguj ponownie (token osadza role przy logowaniu)
+    // grant the admin role and log in again (the token embeds the roles at login time)
     await db
       .update(users)
       .set({ roles: ["admin", "user"] })
@@ -165,7 +165,7 @@ describe.skipIf(!url)("auth (email+hasło, sesje, RBAC, reset)", () => {
     });
     expect(confirmed.statusCode).toBe(200);
 
-    // stare hasło nie działa, nowe działa
+    // the old password no longer works, the new one does
     expect((await login()).statusCode).toBe(401);
     const relog = await login({ email: CREDS.email, password: "new-password-456" });
     expect(relog.statusCode).toBe(200);

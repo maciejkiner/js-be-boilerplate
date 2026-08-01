@@ -7,7 +7,7 @@ import type { ErrorTracker } from "../src/lib/error-tracking/index.js";
 import { NoopErrorTracker } from "../src/lib/error-tracking/noop.js";
 import { MemoryMailer } from "../src/lib/mailer/memory.js";
 
-/** Poprawny env dla testów (bez czytania realnego process.env poza TEST_DATABASE_URL). */
+/** A valid env for the tests (it never reads the real process.env beyond TEST_DATABASE_URL). */
 export function testEnv(overrides: Record<string, string> = {}): Env {
   return parseEnv({
     NODE_ENV: "test",
@@ -18,7 +18,7 @@ export function testEnv(overrides: Record<string, string> = {}): Env {
   } as NodeJS.ProcessEnv);
 }
 
-/** Tracker nagrywający wywołania — do asercji, że 5xx są raportowane. */
+/** A tracker that records its calls — for asserting that 5xx errors are reported. */
 export function recordingTracker(): { tracker: ErrorTracker; captured: unknown[] } {
   const captured: unknown[] = [];
   return {

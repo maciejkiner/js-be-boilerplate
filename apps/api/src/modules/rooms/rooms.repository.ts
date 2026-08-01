@@ -13,7 +13,7 @@ const SORT_COLUMNS = {
 type RoomInsert = typeof rooms.$inferInsert;
 type RoomUpdate = Partial<Omit<RoomInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych rooms — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for rooms — queries only (soft-delete aware). Generated. */
 export const roomsRepository = {
   async list(db: Db, query: RoomListQuery) {
     const conditions: SQL[] = [isNull(rooms.deletedAt)];

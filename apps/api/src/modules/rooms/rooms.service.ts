@@ -18,7 +18,7 @@ async function assertRelations(db: Db, input: { venueId?: string | null }) {
   }
 }
 
-/** Logika biznesowa rooms. Wygenerowane. */
+/** Business logic for rooms. Generated. */
 export const roomsService = {
   async list(db: Db, query: RoomListQuery) {
     const { items, total } = await roomsRepository.list(db, query);

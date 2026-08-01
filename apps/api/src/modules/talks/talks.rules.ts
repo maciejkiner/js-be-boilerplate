@@ -1,8 +1,8 @@
 /**
- * Reguły czasowe prelekcji — CZYSTE predykaty, bez dostępu do bazy.
+ * The scheduling rules for talks — PURE predicates, with no database access.
  *
- * Wydzielone z service'u celowo: to jedyny fragment tych reguł z realnym ryzykiem pomyłki
- * (granice przedziałów), a tutaj testuje się go bez Postgresa.
+ * Deliberately split out of the service: this is the only part of those rules with a real risk of a
+ * mistake (the interval boundaries), and here it can be tested without Postgres.
  */
 
 export interface Interval {
@@ -11,22 +11,23 @@ export interface Interval {
 }
 
 /**
- * Czy przedział `inner` mieści się w całości wewnątrz `outer`. Granice mogą się pokrywać —
- * prelekcja może zaczynać się dokładnie z początkiem wydarzenia i kończyć z jego końcem.
+ * Whether the `inner` interval fits entirely inside `outer`. The boundaries may touch — a talk may
+ * start exactly when the event starts and end exactly when it ends.
  */
 export function intervalContains(outer: Interval, inner: Interval): boolean {
   return inner.startsAt >= outer.startsAt && inner.endsAt <= outer.endsAt;
 }
 
 /**
- * Czy dwa przedziały czasowe na siebie nachodzą.
+ * Whether two time intervals overlap.
  *
- * Przedziały są **domknięte z lewej, otwarte z prawej** — `[start, end)`, więc nierówności są OSTRE:
- * prelekcja kończąca się o 10:00 i ta zaczynająca o 10:00 stoją obok siebie, a nie kolidują.
+ * The intervals are **closed on the left and open on the right** — `[start, end)` — so the
+ * inequalities are STRICT: a talk ending at 10:00 and one starting at 10:00 sit next to each other
+ * rather than clashing.
  *
- * Ten sam warunek liczy SQL w `talksRepository.findOverlappingInRoom` (dla rekordów już zapisanych).
- * Wersja w pamięci obsługuje przypadek, którego SQL nie widzi: kolizje **wewnątrz jednej paczki**
- * przy tworzeniu hurtem, zanim cokolwiek trafi do bazy.
+ * SQL computes the same condition in `talksRepository.findOverlappingInRoom` (for rows already
+ * stored). The in-memory version covers the case SQL cannot see: clashes **within a single batch**
+ * during bulk creation, before anything reaches the database.
  */
 export function intervalsOverlap(a: Interval, b: Interval): boolean {
   return a.startsAt < b.endsAt && a.endsAt > b.startsAt;

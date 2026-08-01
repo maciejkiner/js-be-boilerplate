@@ -60,7 +60,7 @@ export function EventsList() {
     <Page
       title="Events"
       actions={
-        // Dopisane ręcznie do wygenerowanego widoku: scaffolder nie wie o kreatorach.
+        // Added by hand to the generated view: the scaffolder knows nothing about wizards.
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => navigate({ to: "/events/new" })}>
             Nowy: Event

@@ -13,7 +13,7 @@ const SORT_COLUMNS = {
 type TalkInsert = typeof talks.$inferInsert;
 type TalkUpdate = Partial<Omit<TalkInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych talks — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for talks — queries only (soft-delete aware). Generated. */
 export const talksRepository = {
   async list(db: Db, query: TalkListQuery) {
     const conditions: SQL[] = [isNull(talks.deletedAt)];
@@ -53,10 +53,10 @@ export const talksRepository = {
   },
 
   /**
-   * Pierwsza prelekcja w tej samej sali, której czas nachodzi na podany przedział.
-   * Warunek nachodzenia liczony w SQL (`starts_at < :endsAt AND ends_at > :startsAt`) — ostre
-   * nierówności, bo przedziały są domknięte z lewej i otwarte z prawej (patrz `talks.rules.ts`).
-   * `exceptId` wyklucza edytowany rekord, żeby nie kolidował sam ze sobą.
+   * The first talk in the same room whose time overlaps the given interval.
+   * The overlap condition is computed in SQL (`starts_at < :endsAt AND ends_at > :startsAt`) — strict
+   * inequalities, because the intervals are closed on the left and open on the right (see
+   * `talks.rules.ts`). `exceptId` excludes the row being edited so it cannot clash with itself.
    */
   findOverlappingInRoom(
     db: Db,
@@ -80,8 +80,8 @@ export const talksRepository = {
   },
 
   /**
-   * Wstawia wiele prelekcji JEDNYM `INSERT`-em — atomowo, bez jawnej transakcji: albo wejdą
-   * wszystkie, albo żadna. Reguły domenowe sprawdza service PRZED wywołaniem.
+   * Inserts several talks with a SINGLE `INSERT` — atomically, without an explicit transaction:
+   * either all of them land or none. The service checks the domain rules BEFORE calling this.
    */
   async createMany(db: Db, values: TalkInsert[]) {
     if (values.length === 0) {

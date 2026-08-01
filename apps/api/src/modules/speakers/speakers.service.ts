@@ -12,7 +12,7 @@ import { speakersRepository } from "./speakers.repository.js";
 type CreateInput = z.infer<typeof CreateSpeakerSchema>;
 type UpdateInput = z.infer<typeof UpdateSpeakerSchema>;
 
-/** Logika biznesowa speakers. Wygenerowane. */
+/** Business logic for speakers. Generated. */
 export const speakersService = {
   async list(db: Db, query: SpeakerListQuery) {
     const { items, total } = await speakersRepository.list(db, query);

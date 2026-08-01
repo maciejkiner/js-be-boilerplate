@@ -11,7 +11,7 @@ import {
 } from "./venues.dto.js";
 import { venuesService } from "./venues.service.js";
 
-/** CRUD venues pod /api/v1/venues. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for venues under /api/v1/venues. Generated: routes → service → repository; auth required. */
 export function venuesRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

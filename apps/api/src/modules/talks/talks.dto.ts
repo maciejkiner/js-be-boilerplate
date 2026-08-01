@@ -28,8 +28,9 @@ export const IdParamSchema = z.object({ id: z.string().uuid() });
 export type TalkListQuery = z.infer<typeof TalkListQuerySchema>;
 
 /**
- * Pozycja paczki „prelekcje wydarzenia" — `eventId` pochodzi ze ŚCIEŻKI (`/events/:id/talks`),
- * więc nie ma go w ciele. Porządek godzin sprawdza service (`schema` nie niesie `refine`).
+ * An entry of the "talks of an event" batch — `eventId` comes from the PATH (`/events/:id/talks`),
+ * so it is absent from the body. The service checks the ordering of the times (`schema` carries no
+ * `refine`).
  */
 export const CreateTalkInEventSchema = talkEntity.schema.omit({ eventId: true });
 

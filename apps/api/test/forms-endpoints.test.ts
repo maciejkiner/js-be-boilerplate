@@ -12,8 +12,8 @@ const url = process.env.TEST_DATABASE_URL;
 const CREDS = { email: "owner@example.com", password: "password123" };
 
 /**
- * Faza 7 (BE dla formularzy/wizarda): zaproszenia idą do mailera (NIE do bazy) — dowód separacji
- * handlerów; lista userów (RBAC admin) — źródło pól relacji `assignee`.
+ * The backend behind the forms and the wizard: invitations go to the mailer (NOT the database) — the proof of separation
+ * handlers; the user list (admin RBAC) is the source for the `assignee` relation fields.
  */
 describe.skipIf(!url)("Faza 7 BE: zaproszenia (mailer) + lista userów", () => {
   let app: FastifyInstance;

@@ -12,7 +12,7 @@ const url = process.env.TEST_DATABASE_URL;
 const ADMIN = { email: "admin-mgr@example.com", password: "password123" };
 const MEMBER = { email: "member@example.com", password: "password123" };
 
-/** Zarządzanie użytkownikami (panel admina) — bramka roli, zaproszenia, role, dezaktywacja. */
+/** User management (the admin panel) — the role gate, invitations, roles, deactivation. */
 describe.skipIf(!url)("users management (admin)", () => {
   let app: FastifyInstance;
   let db: Db;
@@ -48,7 +48,7 @@ describe.skipIf(!url)("users management (admin)", () => {
   beforeEach(async () => {
     await db.execute(sql`TRUNCATE TABLE users CASCADE`);
     adminId = await register(ADMIN);
-    // Awans do admina w bazie, dopiero potem login — token nosi role z chwili wydania.
+    // Promote to admin in the database first, then log in — the token carries the roles it was issued with.
     await db
       .update(users)
       .set({ roles: ["admin", "user"] })
@@ -122,7 +122,7 @@ describe.skipIf(!url)("users management (admin)", () => {
     expect(deactivate.statusCode).toBe(200);
     expect(deactivate.json().active).toBe(false);
 
-    // Soft-delete egzekwowany przez auth — dezaktywowany user się nie zaloguje.
+    // Soft delete is enforced by auth — a deactivated user cannot log in.
     expect((await login(MEMBER)).statusCode).toBe(401);
 
     const active = await app.inject({

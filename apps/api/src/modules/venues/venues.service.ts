@@ -12,7 +12,7 @@ import { venuesRepository } from "./venues.repository.js";
 type CreateInput = z.infer<typeof CreateVenueSchema>;
 type UpdateInput = z.infer<typeof UpdateVenueSchema>;
 
-/** Logika biznesowa venues. Wygenerowane. */
+/** Business logic for venues. Generated. */
 export const venuesService = {
   async list(db: Db, query: VenueListQuery) {
     const { items, total } = await venuesRepository.list(db, query);

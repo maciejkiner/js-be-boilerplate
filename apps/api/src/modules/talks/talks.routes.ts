@@ -11,7 +11,7 @@ import {
 } from "./talks.dto.js";
 import { talksService } from "./talks.service.js";
 
-/** CRUD talks pod /api/v1/talks. Wygenerowane: trasy → service → repository; auth wymagany. */
+/** CRUD for talks under /api/v1/talks. Generated: routes → service → repository; auth required. */
 export function talksRoutes(deps: { db: Db }): FastifyPluginAsyncZod {
   return async (app) => {
     const { db } = deps;

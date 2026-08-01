@@ -14,7 +14,7 @@ const SORT_COLUMNS = {
 type EventInsert = typeof events.$inferInsert;
 type EventUpdate = Partial<Omit<EventInsert, "id" | "createdAt" | "updatedAt">>;
 
-/** Dostęp do danych events — tylko zapytania (soft-delete-aware). Wygenerowane. */
+/** Data access for events — queries only (soft-delete aware). Generated. */
 export const eventsRepository = {
   async list(db: Db, query: EventListQuery) {
     const conditions: SQL[] = [isNull(events.deletedAt)];
