@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { ensureUser, loginViaUi, seedProject } from "./helpers";
 
-test.describe("formularze: create / edit / wizard (silnik forms + forms-ui)", () => {
-  test("create projektu przez formularz → detal", async ({ page, request }) => {
+test.describe("forms: create / edit / wizard (the forms + forms-ui engine)", () => {
+  test("creating a project through the form → the detail page", async ({ page, request }) => {
     await ensureUser(request);
     await loginViaUi(page);
 
@@ -18,7 +18,7 @@ test.describe("formularze: create / edit / wizard (silnik forms + forms-ui)", ()
     await expect(page.getByRole("heading", { name })).toBeVisible();
   });
 
-  test("walidacja międzypolowa: endDate < startDate blokuje i pokazuje błąd", async ({
+  test("cross-field validation: endDate < startDate blocks and shows the error", async ({
     page,
     request,
   }) => {
@@ -33,10 +33,10 @@ test.describe("formularze: create / edit / wizard (silnik forms + forms-ui)", ()
     await page.getByRole("button", { name: "Utwórz" }).click();
 
     await expect(page.getByText(/on or after the start date/i)).toBeVisible();
-    await expect(page).toHaveURL(/\/projects\/new$/); // nie przeszło dalej
+    await expect(page).toHaveURL(/\/projects\/new$/); // it did not move on
   });
 
-  test("edit projektu zmienia nazwę", async ({ page, request }) => {
+  test("editing a project changes its name", async ({ page, request }) => {
     await ensureUser(request);
     const name = await seedProject(request);
     await loginViaUi(page);
@@ -52,7 +52,7 @@ test.describe("formularze: create / edit / wizard (silnik forms + forms-ui)", ()
     await expect(page.getByRole("heading", { name: newName })).toBeVisible();
   });
 
-  test("wizard: 3 kroki → projekt utworzony (dane→baza, zaproszenia→mailer, zadania→hurt)", async ({
+  test("wizard: 3 steps → the project is created (data→database, invitations→mailer, tasks→bulk)", async ({
     page,
     request,
   }) => {
@@ -61,18 +61,18 @@ test.describe("formularze: create / edit / wizard (silnik forms + forms-ui)", ()
 
     await page.goto("/projects/wizard");
     const name = `Wizard ${Date.now()}`;
-    // krok 1: dane projektu
+    // step 1: the project data
     await page.getByLabel("Name").fill(name);
     await page.getByLabel("Status").selectOption("active");
     await page.getByLabel("Start date").fill("2026-01-01");
     await page.getByLabel("End date").fill("2026-06-01");
     await page.getByRole("button", { name: "Dalej" }).click();
 
-    // krok 2: zaproszenia (→ mailer)
+    // step 2: invitations (→ the mailer)
     await page.getByLabel(/E-maile/).fill("a@example.com, b@example.com");
     await page.getByRole("button", { name: "Dalej" }).click();
 
-    // krok 3: początkowe zadania (→ hurt)
+    // step 3: the initial tasks (→ bulk)
     await page.getByLabel(/zadania/).fill("Zadanie A\nZadanie B");
     await page.getByRole("button", { name: "Utwórz" }).click();
 

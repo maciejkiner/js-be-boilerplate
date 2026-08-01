@@ -4,9 +4,10 @@ import type { ReactNode } from "react";
 import { entityRegistry } from "./entities/registry";
 
 /**
- * Okruszek rodzica dla podwidoków encji (detal/nowy/edycja/wizard). Dopasowuje bieżącą ścieżkę
- * do rejestru encji — dzięki temu breadcrumb działa dla WSZYSTKICH widoków (też scaffoldowanych),
- * bez zmian w każdym z osobna. Na liście encji (ścieżka == path) rodzica nie ma.
+ * The parent breadcrumb for an entity's sub-views (detail, new, edit, wizard). It matches the
+ * current path against the entity registry — which makes the breadcrumb work for EVERY view
+ * (scaffolded ones included) without touching them one by one. On an entity list (path == path)
+ * there is no parent.
  */
 function useParentCrumb(): { label: string; to: string } | null {
   const { pathname } = useLocation();
@@ -19,7 +20,7 @@ function useParentCrumb(): { label: string; to: string } | null {
   return { label: entity.label, to: entity.path };
 }
 
-/** Nagłówek widoku (+ breadcrumb rodzica) + slot akcji + treść. */
+/** The view heading (plus the parent breadcrumb), an actions slot and the content. */
 export function Page({
   title,
   actions,
@@ -52,7 +53,7 @@ export function Page({
   );
 }
 
-/** Pełnoekranowy spinner (np. gdy weryfikujemy sesję). */
+/** A full-screen spinner (while verifying the session, for example). */
 export function FullSpinner() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -61,12 +62,12 @@ export function FullSpinner() {
   );
 }
 
-/** Data ISO → format lokalny (pl-PL) albo „—" dla braku. */
+/** An ISO date → the local (pl-PL) format, or "—" when absent. */
 export function formatDate(iso: string | null | undefined): string {
   return iso ? new Date(iso).toLocaleDateString("pl-PL") : "—";
 }
 
-/** Data z godziną (ISO) → format lokalny (pl-PL) albo „—" dla braku. */
+/** A date with time (ISO) → the local (pl-PL) format, or "—" when absent. */
 export function formatDateTime(iso: string | null | undefined): string {
   return iso
     ? new Date(iso).toLocaleString("pl-PL", {

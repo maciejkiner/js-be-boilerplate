@@ -1,7 +1,7 @@
 import { createApiClient } from "@repo/api-client";
 import { QueryClient } from "@tanstack/react-query";
 
-// Env czyta SKORUPA i wstrzykuje baseUrl do klienta (pakiety nie sięgają po import.meta.env).
+// The SHELL reads the env and injects baseUrl into the client (packages never touch import.meta.env).
 const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 export const apiClient = createApiClient({ baseUrl });

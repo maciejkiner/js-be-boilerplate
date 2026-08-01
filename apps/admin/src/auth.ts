@@ -6,7 +6,7 @@ export interface Credentials {
   password: string;
 }
 
-/** Bieżący użytkownik (sesja). 401 → isError (retry:false), używane jako auth-gate. */
+/** The current user (the session). A 401 becomes isError (retry:false), used as the auth gate. */
 export function useMe() {
   const client = useApiClient();
   return useQuery({

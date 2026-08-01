@@ -20,8 +20,8 @@ import { useState } from "react";
 import { z } from "zod";
 import { formatDate, Page } from "../ui";
 
-// Role przypisywalne w panelu. Źródło prawdy po stronie API: APP_ROLES (modules/auth/rbac.ts) —
-// walidacja i tak dzieje się na serwerze; tu tylko lista do zaznaczania.
+// The roles assignable in the panel. The source of truth is the API: APP_ROLES (modules/auth/rbac.ts) —
+// the server validates anyway; this is only the list to tick.
 const ROLE_OPTIONS = ["user", "admin"] as const;
 
 type UserRow = UserList["items"][number];
@@ -41,7 +41,7 @@ export function UsersList() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<"active" | "inactive" | "all">("active");
 
-  // Endpoint listy userów nie wspiera sortowania po kolumnach (porządek: e-mail rosnąco).
+  // The user list endpoint does not support column sorting (the order is e-mail ascending).
   const query = useUsers({ page, status: status as UserListQuery["status"] });
 
   const columns: Column<UserRow>[] = [
@@ -93,7 +93,7 @@ export function UsersList() {
   );
 }
 
-/** Zaznaczanie ról (checkboxy) — wspólne dla detalu i zaproszenia. */
+/** Ticking roles (checkboxes) — shared by the detail page and the invitation form. */
 function RolesPicker({
   value,
   onChange,
@@ -250,7 +250,7 @@ export function UserDetail() {
   );
 }
 
-/** Formularz zaproszenia nie wywodzi się z encji (to nie CRUD), więc schemat piszemy wprost. */
+/** The invitation form is not derived from an entity (this is not CRUD), so we write the schema out. */
 const InviteSchema = z.object({
   email: z.string().email("Podaj poprawny adres e-mail."),
   roles: z.array(z.string()).min(1, "Wybierz co najmniej jedną rolę."),
@@ -261,8 +261,8 @@ export function UserInvite() {
   const { toast } = useToast();
   const invite = useInviteUser();
 
-  // `useForm` również poza `EntityForm`: bierzemy z niego walidację ORAZ obsługę błędu z API —
-  // 409 o zajętym e-mailu ląduje pod polem `email`, a nie w zgadywanym toaście.
+  // `useForm` outside `EntityForm` too: we take both the validation AND the API error handling from
+  // it — a 409 about a taken e-mail lands under the `email` field, not in a guessed toast.
   const form = useForm({
     schema: InviteSchema,
     defaultValues: { email: "", roles: ["user"] as string[] },
@@ -275,8 +275,8 @@ export function UserInvite() {
 
   return (
     <Page title="Zaproś użytkownika">
-      {/* `noValidate`: walidację robi schemat Zod, nie przeglądarka — inaczej natywny dymek przy
-          `type="email"` blokuje submit i użytkownik nigdy nie zobaczy komunikatu z formularza. */}
+      {/* `noValidate`: the Zod schema validates, not the browser — otherwise the native bubble on
+          `type="email"` blocks the submit and the user never sees our own message. */}
       <form noValidate onSubmit={form.handleSubmit} className="flex max-w-lg flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
           E-mail

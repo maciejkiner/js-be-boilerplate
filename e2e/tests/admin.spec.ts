@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { ensureUser, loginViaUi, seedProject } from "./helpers";
 
-test.describe("admin: auth + encja referencyjna", () => {
-  test("login przez UI prowadzi do pulpitu", async ({ page, request }) => {
+test.describe("admin: auth + the reference entity", () => {
+  test("logging in through the UI leads to the dashboard", async ({ page, request }) => {
     await ensureUser(request);
     await loginViaUi(page);
   });
 
-  test("lista i detal projektu (DataTable → detal)", async ({ page, request }) => {
+  test("the project list and detail (DataTable → detail)", async ({ page, request }) => {
     await ensureUser(request);
     const name = await seedProject(request);
 
@@ -15,7 +15,7 @@ test.describe("admin: auth + encja referencyjna", () => {
     await page.getByRole("link", { name: "Projekty" }).click();
     await expect(page.getByRole("heading", { name: "Projekty" })).toBeVisible();
 
-    // Zaseedowany projekt jest najnowszy (sort createdAt desc) → widoczny na 1. stronie.
+    // The seeded project is the newest (sorted by createdAt desc) → it shows on page 1.
     const cell = page.getByText(name);
     await expect(cell).toBeVisible();
 

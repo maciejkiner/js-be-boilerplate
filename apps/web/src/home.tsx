@@ -2,8 +2,9 @@ import { Badge, Button } from "@repo/design-system";
 import { EmptyState } from "@repo/ui";
 
 /**
- * Domyślna skorupa (publiczna). Minimalny landing dowodzący, że `apps/web` startuje na TYCH SAMYCH
- * pakietach co admin (DS, packages/ui, api-*) i respektuje granicę (router/env tylko tu, nie w pakietach).
+ * The default (public) shell. A minimal landing page proving that `apps/web` runs on THE SAME
+ * packages as admin (the DS, packages/ui, api-*) and respects the boundary (the router and the env
+ * live here, never in the packages).
  */
 export function Home() {
   return (

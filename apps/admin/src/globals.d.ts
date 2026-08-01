@@ -1,2 +1,2 @@
-/** Wstrzykiwane przez Vite `define` (patrz vite.config.ts) — czas budowania/startu (ISO). */
+/** Injected by Vite's `define` (see vite.config.ts) — the build/start time (ISO). */
 declare const __BUILD_TIME__: string;

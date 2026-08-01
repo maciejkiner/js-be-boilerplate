@@ -43,9 +43,9 @@ function UserMenu({ email }: { email: string }) {
 }
 
 /**
- * Stopka z informacjami technicznymi. Rozszerzalna — dokładaj kolejne pozycje do `items`
- * (np. wersja API, flagi debug). Wartości pochodzą z Vite (`import.meta.env`/`__BUILD_TIME__`),
- * więc żyją TYLKO w skorupie; do `packages/ui` trafiają jako gotowy `ReactNode`.
+ * The footer with technical information. Extensible — add further entries to `items`
+ * (the API version, debug flags). The values come from Vite (`import.meta.env`/`__BUILD_TIME__`),
+ * so they live ONLY in the shell; `packages/ui` receives them as a ready `ReactNode`.
  */
 function TechInfo() {
   const items: Array<[string, string]> = [
@@ -63,7 +63,7 @@ function TechInfo() {
   );
 }
 
-/** Layout chroniony sesją: dopóki nie wiadomo → spinner; brak sesji → /login. */
+/** The session-protected layout: while it is unknown → a spinner; no session → /login. */
 export function ProtectedShell() {
   const me = useMe();
   if (me.isPending) {
@@ -130,8 +130,9 @@ export function LoginPage() {
           required
         />
         {login.isError && (
-          // Treść z API (celowo jednakowa dla złego e-maila i hasła — nie zdradzamy, czy konto
-          // istnieje); własny tekst zastępczy tylko wtedy, gdy odpowiedzi nie było.
+          // The text from the API (deliberately identical for a wrong e-mail and a wrong password —
+          // we never reveal whether the account exists); our own fallback only when there was no
+          // response at all.
           <p role="alert" className="text-sm text-red-600">
             {errorMessage(login.error, "Nieprawidłowy e-mail lub hasło.")}
           </p>

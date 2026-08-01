@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Porty konfigurowalne (jak POSTGRES_PORT) — domyślne dla CI (wolne), nadpisywalne lokalnie
-// przy kolizji z innymi projektami: E2E_API_PORT / E2E_WEB_PORT / E2E_ADMIN_PORT.
+// Configurable ports (like POSTGRES_PORT) — the defaults suit CI (where they are free) and can be
+// overridden locally on a collision with another project: E2E_API_PORT / E2E_WEB_PORT / E2E_ADMIN_PORT.
 const apiPort = process.env.E2E_API_PORT ?? "3000";
 const webPort = process.env.E2E_WEB_PORT ?? "5173";
 const adminPort = process.env.E2E_ADMIN_PORT ?? "5174";
@@ -10,7 +10,7 @@ const API = `http://localhost:${apiPort}`;
 const WEB = `http://localhost:${webPort}`;
 const ADMIN = `http://localhost:${adminPort}`;
 
-// Udostępnij URL-e testom (helpers / two-origins) — config i workery dzielą process.env.
+// Expose the URLs to the tests (helpers, two-origins) — the config and the workers share process.env.
 process.env.E2E_API_URL = API;
 process.env.E2E_WEB_URL = WEB;
 process.env.E2E_ADMIN_URL = ADMIN;

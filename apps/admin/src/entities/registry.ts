@@ -28,7 +28,7 @@ export interface EntityRoute {
   label: string;
   /** Ścieżka bazowa listy (detal = `${path}/$id`, create = `${path}/new`, edit = `${path}/$id/edit`). */
   path: string;
-  // Funkcyjne komponenty — zgodne z `RouteComponent` TanStack Routera (bez klas).
+  // Function components — compatible with TanStack Router's `RouteComponent` (no classes).
   List: FunctionComponent;
   Detail: FunctionComponent;
   Create?: FunctionComponent;
@@ -36,8 +36,9 @@ export interface EntityRoute {
 }
 
 /**
- * Rejestr encji admina — JEDNO źródło menu i tras. Scaffolder (Faza 8) dopisuje jedną pozycję
- * przy kotwicy poniżej; menu (`Nav`) i drzewo tras (`routes.ts`) budują się z tej tablicy.
+ * The admin entity registry — ONE source for the menu and the routes. The scaffolder appends a
+ * single entry at the anchor below; the menu (`Nav`) and the route tree (`routes.ts`) are built from
+ * this array.
  */
 export const entityRegistry: EntityRoute[] = [
   {
@@ -59,8 +60,8 @@ export const entityRegistry: EntityRoute[] = [
     Edit: TaskEdit,
   },
   {
-    // Encja CORE (auth), nie scaffoldowana: zarządzanie userami (role/dezaktywacja) w widoku detalu,
-    // `Create` = zaproszenie. Brak `Edit` (role edytowane w Detail). Endpointy tylko dla admina.
+    // A CORE entity (auth), not scaffolded: user management (roles, deactivation) on the detail page,
+    // `Create` is the invitation. There is no `Edit` (roles are edited in Detail). Admin-only endpoints.
     name: "user",
     label: "Użytkownicy",
     path: "/users",

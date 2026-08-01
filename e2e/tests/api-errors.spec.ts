@@ -2,25 +2,25 @@ import { expect, test } from "@playwright/test";
 import { ADMIN_USER, loginViaUi } from "./helpers";
 
 /**
- * Regresja: odpowiedź błędu z API musi dotrzeć do użytkownika w miejscu, w którym może coś z nią
- * zrobić. Wcześniej widok łapał wyjątek i pokazywał własny domysł ("Nie udało się zaprosić
- * (e-mail zajęty?)"), więc treść z serwera i informacja o polu ginęły po drodze.
+ * A regression guard: an API error response must reach the user where they can act on it. The view
+ * used to catch the exception and show a guess of its own ("Nie udało się zaprosić (e-mail
+ * zajęty?)"), so both the server's text and the information about the field were lost on the way.
  */
-test.describe("błędy z API w UI", () => {
-  test("409 ląduje pod polem, którego dotyczy, i w komunikacie globalnym", async ({ page }) => {
+test.describe("API errors in the UI", () => {
+  test("a 409 lands under the field it concerns and in the global message", async ({ page }) => {
     await loginViaUi(page, ADMIN_USER);
 
     await page.goto("/users/new");
-    await page.getByLabel("E-mail").fill(ADMIN_USER.email); // adres już zajęty
+    await page.getByLabel("E-mail").fill(ADMIN_USER.email); // an address already taken
     await page.getByRole("button", { name: "Wyślij zaproszenie" }).click();
 
-    // `errors` z problem+json → błąd przy kontrolce; `detail` → komunikat globalny.
+    // `errors` from problem+json → an error at the control; `detail` → the global message.
     await expect(page.getByText("Ten adres jest już zajęty.")).toBeVisible();
     await expect(page.getByText("Użytkownik z tym adresem e-mail już istnieje.")).toBeVisible();
-    await expect(page).toHaveURL(/\/users\/new$/); // formularz nie przeszedł dalej
+    await expect(page).toHaveURL(/\/users\/new$/); // the form did not move on
   });
 
-  test("walidacja klienta zatrzymuje żądanie i wskazuje pole", async ({ page }) => {
+  test("client-side validation stops the request and points at the field", async ({ page }) => {
     await loginViaUi(page, ADMIN_USER);
 
     await page.goto("/users/new");

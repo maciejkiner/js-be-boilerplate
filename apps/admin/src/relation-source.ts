@@ -2,22 +2,23 @@ import { useApiClient } from "@repo/api-react";
 import type { RelationSource } from "@repo/forms-ui";
 
 /**
- * Konwencja API: encja pojedyncza → ścieżka w liczbie mnogiej, kebab-case
- * (`user` to encja core → `users`; `talkSpeaker` → `talk-speakers`).
+ * The API convention: a singular entity → a plural, kebab-case path (`user` is a core entity →
+ * `users`; `talkSpeaker` → `talk-speakers`).
  */
 const pluralize = (entity: string) =>
   (entity === "user" ? "users" : `${entity}s`).replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 
 /**
- * GENERYCZNE źródło pól relacji: jeden fetcher dla DOWOLNEJ encji-celu (bez per-encja gałęzi).
- * Uderza w `GET /api/v1/<plural>` i zwraca surowe wiersze — label liczy `forms-ui` z
- * `relation.displayField` (ta sama encja-cel może być pokazywana różnymi polami). Nowa encja działa
- * jako cel bez żadnej rejestracji. `q` jest pomijane przez endpointy bez tego pola (zod strip).
+ * The GENERIC source for relation fields: one fetcher for ANY target entity (no per-entity
+ * branches). It hits `GET /api/v1/<plural>` and returns raw rows — `forms-ui` computes the label
+ * from `relation.displayField` (so the same target entity can be shown through different fields). A
+ * new entity works as a target with no registration at all. `q` is dropped by endpoints that do not
+ * declare it (Zod strips it).
  */
 export function useRelationSource(): RelationSource {
   const client = useApiClient();
   return async (relation, query) => {
-    // Ścieżka dynamiczna — rzut na znaną ścieżkę tylko dla typów openapi-fetch; runtime używa realnej.
+    // A dynamic path — the cast to a known path is only for the openapi-fetch types; at runtime the real one is used.
     const res = await client.GET(`/api/v1/${pluralize(relation.entity)}/` as "/api/v1/users/", {
       params: { query: { pageSize: 50, q: query || undefined } },
     });

@@ -7,9 +7,9 @@ import type { z } from "zod";
 const pad = (value: number): string => String(value).padStart(2, "0");
 
 /**
- * ISO → wartość `input[type=datetime-local]`, czyli `YYYY-MM-DDTHH:mm` w czasie **lokalnym**.
- * Surowe ISO (z sekundami i strefą) jest dla tej kontrolki nieprawidłowe — przeglądarka pokazuje
- * wtedy puste pole, a zapis formularza wyczyściłby wartość.
+ * ISO → the value of an `input[type=datetime-local]`, that is `YYYY-MM-DDTHH:mm` in **local** time.
+ * Raw ISO (with seconds and a zone) is invalid for this control — the browser then shows an empty
+ * field, and saving the form would wipe the value.
  */
 function toDateTimeLocal(iso: string): string {
   const date = new Date(iso);
@@ -22,7 +22,7 @@ function toDateTimeLocal(iso: string): string {
   );
 }
 
-/** Rekord z API → wartości formularza (daty ISO→yyyy-mm-dd, null→"", bool dla checkbox/switch). */
+/** An API record → form values (ISO dates→yyyy-mm-dd, null→"", booleans for checkbox/switch). */
 export function recordToFormValues<Shape extends z.ZodRawShape>(
   entity: Entity<Shape>,
   record: Record<string, unknown>,
@@ -54,8 +54,9 @@ export interface EntityFormProps<Shape extends z.ZodRawShape> {
 }
 
 /**
- * Formularz encji wywiedziony z metadanych: `deriveFields` (pola) + `entity.validation` (Zod,
- * z walidacją międzypolową) + `FormFields` (renderery DS). Jedno źródło prawdy dla create i edit.
+ * An entity form derived from the metadata: `deriveFields` (the fields) + `entity.validation` (Zod,
+ * including cross-field rules) + `FormFields` (the DS renderers). One source of truth for create and
+ * edit.
  */
 export function EntityForm<Shape extends z.ZodRawShape>({
   entity,
@@ -71,8 +72,8 @@ export function EntityForm<Shape extends z.ZodRawShape>({
     <form onSubmit={form.handleSubmit} className="flex max-w-lg flex-col gap-4">
       <FormFields fields={fields} form={form} relationSource={relationSource} />
       {form.errors._form && (
-        // Błąd bez przypisania do pola: walidacja międzypolowa albo odpowiedź API (`detail`
-        // z problem+json). Pola wskazane przez API podświetla `FormFields` — tu ląduje reszta.
+        // An error attached to no field: cross-field validation, or the API response (`detail` from
+        // problem+json). Fields the API named are highlighted by `FormFields` — the rest lands here.
         <p
           role="alert"
           className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700"

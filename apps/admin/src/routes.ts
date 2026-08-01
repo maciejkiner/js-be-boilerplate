@@ -10,9 +10,9 @@ import { CreateProjectWizard } from "./entities/project-wizard";
 import { entityRegistry } from "./entities/registry";
 import { Dashboard, LoginPage, ProtectedShell } from "./shell";
 
-// Routing CODE-BASED sterowany rejestrem encji (kotwica scaffoldera). Typowanie tras trzymamy
-// luźne (bez `Register`) — ścieżki pochodzą z runtime'owej tablicy, więc literałowe typy Linków
-// tylko by przeszkadzały. Bezpieczeństwo kontraktu daje warstwa api-client (typy z OpenAPI).
+// CODE-BASED routing driven by the entity registry (the scaffolder anchor). Route typing stays
+// loose (no `Register`) — the paths come from a runtime array, so literal Link types would only get
+// in the way. Contract safety comes from the api-client layer (types generated from OpenAPI).
 
 const rootRoute = createRootRoute({ component: Outlet });
 
@@ -22,7 +22,7 @@ const loginRoute = createRoute({
   component: LoginPage,
 });
 
-// Pathless layout: wszystko poniżej wymaga sesji (ProtectedShell = auth-gate + AdminLayout).
+// A pathless layout: everything below requires a session (ProtectedShell = auth gate + AdminLayout).
 const protectedRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "protected",

@@ -53,10 +53,11 @@ function LabeledTextarea({
 }
 
 /**
- * Wizard referencyjny: dowód separacji silnika formularzy od CRUD ORAZ reużywalnej struktury.
- * Cała mechanika (Stepper, przyciski, stan, walidacja-gating) jest w `<Wizard>` (`@repo/forms-ui`) —
- * tu wstrzykujemy tylko kroki (`render`) i `onComplete`, który orkiestruje TRZY różne handlery:
- * projekt → baza (create), zaproszenia → mailer (bez zapisu), zadania → hurt (create).
+ * The reference wizard: proof that the form engine is separate from CRUD AND that the structure is
+ * reusable. All the mechanics (stepper, buttons, state, validation gating) live in `<Wizard>`
+ * (`@repo/forms-ui`) — here we inject only the steps (`render`) and `onComplete`, which orchestrates
+ * THREE different handlers: the project → the database (create), invitations → the mailer (nothing
+ * persisted), tasks → bulk create.
  */
 export function CreateProjectWizard() {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ export function CreateProjectWizard() {
     {
       id: "project",
       label: "Dane projektu",
-      schema: projectEntity.validation, // walidacja pełna, w tym międzypolowa
+      schema: projectEntity.validation, // full validation, cross-field rules included
       render: (wizard) => <FormFields fields={projectFields} form={wizard} />,
     },
     {
@@ -111,24 +112,25 @@ export function CreateProjectWizard() {
             taskTitlesText: "",
           }}
           labels={{ next: "Dalej", submit: "Utwórz" }}
-          // Bez własnego `try/catch`: błąd finalnej orkiestracji obsługuje `<Wizard>` — pokazuje
-          // `detail` z API i cofa do kroku wskazanego przez `WizardStepError`. `WizardStepError.from`
-          // zachowuje błąd źródłowy, więc pola z problem+json podświetlają się w formularzu kroku.
+          // No `try/catch` of our own: `<Wizard>` handles the final orchestration error — it shows
+          // the `detail` from the API and returns to the step named by `WizardStepError`.
+          // `WizardStepError.from` keeps the original error, so the fields from problem+json are
+          // highlighted in that step's form.
           onComplete={async (values) => {
-            // 1) projekt → baza
+            // 1) the project → the database
             const project = await createProject
               .mutateAsync(values as unknown as CreateProjectBody)
               .catch((error: unknown) => {
                 throw WizardStepError.from("project", error);
               });
-            // 2) zaproszenia → mailer (NIE do bazy)
+            // 2) invitations → the mailer (NOT the database)
             const emails = parseEmails((values.inviteEmailsText as string) ?? "");
             if (emails.length > 0) {
               await invite.mutateAsync({ id: project.id, emails }).catch((error: unknown) => {
                 throw WizardStepError.from("invite", error);
               });
             }
-            // 3) początkowe zadania → hurt (baza)
+            // 3) the initial tasks → bulk create (the database)
             for (const title of parseLines((values.taskTitlesText as string) ?? "")) {
               await createTask
                 .mutateAsync({

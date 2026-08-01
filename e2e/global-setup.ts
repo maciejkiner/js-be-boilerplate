@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
 
 /**
- * Seed konta admina przed testami. Panel (użytkownicy, role) jest `admin`-only, a rejestracja przez
- * API daje wyłącznie rolę `user` — bez tego kroku nie da się przetestować żadnego widoku spod RBAC.
- * Seeder jest idempotentny, więc powtórne uruchomienie suite'u nic nie psuje.
+ * Seeds the admin account before the tests. The panel (users, roles) is `admin`-only, and
+ * registering through the API only ever grants the `user` role — without this step no view behind
+ * RBAC can be tested. The seeder is idempotent, so rerunning the suite breaks nothing.
  */
 export default function globalSetup(): void {
   execFileSync("pnpm", ["--filter", "@repo/api", "db:seed"], {
