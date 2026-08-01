@@ -45,10 +45,10 @@ describe.skipIf(!url)("speakers CRUD (generated)", () => {
       cookies: auth(),
       payload: {
         fullName: "test-fullName",
-        email: "test-email",
+        email: "test@example.com",
         bio: "test-bio",
         company: "test-company",
-        website: "test-website",
+        website: "https://example.com",
         isConfirmed: true,
       },
     });

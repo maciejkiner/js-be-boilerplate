@@ -52,7 +52,7 @@ describe.skipIf(!url || RELATIONS_TODO)("registrations CRUD (generated)", () => 
       payload: {
         eventId,
         fullName: "test-fullName",
-        email: "test-email",
+        email: "test@example.com",
         ticketType: "standard",
         needsCatering: true,
         acceptsTerms: true,
